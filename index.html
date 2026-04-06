@@ -929,33 +929,35 @@ function showPage(page) {
 
 // DASHBOARD
 async function loadDashboard() {
-  const { data: enrollments } = await sb.from('enrollments').select('*, courses(*), progress(*)').eq('user_id', currentUser.id);
-
+  const { data: enrollments } = await sb.from('enrollments').select('*').eq('user_id', currentUser.id);
   if (!enrollments) return;
 
+  const courseIds = enrollments.map(e => e.course_id);
+  const { data: courses } = courseIds.length ? await sb.from('courses').select('*').in('id', courseIds) : { data: [] };
+  const { data: progress } = await sb.from('progress').select('*').eq('user_id', currentUser.id);
+
   const total = enrollments.length;
-  const done = enrollments.filter(e => e.progress?.[0]?.completed).length;
-  const scores = enrollments.map(e => e.progress?.[0]?.score || 0);
+  const done = progress?.filter(p => p.completed).length || 0;
+  const scores = progress?.map(p => p.score || 0) || [];
   const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
 
   document.getElementById('statTotal').textContent = total;
   document.getElementById('statDone').textContent = done;
-  document.getElementById('statAvg').textContent = avg + '%';
+  document.getElementById('statAvg').textContent = avg > 0 ? avg + '%' : '—';
 
-  const active = enrollments.filter(e => !e.progress?.[0]?.completed).slice(0,4);
   const container = document.getElementById('dashCourses');
-
-  if (!active.length) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🎉</div><p>Все курсы завершены!</p></div>';
+  if (!enrollments.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📚</div><p>Тебе пока не назначено курсов</p></div>';
     return;
   }
 
-  container.innerHTML = active.map(e => {
-    const prog = e.progress?.[0];
+  container.innerHTML = enrollments.slice(0,4).map(e => {
+    const course = courses?.find(c => c.id === e.course_id);
+    const prog = progress?.find(p => p.course_id === e.course_id);
     const pct = prog ? Math.round((prog.module_index / 3) * 100) : 0;
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
-      <div>
-        <div style="font-size:14px;font-weight:600;margin-bottom:4px">${e.courses.title}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600;margin-bottom:4px">${course?.title || '—'}</div>
         <div class="mini-progress">
           <div class="mini-bar"><div class="mini-fill" style="width:${pct}%"></div></div>
           <div class="mini-label">${pct}%</div>
@@ -968,7 +970,7 @@ async function loadDashboard() {
 
 // COURSES
 async function loadCourses() {
-  const { data: enrollments } = await sb.from('enrollments').select('*, courses(*), progress(*)').eq('user_id', currentUser.id);
+  const { data: enrollments } = await sb.from('enrollments').select('*').eq('user_id', currentUser.id);
   const grid = document.getElementById('coursesGrid');
 
   if (!enrollments?.length) {
@@ -976,9 +978,14 @@ async function loadCourses() {
     return;
   }
 
+  const courseIds = enrollments.map(e => e.course_id);
+  const { data: courses } = await sb.from('courses').select('*').in('id', courseIds);
+  const { data: progress } = await sb.from('progress').select('*').eq('user_id', currentUser.id);
+
   const icons = ['💡','🔩','🎯','📋','⚡','🌟'];
   grid.innerHTML = enrollments.map((e, i) => {
-    const prog = e.progress?.[0];
+    const course = courses?.find(c => c.id === e.course_id);
+    const prog = progress?.find(p => p.course_id === e.course_id);
     const pct = prog ? Math.round((prog.module_index / 3) * 100) : 0;
     const completed = prog?.completed;
     const started = prog && prog.module_index > 0;
@@ -988,8 +995,8 @@ async function loadCourses() {
     return `<div class="course-card">
       <div class="course-icon">${icons[i % icons.length]}</div>
       ${badge}
-      <div class="course-name">${e.courses.title}</div>
-      <div class="course-desc">${e.courses.description || 'Пройди курс и стань экспертом!'}</div>
+      <div class="course-name">${course?.title || '—'}</div>
+      <div class="course-desc">${course?.description || 'Пройди курс и стань экспертом!'}</div>
       <div class="course-progress-bar"><div class="course-progress-fill" style="width:${pct}%"></div></div>
       <div class="course-progress-label">${pct}% завершено · Балл: ${prog?.score || 0}</div>
     </div>`;
