@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тест: Направляющие и Подсветки — Svet.kz</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f1fa; min-height: 100vh; padding: 32px 20px 60px; color: #2c2338; }
+header { text-align: center; margin-bottom: 32px; }
+.logo { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5B2D8E; margin-bottom: 8px; }
+h1 { font-size: 24px; font-weight: 800; color: #2c2338; margin-bottom: 6px; }
+header p { font-size: 14px; color: #7a6d8a; }
+.progress-wrap { max-width: 660px; margin: 0 auto 28px; }
+.progress-info { display: flex; justify-content: space-between; font-size: 13px; color: #7a6d8a; margin-bottom: 8px; }
+.progress-bar { height: 6px; background: #ddd8ec; border-radius: 10px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #5B2D8E, #9b6fd4); border-radius: 10px; transition: width 0.4s ease; }
+.card { background: #fff; border-radius: 20px; padding: 28px; max-width: 660px; margin: 0 auto 20px; box-shadow: 0 4px 20px rgba(91,45,142,0.09); }
+.scenario { display: flex; gap: 14px; align-items: flex-start; background: #f7f4fd; border-radius: 14px; padding: 16px; margin-bottom: 20px; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.avatar.customer { background: #ede8f9; }
+.avatar.task { background: #e6f7f0; }
+.bubble-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; }
+.label-customer { color: #5B2D8E; }
+.label-task { color: #0f6e56; }
+.bubble-text { font-size: 14px; line-height: 1.6; color: #2c2338; }
+.section-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 14px; }
+.badge-nav { background: #ede8f9; color: #5B2D8E; }
+.badge-pod { background: #fce8f3; color: #8c1a5e; }
+.question-num { font-size: 11px; font-weight: 600; color: #b0a0c8; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+.question-text { font-size: 17px; font-weight: 700; line-height: 1.5; color: #2c2338; margin-bottom: 20px; }
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option { background: #f7f4fd; border: 2px solid #e2d9f3; border-radius: 12px; padding: 13px 16px; font-size: 14px; font-weight: 500; color: #3d2b5e; cursor: pointer; transition: all 0.15s; text-align: left; line-height: 1.4; width: 100%; }
+.option:hover:not(.disabled) { border-color: #5B2D8E; background: #ede8f9; transform: translateX(4px); }
+.option.correct { background: #e6f7f0; border-color: #1D9E75; color: #085041; }
+.option.wrong { background: #fdeaea; border-color: #e05050; color: #7a1a1a; animation: shake 0.3s ease; }
+.option.show-correct { background: #e6f7f0; border-color: #1D9E75; color: #085041; }
+.option.disabled { cursor: default; }
+@keyframes shake { 0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)} }
+.explanation { margin-top: 16px; padding: 13px 16px; border-radius: 12px; font-size: 13px; line-height: 1.6; display: none; }
+.explanation.show { display: block; }
+.explanation.ok { background: #e6f7f0; color: #085041; border-left: 4px solid #1D9E75; }
+.explanation.fail { background: #fdeaea; color: #7a1a1a; border-left: 4px solid #e05050; }
+.nav-btn { max-width: 660px; margin: 0 auto; display: flex; justify-content: flex-end; }
+.btn-next { background: #5B2D8E; color: #fff; border: none; border-radius: 12px; padding: 13px 32px; font-size: 14px; font-weight: 700; cursor: pointer; display: none; box-shadow: 0 4px 14px rgba(91,45,142,0.3); transition: all 0.15s; }
+.btn-next:hover { background: #4a2275; transform: translateY(-1px); }
+.btn-next.show { display: block; }
+.result-screen { display: none; background: #fff; border-radius: 20px; padding: 40px 32px; max-width: 660px; margin: 0 auto; text-align: center; box-shadow: 0 4px 20px rgba(91,45,142,0.09); }
+.result-screen.show { display: block; }
+.result-emoji { font-size: 52px; margin-bottom: 16px; }
+.result-score { font-size: 52px; font-weight: 800; margin-bottom: 8px; }
+.score-good { color: #1D9E75; }
+.score-mid { color: #BA7517; }
+.score-bad { color: #e05050; }
+.result-title { font-size: 20px; font-weight: 700; color: #2c2338; margin-bottom: 8px; }
+.result-msg { font-size: 14px; color: #7a6d8a; line-height: 1.6; margin-bottom: 28px; }
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+.res-card { border-radius: 14px; padding: 16px; text-align: center; }
+.res-card.nav-card { background: #ede8f9; }
+.res-card.pod-card { background: #fce8f3; }
+.res-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+.nav-card .res-label { color: #5B2D8E; }
+.pod-card .res-label { color: #8c1a5e; }
+.res-score { font-size: 28px; font-weight: 800; }
+.nav-card .res-score { color: #5B2D8E; }
+.pod-card .res-score { color: #c2387a; }
+.btn-retry { background: #5B2D8E; color: #fff; border: none; border-radius: 12px; padding: 14px 40px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(91,45,142,0.3); transition: all 0.15s; }
+.btn-retry:hover { background: #4a2275; transform: translateY(-1px); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Svet.kz — Обучение стажёров</div>
+  <h1>Направляющие и Подсветки</h1>
+  <p>10 вопросов строго по материалу урока</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-info">
+    <span id="progress-label">Вопрос 1 из 10</span>
+    <span id="progress-score">0 правильных</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+</div>
+
+<div id="questions-wrap"></div>
+
+<div class="nav-btn">
+  <button class="btn-next" id="btn-next" onclick="nextQuestion()">Следующий →</button>
+</div>
+
+<div class="result-screen" id="result-screen">
+  <div class="result-emoji" id="res-emoji"></div>
+  <div class="result-score" id="res-score"></div>
+  <div class="result-title" id="res-title"></div>
+  <div class="result-msg" id="res-msg"></div>
+  <div class="result-grid">
+    <div class="res-card nav-card">
+      <div class="res-label">Направляющие</div>
+      <div class="res-score" id="nav-score"></div>
+    </div>
+    <div class="res-card pod-card">
+      <div class="res-label">Подсветки</div>
+      <div class="res-score" id="pod-score"></div>
+    </div>
+  </div>
+  <button class="btn-retry" onclick="restart()">Пройти ещё раз</button>
+</div>
+
+<script>
+const questions = [
+
+  // ===== НАПРАВЛЯЮЩИЕ — 5 вопросов =====
+  {
+    section: 'nav',
+    scenario: null,
+    text: 'Направляющий светильник — это...',
+    options: [
+      'Светильник, который скользит по шине (треку)',
+      'Один или несколько светильников на одном общем основании — единая неразборная конструкция',
+      'Подвесной светильник на тросе или цепи',
+      'Светильник, крепящийся только к стене'
+    ],
+    correct: 1,
+    explanation: 'Направляющий светильник — это один или несколько маленьких светильников, расположенных на одном общем основании. Основание и светильники — единая неразборная конструкция.'
+  },
+  {
+    section: 'nav',
+    scenario: null,
+    text: 'Чем направляющий светильник отличается от бра?',
+    options: [
+      'Бра ярче светит',
+      'Направляющий светильник можно установить и на стену, и на потолок — бра только на стену',
+      'Бра можно ставить на потолок, а направляющий — нет',
+      'Никакой разницы нет'
+    ],
+    correct: 1,
+    explanation: 'Бра крепится только на стену. Направляющий светильник можно установить и на стену, и на потолок — это его главное отличие от бра.'
+  },
+  {
+    section: 'nav',
+    scenario: null,
+    text: 'Чем направляющий светильник отличается от трековой системы?',
+    options: [
+      'В направляющем основание и светильники — единая конструкция, шины нет. В треке шина и светильники — отдельные элементы',
+      'В направляющем светильники скользят по шине',
+      'Трековая система дешевле',
+      'Направляющий светильник мощнее'
+    ],
+    correct: 0,
+    explanation: 'В трековой системе шина и светильники — отдельные элементы. В направляющем светильнике — единая готовая конструкция без шины. Нельзя удлинить или добавить светильники.'
+  },
+  {
+    section: 'nav',
+    scenario: { type: 'customer', text: 'Хочу что-то на потолок — несколько светильников без шин и рельсов, каждый можно повернуть куда нужно.' },
+    text: 'Что предложишь покупателю?',
+    options: [
+      'Трековую систему — она для нескольких светильников',
+      'Направляющий светильник — единая конструкция, шина не нужна, каждый светильник поворачивается',
+      'Люстру с рожками',
+      'Несколько бра рядом'
+    ],
+    correct: 1,
+    explanation: 'Направляющий светильник — идеальное решение. Несколько светильников на одном основании, каждый поворачивается. Никакой шины не нужно. Проще в установке, чем трек, и дешевле.'
+  },
+  {
+    section: 'nav',
+    scenario: { type: 'task', text: 'Покупатель хочет добавить ещё светильник к своей направляющей' },
+    text: 'Что правильно ответить?',
+    options: [
+      'Без проблем, докупите светильник и вставьте в шину',
+      'Можно добавить, нужен только переходник',
+      'К направляющему нельзя добавить светильники — это единая неразборная конструкция. Нужно выбрать модель с нужным количеством головок',
+      'Да, любой трековый светильник подойдёт'
+    ],
+    correct: 2,
+    explanation: 'Направляющий светильник — единая неразборная конструкция. Добавить светильники нельзя. Если нужно больше — выбирается модель с нужным количеством головок изначально.'
+  },
+
+  // ===== ПОДСВЕТКИ — 5 вопросов =====
+  {
+    section: 'pod',
+    scenario: null,
+    text: 'Для чего предназначены подсветки?',
+    options: [
+      'Для общего освещения комнаты',
+      'Для освещения картин, зеркал и декора',
+      'Для подсветки натяжного потолка',
+      'Для замены люстры'
+    ],
+    correct: 1,
+    explanation: 'Подсветки — специальные светильники для освещения картин, зеркал и декора. Устанавливаются над объектом и направляют свет точно на него.'
+  },
+  {
+    section: 'pod',
+    scenario: null,
+    text: 'Из каких трёх частей состоит подсветка?',
+    options: [
+      'Патрон, рожок, абажур',
+      'Шина, адаптер, светильник',
+      'Основание, закрутка, лампочка',
+      'Цепь, плафон, планка'
+    ],
+    correct: 2,
+    explanation: 'Подсветка состоит из: основания (крепится к стене), закрутки (регулирует угол рассеивания света) и лампочки (освещает объект).'
+  },
+  {
+    section: 'pod',
+    scenario: { type: 'customer', text: 'Хочу подсветить картину — просто, классически, свет прямо на неё.' },
+    text: 'Какой вид подсветки подойдёт?',
+    options: [
+      'Декоративная — для красивых теней на стене',
+      'Подсветка, которая светит вверх и вниз',
+      'Подсветка, которая светит вниз — классический вариант для картин',
+      'Направляющий светильник на потолок'
+    ],
+    correct: 2,
+    explanation: 'Подсветка "светит вниз" — классический вид. Устанавливается над картиной, свет направлен строго вниз на объект. Идеальна для галерейной подсветки картин.'
+  },
+  {
+    section: 'pod',
+    scenario: { type: 'customer', text: 'Хочу чтобы и картина была подсвечена, и на потолке был красивый световой акцент сверху.' },
+    text: 'Какой вид подсветки выбрать?',
+    options: [
+      'Подсветка, которая светит только вниз',
+      'Декоративная подсветка',
+      'Подсветка, которая светит и вверх, и вниз',
+      'Обычное бра рядом с картиной'
+    ],
+    correct: 2,
+    explanation: 'Двунаправленная подсветка "светит вверх и вниз" — освещает объект и одновременно создаёт световой акцент на потолке. Более объёмный и эффектный результат.'
+  },
+  {
+    section: 'pod',
+    scenario: { type: 'customer', text: 'У меня в прихожей большое зеркало, хочу его красиво подсветить.' },
+    text: 'Какой светильник для этого подойдёт?',
+    options: [
+      'Направляющий светильник на потолок',
+      'Подсветку — устанавливается над зеркалом и направляет свет точно на него',
+      'Торшер рядом с зеркалом',
+      'Плафон на потолок'
+    ],
+    correct: 1,
+    explanation: 'Подсветки специально созданы для освещения зеркал и картин. Устанавливаются над объектом и направляют свет точно на него — идеальное решение для зеркала в прихожей.'
+  },
+];
+
+let current = 0, score = 0, navScore = 0, podScore = 0, answered = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+const shuffled = shuffle(questions);
+
+function renderQuestion(idx) {
+  const wrap = document.getElementById('questions-wrap');
+  wrap.innerHTML = '';
+  const q = shuffled[idx];
+  const isNav = q.section === 'nav';
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  let sc = '';
+  if (q.scenario) {
+    const isCust = q.scenario.type === 'customer';
+    sc = `<div class="scenario"><div class="avatar ${isCust?'customer':'task'}">${isCust?'🧑':'📋'}</div><div><div class="bubble-label ${isCust?'label-customer':'label-task'}">${isCust?'Говорит покупатель':'Задание'}</div><div class="bubble-text">${q.scenario.text}</div></div></div>`;
+  }
+
+  card.innerHTML = `${sc}
+    <div class="section-badge ${isNav?'badge-nav':'badge-pod'}">${isNav?'Направляющие светильники':'Подсветки'}</div>
+    <div class="question-num">Вопрос ${idx+1} из ${shuffled.length}</div>
+    <div class="question-text">${q.text}</div>
+    <div class="options" id="options"></div>
+    <div class="explanation" id="explanation"></div>`;
+
+  wrap.appendChild(card);
+
+  const optWrap = document.getElementById('options');
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i, q.correct, q.explanation, q.section);
+    optWrap.appendChild(btn);
+  });
+
+  answered = false;
+  document.getElementById('btn-next').classList.remove('show');
+  updateProgress();
+}
+
+function selectAnswer(chosen, correct, explanation, section) {
+  if (answered) return;
+  answered = true;
+  document.querySelectorAll('.option').forEach((btn, i) => {
+    btn.classList.add('disabled');
+    if (i === correct) btn.classList.add(chosen === correct ? 'correct' : 'show-correct');
+    if (i === chosen && chosen !== correct) btn.classList.add('wrong');
+  });
+  const expEl = document.getElementById('explanation');
+  expEl.textContent = explanation;
+  expEl.classList.add('show');
+  if (chosen === correct) {
+    expEl.classList.add('ok'); score++;
+    if (section === 'nav') navScore++; else podScore++;
+  } else { expEl.classList.add('fail'); }
+  updateProgress();
+  const btn = document.getElementById('btn-next');
+  btn.textContent = current === shuffled.length-1 ? 'Посмотреть результат →' : 'Следующий →';
+  btn.classList.add('show');
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= shuffled.length) showResult();
+  else renderQuestion(current);
+}
+
+function updateProgress() {
+  document.getElementById('progress-fill').style.width = Math.round(current/shuffled.length*100)+'%';
+  document.getElementById('progress-label').textContent = `Вопрос ${current+1} из ${shuffled.length}`;
+  document.getElementById('progress-score').textContent = `${score} правильных`;
+}
+
+function showResult() {
+  document.getElementById('questions-wrap').innerHTML = '';
+  document.getElementById('btn-next').classList.remove('show');
+  document.querySelector('.progress-wrap').style.display = 'none';
+  document.getElementById('result-screen').classList.add('show');
+  const pct = Math.round(score/shuffled.length*100);
+  const scoreEl = document.getElementById('res-score');
+  scoreEl.textContent = `${score} / ${shuffled.length}`;
+  if (pct===100) { document.getElementById('res-emoji').textContent='🏆'; scoreEl.className='result-score score-good'; document.getElementById('res-title').textContent='Блестящий результат!'; document.getElementById('res-msg').textContent='Все верно! Отлично знаешь тему направляющих и подсветок.'; }
+  else if (pct>=70) { document.getElementById('res-emoji').textContent='👍'; scoreEl.className='result-score score-mid'; document.getElementById('res-title').textContent='Хороший результат!'; document.getElementById('res-msg').textContent='Большинство верно. Повтори моменты где ошибся.'; }
+  else { document.getElementById('res-emoji').textContent='📚'; scoreEl.className='result-score score-bad'; document.getElementById('res-title').textContent='Нужно повторить материал'; document.getElementById('res-msg').textContent='Рекомендуем ещё раз посмотреть видео и PDF по теме.'; }
+  const navT = shuffled.filter(q=>q.section==='nav').length;
+  const podT = shuffled.filter(q=>q.section==='pod').length;
+  document.getElementById('nav-score').textContent = `${navScore} / ${navT}`;
+  document.getElementById('pod-score').textContent = `${podScore} / ${podT}`;
+}
+
+function restart() {
+  current=0; score=0; navScore=0; podScore=0;
+  document.getElementById('result-screen').classList.remove('show');
+  document.querySelector('.progress-wrap').style.display='block';
+  shuffled.sort(()=>Math.random()-0.5);
+  renderQuestion(0);
+}
+
+renderQuestion(0);
+</script>
+</body>
+</html>

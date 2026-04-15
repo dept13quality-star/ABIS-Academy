@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тест: Споты и Треки — Svet.kz</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f4f1fa;
+  min-height: 100vh;
+  padding: 32px 20px 60px;
+  color: #2c2338;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.logo {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5B2D8E;
+  margin-bottom: 8px;
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #2c2338;
+  margin-bottom: 6px;
+}
+
+header p {
+  font-size: 14px;
+  color: #7a6d8a;
+}
+
+.progress-wrap {
+  max-width: 640px;
+  margin: 0 auto 28px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #7a6d8a;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: #ddd8ec;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5B2D8E, #9b6fd4);
+  border-radius: 10px;
+  transition: width 0.4s ease;
+}
+
+.section-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.badge-spot { background: #ede8f9; color: #5B2D8E; }
+.badge-track { background: #e6f7f0; color: #0f6e56; }
+
+.question-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px;
+  max-width: 640px;
+  margin: 0 auto 20px;
+  box-shadow: 0 4px 20px rgba(91,45,142,0.09);
+  display: none;
+}
+
+.question-card.active { display: block; }
+
+.question-num {
+  font-size: 12px;
+  font-weight: 600;
+  color: #b0a0c8;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.question-text {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #2c2338;
+  margin-bottom: 22px;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option {
+  background: #f7f4fd;
+  border: 2px solid #e2d9f3;
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #3d2b5e;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.option:hover:not(.disabled) {
+  border-color: #5B2D8E;
+  background: #ede8f9;
+  transform: translateX(4px);
+}
+
+.option.correct {
+  background: #e6f7f0;
+  border-color: #1D9E75;
+  color: #085041;
+}
+
+.option.wrong {
+  background: #fdeaea;
+  border-color: #e05050;
+  color: #7a1a1a;
+}
+
+.option.show-correct {
+  background: #e6f7f0;
+  border-color: #1D9E75;
+  color: #085041;
+}
+
+.option.disabled { cursor: default; }
+
+.explanation {
+  margin-top: 16px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  display: none;
+}
+
+.explanation.show { display: block; }
+.explanation.correct-exp { background: #e6f7f0; color: #085041; border-left: 4px solid #1D9E75; }
+.explanation.wrong-exp { background: #fdeaea; color: #7a1a1a; border-left: 4px solid #e05050; }
+
+.nav {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-next {
+  background: #5B2D8E;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 32px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: none;
+  box-shadow: 0 4px 14px rgba(91,45,142,0.3);
+  transition: all 0.15s;
+}
+
+.btn-next:hover {
+  background: #4a2275;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(91,45,142,0.35);
+}
+
+.btn-next.show { display: block; }
+
+/* Result screen */
+.result-screen {
+  display: none;
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 32px;
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(91,45,142,0.09);
+}
+
+.result-screen.show { display: block; }
+
+.result-emoji { font-size: 48px; margin-bottom: 16px; }
+
+.result-score {
+  font-size: 48px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.score-good { color: #1D9E75; }
+.score-mid  { color: #BA7517; }
+.score-bad  { color: #e05050; }
+
+.result-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c2338;
+  margin-bottom: 8px;
+}
+
+.result-msg {
+  font-size: 14px;
+  color: #7a6d8a;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.result-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.breakdown-card {
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+}
+
+.breakdown-card.spot-card { background: #ede8f9; }
+.breakdown-card.track-card { background: #e6f7f0; }
+
+.breakdown-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.spot-card .breakdown-label { color: #5B2D8E; }
+.track-card .breakdown-label { color: #0f6e56; }
+
+.breakdown-score {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.spot-card .breakdown-score { color: #5B2D8E; }
+.track-card .breakdown-score { color: #1D9E75; }
+
+.btn-retry {
+  background: #5B2D8E;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 40px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(91,45,142,0.3);
+  transition: all 0.15s;
+}
+
+.btn-retry:hover {
+  background: #4a2275;
+  transform: translateY(-1px);
+}
+
+.divider {
+  max-width: 640px;
+  margin: 8px auto 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.divider-line { flex: 1; height: 1px; background: #e2d9f3; }
+.divider-text { font-size: 12px; color: #b0a0c8; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Svet.kz — Обучение стажёров</div>
+  <h1>Споты и Треки</h1>
+  <p>10 вопросов — 5 про споты, 5 про треки</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-info">
+    <span id="progress-label">Вопрос 1 из 10</span>
+    <span id="progress-score">0 правильных</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+  </div>
+</div>
+
+<div id="questions-wrap"></div>
+
+<div class="nav">
+  <button class="btn-next" id="btn-next" onclick="nextQuestion()">Следующий вопрос →</button>
+</div>
+
+<div class="result-screen" id="result-screen">
+  <div class="result-emoji" id="result-emoji"></div>
+  <div class="result-score" id="result-score"></div>
+  <div class="result-title" id="result-title"></div>
+  <div class="result-msg" id="result-msg"></div>
+  <div class="result-breakdown">
+    <div class="breakdown-card spot-card">
+      <div class="breakdown-label">Споты</div>
+      <div class="breakdown-score" id="spot-score"></div>
+    </div>
+    <div class="breakdown-card track-card">
+      <div class="breakdown-label">Треки</div>
+      <div class="breakdown-score" id="track-score"></div>
+    </div>
+  </div>
+  <button class="btn-retry" onclick="restart()">Пройти ещё раз</button>
+</div>
+
+<script>
+const questions = [
+  // ===== СПОТЫ =====
+  {
+    section: 'spot',
+    text: 'Что означает слово SPOT в переводе с английского?',
+    options: ['Луч', 'Пятно', 'Точка', 'Свет'],
+    correct: 1,
+    explanation: 'SPOT переводится как «пятно». Именно поэтому споты помогают точечно выделить объект или зону пространства.'
+  },
+  {
+    section: 'spot',
+    text: 'Как ещё называют споты?',
+    options: ['Трековые светильники и подвесы', 'Бра и торшеры', 'Софиты и точечные светильники', 'Плафоны и подсветки'],
+    correct: 2,
+    explanation: 'Споты также называют софитами и точечными светильниками.'
+  },
+  {
+    section: 'spot',
+    text: 'Накладной спот — это...',
+    options: [
+      'Спот, который вставляется в трек',
+      'Спот, которому не нужно отверстие в потолке — крепится на поверхность',
+      'Спот, который встраивается в потолок через отверстие',
+      'Спот с магнитным креплением'
+    ],
+    correct: 1,
+    explanation: 'Накладной спот не требует отверстия в потолке. Достаточно выведенного провода — светильник крепится к потолку с помощью гвоздей или шурупов.'
+  },
+  {
+    section: 'spot',
+    text: 'На какие два вида делятся споты по способу установки?',
+    options: [
+      'Подвесные и напольные',
+      'Накладные и врезные',
+      'Магнитные и механические',
+      'Одинарные и двойные'
+    ],
+    correct: 1,
+    explanation: 'Споты делятся на накладные (крепятся на поверхность потолка, отверстие не нужно) и врезные (устанавливаются в отверстие в потолке, снаружи видна только лицевая часть).'
+  },
+  {
+    section: 'spot',
+    text: 'Чем спот отличается от трекового светильника?',
+    options: [
+      'Спот ярче светит',
+      'Спот дороже',
+      'Спот — самостоятельный светильник, он НЕ вставляется в трек',
+      'Спот можно использовать только на потолке'
+    ],
+    correct: 2,
+    explanation: 'Спот — самостоятельный точечный светильник, который крепится напрямую к потолку или стене. Он не вставляется в трек. Трековый светильник — это отдельный вид товара.'
+  },
+
+  // ===== ТРЕКИ =====
+  {
+    section: 'track',
+    text: 'Из чего состоит трековая система?',
+    options: [
+      'Из плафона и патрона',
+      'Из шины (рельса) и трековых светильников',
+      'Из основания и рожков',
+      'Из провода, цепи и абажура'
+    ],
+    correct: 1,
+    explanation: 'Трек — это система из двух элементов: шина (рельс) и трековые светильники. Сначала монтируется шина, затем на неё устанавливаются светильники.'
+  },
+  {
+    section: 'track',
+    text: 'Какое напряжение у однофазного трека?',
+    options: ['12В', '24В', '48В', '220В'],
+    correct: 3,
+    explanation: 'Однофазный трек работает от стандартной сети 220В. Магнитный трек — на пониженном напряжении 24В или 48В.'
+  },
+  {
+    section: 'track',
+    text: 'Что умеет магнитный трек, чего не умеет однофазный?',
+    options: [
+      'Светить ярче',
+      'Делиться на независимые группы, поддерживать умный дом и диммирование',
+      'Устанавливаться на потолок',
+      'Работать от сети 220В'
+    ],
+    correct: 1,
+    explanation: 'Магнитный трек поддерживает управление группами, диммирование, протоколы DALI и Tuya — то есть интеграцию в умный дом. Однофазный трек просто включает и выключает все светильники сразу.'
+  },
+  {
+    section: 'track',
+    text: 'Покупатель хочет управлять светом со смартфона и задавать световые сцены. Что предложишь?',
+    options: [
+      'Однофазный трек — он дешевле',
+      'Споты — они точечные',
+      'Магнитный трек с поддержкой DALI или Tuya',
+      'Подвесы — они красивее'
+    ],
+    correct: 2,
+    explanation: 'Магнитный трек поддерживает протоколы DALI, Tuya (Zigbee) и другие — это позволяет управлять светом со смартфона, голосом и создавать световые сценарии.'
+  },
+  {
+    section: 'track',
+    text: 'Покупатель делает ремонт и хочет трек в гипсокартонный потолок вровень с поверхностью. Какой способ монтажа?',
+    options: [
+      'Подвесной — на тросах',
+      'Накладной — на поверхность',
+      'Встраиваемый — шина утапливается в потолок заподлицо',
+      'Никакой — в гипсокартон трек не ставят'
+    ],
+    correct: 2,
+    explanation: 'Встраиваемый монтаж — шина утапливается в потолок заподлицо. Это самый аккуратный вариант. Гипсокартон — идеальный потолок для этого способа: можно сделать нишу нужной глубины.'
+  },
+];
+
+let current = 0;
+let score = 0;
+let spotScore = 0;
+let trackScore = 0;
+let answered = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+const shuffled = shuffle(questions);
+
+function renderQuestion(idx) {
+  const wrap = document.getElementById('questions-wrap');
+  wrap.innerHTML = '';
+
+  const q = shuffled[idx];
+  const isSpot = q.section === 'spot';
+
+  const card = document.createElement('div');
+  card.className = 'question-card active';
+
+  const sectionNum = isSpot
+    ? 'Часть 1: Споты'
+    : 'Часть 2: Треки';
+
+  card.innerHTML = `
+    <div class="section-badge ${isSpot ? 'badge-spot' : 'badge-track'}">${sectionNum}</div>
+    <div class="question-num">Вопрос ${idx + 1} из ${shuffled.length}</div>
+    <div class="question-text">${q.text}</div>
+    <div class="options" id="options"></div>
+    <div class="explanation" id="explanation"></div>
+  `;
+
+  wrap.appendChild(card);
+
+  const optWrap = document.getElementById('options');
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i, q.correct, q.explanation, q.section);
+    optWrap.appendChild(btn);
+  });
+
+  answered = false;
+  document.getElementById('btn-next').classList.remove('show');
+  updateProgress();
+}
+
+function selectAnswer(chosen, correct, explanation, section) {
+  if (answered) return;
+  answered = true;
+
+  const options = document.querySelectorAll('.option');
+  options.forEach((btn, i) => {
+    btn.classList.add('disabled');
+    if (i === correct) btn.classList.add(chosen === correct ? 'correct' : 'show-correct');
+    if (i === chosen && chosen !== correct) btn.classList.add('wrong');
+  });
+
+  const expEl = document.getElementById('explanation');
+  expEl.textContent = explanation;
+  expEl.classList.add('show');
+
+  if (chosen === correct) {
+    expEl.classList.add('correct-exp');
+    score++;
+    if (section === 'spot') spotScore++;
+    else trackScore++;
+  } else {
+    expEl.classList.add('wrong-exp');
+  }
+
+  updateProgress();
+
+  const isLast = current === shuffled.length - 1;
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.textContent = isLast ? 'Посмотреть результат →' : 'Следующий вопрос →';
+  nextBtn.classList.add('show');
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= shuffled.length) {
+    showResult();
+  } else {
+    renderQuestion(current);
+  }
+}
+
+function updateProgress() {
+  const pct = Math.round((current / shuffled.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `Вопрос ${current + 1} из ${shuffled.length}`;
+  document.getElementById('progress-score').textContent = `${score} правильных`;
+}
+
+function showResult() {
+  document.getElementById('questions-wrap').innerHTML = '';
+  document.getElementById('btn-next').classList.remove('show');
+  document.querySelector('.progress-wrap').style.display = 'none';
+
+  const screen = document.getElementById('result-screen');
+  screen.classList.add('show');
+
+  const pct = Math.round(score / shuffled.length * 100);
+  const scoreEl = document.getElementById('result-score');
+  scoreEl.textContent = `${score} / ${shuffled.length}`;
+
+  if (pct === 100) {
+    document.getElementById('result-emoji').textContent = '🏆';
+    scoreEl.className = 'result-score score-good';
+    document.getElementById('result-title').textContent = 'Отличный результат!';
+    document.getElementById('result-msg').textContent = 'Все вопросы верно! Ты отлично разобрался в теме спотов и трековых систем.';
+  } else if (pct >= 70) {
+    document.getElementById('result-emoji').textContent = '👍';
+    scoreEl.className = 'result-score score-mid';
+    document.getElementById('result-title').textContent = 'Хороший результат!';
+    document.getElementById('result-msg').textContent = 'Большинство ответов верные. Повтори моменты, в которых ошибся, и попробуй снова.';
+  } else {
+    document.getElementById('result-emoji').textContent = '📚';
+    scoreEl.className = 'result-score score-bad';
+    document.getElementById('result-title').textContent = 'Нужно повторить материал';
+    document.getElementById('result-msg').textContent = 'Рекомендуем ещё раз посмотреть обучающее видео и PDF по теме спотов и треков.';
+  }
+
+  const spotTotal = shuffled.filter(q => q.section === 'spot').length;
+  const trackTotal = shuffled.filter(q => q.section === 'track').length;
+  document.getElementById('spot-score').textContent = `${spotScore} / ${spotTotal}`;
+  document.getElementById('track-score').textContent = `${trackScore} / ${trackTotal}`;
+}
+
+function restart() {
+  current = 0; score = 0; spotScore = 0; trackScore = 0;
+  document.getElementById('result-screen').classList.remove('show');
+  document.querySelector('.progress-wrap').style.display = 'block';
+  shuffled.sort(() => Math.random() - 0.5);
+  renderQuestion(0);
+}
+
+renderQuestion(0);
+</script>
+</body>
+</html>

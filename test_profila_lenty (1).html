@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тест: Профиля и Ленты — Svet.kz</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f1fa; min-height: 100vh; padding: 32px 20px 60px; color: #2c2338; }
+header { text-align: center; margin-bottom: 32px; }
+.logo { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5B2D8E; margin-bottom: 8px; }
+h1 { font-size: 24px; font-weight: 800; color: #2c2338; margin-bottom: 6px; }
+header p { font-size: 14px; color: #7a6d8a; }
+.progress-wrap { max-width: 660px; margin: 0 auto 28px; }
+.progress-info { display: flex; justify-content: space-between; font-size: 13px; color: #7a6d8a; margin-bottom: 8px; }
+.progress-bar { height: 6px; background: #ddd8ec; border-radius: 10px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #5B2D8E, #9b6fd4); border-radius: 10px; transition: width 0.4s ease; }
+.card { background: #fff; border-radius: 20px; padding: 28px; max-width: 660px; margin: 0 auto 20px; box-shadow: 0 4px 20px rgba(91,45,142,0.09); }
+.scenario { display: flex; gap: 14px; align-items: flex-start; background: #f7f4fd; border-radius: 14px; padding: 16px; margin-bottom: 20px; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.avatar.customer { background: #ede8f9; }
+.avatar.task { background: #e6f7f0; }
+.bubble-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; }
+.label-customer { color: #5B2D8E; }
+.label-task { color: #0f6e56; }
+.bubble-text { font-size: 14px; line-height: 1.6; color: #2c2338; }
+.section-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 14px; }
+.badge-prof { background: #fff3e0; color: #8c4a00; }
+.badge-tape { background: #e8f4fd; color: #185FA5; }
+.question-num { font-size: 11px; font-weight: 600; color: #b0a0c8; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+.question-text { font-size: 17px; font-weight: 700; line-height: 1.5; color: #2c2338; margin-bottom: 20px; }
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option { background: #f7f4fd; border: 2px solid #e2d9f3; border-radius: 12px; padding: 13px 16px; font-size: 14px; font-weight: 500; color: #3d2b5e; cursor: pointer; transition: all 0.15s; text-align: left; line-height: 1.4; width: 100%; }
+.option:hover:not(.disabled) { border-color: #5B2D8E; background: #ede8f9; transform: translateX(4px); }
+.option.correct { background: #e6f7f0; border-color: #1D9E75; color: #085041; }
+.option.wrong { background: #fdeaea; border-color: #e05050; color: #7a1a1a; animation: shake 0.3s ease; }
+.option.show-correct { background: #e6f7f0; border-color: #1D9E75; color: #085041; }
+.option.disabled { cursor: default; }
+@keyframes shake { 0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)} }
+.explanation { margin-top: 16px; padding: 13px 16px; border-radius: 12px; font-size: 13px; line-height: 1.6; display: none; }
+.explanation.show { display: block; }
+.explanation.ok { background: #e6f7f0; color: #085041; border-left: 4px solid #1D9E75; }
+.explanation.fail { background: #fdeaea; color: #7a1a1a; border-left: 4px solid #e05050; }
+.nav-btn { max-width: 660px; margin: 0 auto; display: flex; justify-content: flex-end; }
+.btn-next { background: #5B2D8E; color: #fff; border: none; border-radius: 12px; padding: 13px 32px; font-size: 14px; font-weight: 700; cursor: pointer; display: none; box-shadow: 0 4px 14px rgba(91,45,142,0.3); transition: all 0.15s; }
+.btn-next:hover { background: #4a2275; transform: translateY(-1px); }
+.btn-next.show { display: block; }
+.result-screen { display: none; background: #fff; border-radius: 20px; padding: 40px 32px; max-width: 660px; margin: 0 auto; text-align: center; box-shadow: 0 4px 20px rgba(91,45,142,0.09); }
+.result-screen.show { display: block; }
+.result-emoji { font-size: 52px; margin-bottom: 16px; }
+.result-score { font-size: 52px; font-weight: 800; margin-bottom: 8px; }
+.score-good { color: #1D9E75; }
+.score-mid { color: #BA7517; }
+.score-bad { color: #e05050; }
+.result-title { font-size: 20px; font-weight: 700; color: #2c2338; margin-bottom: 8px; }
+.result-msg { font-size: 14px; color: #7a6d8a; line-height: 1.6; margin-bottom: 28px; }
+.btn-retry { background: #5B2D8E; color: #fff; border: none; border-radius: 12px; padding: 14px 40px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(91,45,142,0.3); transition: all 0.15s; }
+.btn-retry:hover { background: #4a2275; transform: translateY(-1px); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Svet.kz — Обучение стажёров</div>
+  <h1>Профиля и Светодиодные ленты</h1>
+  <p>5 вопросов по материалу урока</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-info">
+    <span id="progress-label">Вопрос 1 из 5</span>
+    <span id="progress-score">0 правильных</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+</div>
+
+<div id="questions-wrap"></div>
+
+<div class="nav-btn">
+  <button class="btn-next" id="btn-next" onclick="nextQuestion()">Следующий →</button>
+</div>
+
+<div class="result-screen" id="result-screen">
+  <div class="result-emoji" id="res-emoji"></div>
+  <div class="result-score" id="res-score"></div>
+  <div class="result-title" id="res-title"></div>
+  <div class="result-msg" id="res-msg"></div>
+  <button class="btn-retry" onclick="restart()">Пройти ещё раз</button>
+</div>
+
+<script>
+const questions = [
+  {
+    section: 'prof',
+    scenario: null,
+    text: 'Что находится внутри алюминиевого профиля?',
+    options: [
+      'Обычная лампочка накаливания',
+      'Светодиодная лента',
+      'Газоразрядная трубка',
+      'Патрон с цоколем'
+    ],
+    correct: 1,
+    explanation: 'Внутри алюминиевого профиля размещается светодиодная лента. Профиль служит корпусом и рассеивателем — матовый экран делает свет мягким, без видимых точек.'
+  },
+  {
+    section: 'prof',
+    scenario: { type: 'customer', text: 'Хочу сделать подсветку под кухонными шкафами над столешницей.' },
+    text: 'Что предложишь покупателю?',
+    options: [
+      'Люстру на потолок',
+      'Алюминиевый профиль со светодиодной лентой — накладной монтаж под шкаф',
+      'Торшер рядом с кухней',
+      'Уличный светильник'
+    ],
+    correct: 1,
+    explanation: 'Алюминиевый профиль со светодиодной лентой — идеальное решение для подсветки рабочей зоны на кухне. Крепится накладным способом под шкаф, даёт равномерный линейный свет.'
+  },
+  {
+    section: 'tape',
+    scenario: null,
+    text: 'Можно ли подключить светодиодную ленту напрямую в розетку 220В?',
+    options: [
+      'Да, без проблем',
+      'Да, но только одноцветную',
+      'Нет — лента работает от 12В или 24В, нужен блок питания',
+      'Да, если лента длиннее 5 метров'
+    ],
+    correct: 2,
+    explanation: 'Светодиодная лента НЕ подключается напрямую в розетку 220В. Она работает от напряжения 12В или 24В — обязательно нужен блок питания (драйвер). Для RGB-ленты ещё нужен контроллер.'
+  },
+  {
+    section: 'tape',
+    scenario: { type: 'customer', text: 'Хочу разноцветную подсветку в детской — чтобы можно было менять цвета.' },
+    text: 'Какую ленту предложишь?',
+    options: [
+      'Одноцветную белую ленту',
+      'RGB-ленту — многоцветная, управляется контроллером',
+      'Обычную лампочку с диммером',
+      'Алюминиевый профиль без ленты'
+    ],
+    correct: 1,
+    explanation: 'RGB-лента — многоцветная светодиодная лента. Может менять цвет и управляется контроллером. Идеально для детской комнаты где нужна игровая атмосфера с разными цветами.'
+  },
+  {
+    section: 'tape',
+    scenario: { type: 'task', text: 'Покупатель хочет ленту для подсветки столешницы на кухне' },
+    text: 'На что важно обратить внимание при выборе ленты?',
+    options: [
+      'Только на цвет ленты',
+      'Только на длину',
+      'На степень влагозащищённости — кухня это влажное помещение',
+      'На количество цветов в ленте'
+    ],
+    correct: 2,
+    explanation: 'Для кухни обязательно нужно уточнить степень влагозащищённости ленты — кухня это влажное помещение с паром и брызгами. Также не забудь предложить профиль и блок питания в комплекте.'
+  },
+];
+
+let current = 0, score = 0, answered = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+const shuffled = shuffle(questions);
+
+function renderQuestion(idx) {
+  const wrap = document.getElementById('questions-wrap');
+  wrap.innerHTML = '';
+  const q = shuffled[idx];
+  const isProf = q.section === 'prof';
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  let sc = '';
+  if (q.scenario) {
+    const isCust = q.scenario.type === 'customer';
+    sc = `<div class="scenario"><div class="avatar ${isCust?'customer':'task'}">${isCust?'🧑':'📋'}</div><div><div class="bubble-label ${isCust?'label-customer':'label-task'}">${isCust?'Говорит покупатель':'Задание'}</div><div class="bubble-text">${q.scenario.text}</div></div></div>`;
+  }
+
+  card.innerHTML = `${sc}
+    <div class="section-badge ${isProf?'badge-prof':'badge-tape'}">${isProf?'Алюминиевые профиля':'Светодиодные ленты'}</div>
+    <div class="question-num">Вопрос ${idx+1} из ${shuffled.length}</div>
+    <div class="question-text">${q.text}</div>
+    <div class="options" id="options"></div>
+    <div class="explanation" id="explanation"></div>`;
+
+  wrap.appendChild(card);
+
+  const optWrap = document.getElementById('options');
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i, q.correct, q.explanation);
+    optWrap.appendChild(btn);
+  });
+
+  answered = false;
+  document.getElementById('btn-next').classList.remove('show');
+  updateProgress();
+}
+
+function selectAnswer(chosen, correct, explanation) {
+  if (answered) return;
+  answered = true;
+  document.querySelectorAll('.option').forEach((btn, i) => {
+    btn.classList.add('disabled');
+    if (i === correct) btn.classList.add(chosen === correct ? 'correct' : 'show-correct');
+    if (i === chosen && chosen !== correct) btn.classList.add('wrong');
+  });
+  const expEl = document.getElementById('explanation');
+  expEl.textContent = explanation;
+  expEl.classList.add('show');
+  if (chosen === correct) { expEl.classList.add('ok'); score++; }
+  else { expEl.classList.add('fail'); }
+  updateProgress();
+  const btn = document.getElementById('btn-next');
+  btn.textContent = current === shuffled.length-1 ? 'Посмотреть результат →' : 'Следующий →';
+  btn.classList.add('show');
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= shuffled.length) showResult();
+  else renderQuestion(current);
+}
+
+function updateProgress() {
+  document.getElementById('progress-fill').style.width = Math.round(current/shuffled.length*100)+'%';
+  document.getElementById('progress-label').textContent = `Вопрос ${current+1} из ${shuffled.length}`;
+  document.getElementById('progress-score').textContent = `${score} правильных`;
+}
+
+function showResult() {
+  document.getElementById('questions-wrap').innerHTML = '';
+  document.getElementById('btn-next').classList.remove('show');
+  document.querySelector('.progress-wrap').style.display = 'none';
+  document.getElementById('result-screen').classList.add('show');
+  const pct = Math.round(score/shuffled.length*100);
+  const scoreEl = document.getElementById('res-score');
+  scoreEl.textContent = `${score} / ${shuffled.length}`;
+  if (pct===100) {
+    document.getElementById('res-emoji').textContent='🏆';
+    scoreEl.className='result-score score-good';
+    document.getElementById('res-title').textContent='Отлично!';
+    document.getElementById('res-msg').textContent='Все верно! Тему профилей и лент знаешь хорошо.';
+  } else if (pct>=60) {
+    document.getElementById('res-emoji').textContent='👍';
+    scoreEl.className='result-score score-mid';
+    document.getElementById('res-title').textContent='Неплохо!';
+    document.getElementById('res-msg').textContent='Почти всё верно. Повтори моменты где ошибся.';
+  } else {
+    document.getElementById('res-emoji').textContent='📚';
+    scoreEl.className='result-score score-bad';
+    document.getElementById('res-title').textContent='Нужно повторить материал';
+    document.getElementById('res-msg').textContent='Рекомендуем ещё раз посмотреть видео и PDF по теме.';
+  }
+}
+
+function restart() {
+  current=0; score=0;
+  document.getElementById('result-screen').classList.remove('show');
+  document.querySelector('.progress-wrap').style.display='block';
+  shuffled.sort(()=>Math.random()-0.5);
+  renderQuestion(0);
+}
+
+renderQuestion(0);
+</script>
+</body>
+</html>

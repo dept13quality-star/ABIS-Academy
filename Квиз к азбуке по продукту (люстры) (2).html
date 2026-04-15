@@ -1,0 +1,197 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.shell{background:#1a1140;min-height:100vh;padding:0;font-family:var(--font-sans)}
+.header{background:#26215C;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:13px;font-weight:500;color:#AFA9EC;letter-spacing:.06em}
+.score-badge{background:#534AB7;color:#EEEDFE;font-size:13px;font-weight:500;padding:4px 14px;border-radius:99px}
+.prog-track{height:3px;background:#3C3489;width:100%}
+.prog-fill{height:3px;background:#7F77DD;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.body{padding:1.5rem}
+.q-num{font-size:12px;color:#7F77DD;font-weight:500;letter-spacing:.08em;margin-bottom:.5rem}
+.q-text{font-size:19px;font-weight:500;color:#EEEDFE;line-height:1.5;margin-bottom:1.5rem}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:12px;border:1px solid #3C3489;background:#26215C;cursor:pointer;text-align:left;font-size:15px;color:#CECBF6;transition:border-color .15s,background .15s,transform .1s}
+.opt:hover:not(:disabled){border-color:#534AB7;background:#2e2768;transform:translateX(3px)}
+.opt:disabled{cursor:default;transform:none}
+.opt .letter{width:30px;height:30px;border-radius:50%;border:1px solid #534AB7;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0;color:#7F77DD;transition:background .2s}
+.opt.correct{border-color:#1D9E75;background:#085041}
+.opt.correct .letter{background:#1D9E75;color:#E1F5EE;border-color:#1D9E75}
+.opt.correct .opt-text{color:#9FE1CB}
+.opt.wrong{border-color:#D85A30;background:#4A1B0C}
+.opt.wrong .letter{background:#D85A30;color:#FAECE7;border-color:#D85A30}
+.opt.wrong .opt-text{color:#F5C4B3}
+.opt.shake{animation:shake .35s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.opt.pop{animation:pop .25s}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+.fb{margin-top:1rem;padding:13px 16px;border-radius:10px;font-size:14px;line-height:1.6;display:none;border-left:3px solid transparent}
+.fb.show{display:block}
+.fb.ok{background:#04342C;color:#9FE1CB;border-color:#1D9E75}
+.fb.fail{background:#4A1B0C;color:#F5C4B3;border-color:#D85A30}
+.next-btn{margin-top:1.25rem;width:100%;padding:13px;border-radius:12px;background:#534AB7;color:#EEEDFE;font-size:15px;font-weight:500;border:none;cursor:pointer;display:none;transition:background .15s,transform .1s}
+.next-btn:hover{background:#3C3489}
+.next-btn:active{transform:scale(.98)}
+.next-btn.show{display:block}
+.streak{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap}
+.streak-dot{width:10px;height:10px;border-radius:50%;background:#3C3489;transition:background .3s}
+.streak-dot.ok{background:#1D9E75}
+.streak-dot.fail{background:#D85A30}
+.result{padding:2rem 1.5rem;text-align:center;display:none}
+.result-ring{width:120px;height:120px;margin:0 auto 1.25rem;position:relative}
+.result-ring svg{width:120px;height:120px}
+.ring-bg{fill:none;stroke:#3C3489;stroke-width:8}
+.ring-fill{fill:none;stroke:#7F77DD;stroke-width:8;stroke-linecap:round;stroke-dasharray:320;stroke-dashoffset:320;transition:stroke-dashoffset 1s ease;transform:rotate(-90deg);transform-origin:60px 60px}
+.ring-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;font-weight:500;color:#EEEDFE}
+.ring-sub{position:absolute;top:62%;left:50%;transform:translate(-50%,0);font-size:12px;color:#7F77DD}
+.result-title{font-size:22px;font-weight:500;color:#EEEDFE;margin-bottom:.5rem}
+.result-msg{font-size:15px;color:#AFA9EC;line-height:1.6;margin-bottom:1.5rem;max-width:360px;margin-left:auto;margin-right:auto}
+.restart{padding:12px 32px;border-radius:12px;background:#534AB7;color:#EEEDFE;font-size:15px;font-weight:500;border:none;cursor:pointer;transition:background .15s}
+.restart:hover{background:#3C3489}
+.entry{animation:fadeUp .3s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
+
+<div class="shell">
+  <div class="header">
+    <span class="logo">ABIS GROUP · Азбука по продукту</span>
+    <span class="score-badge" id="sbadge">0 / 12</span>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+
+  <div class="body" id="quiz-body">
+    <div class="streak" id="streak"></div>
+    <div class="q-num" id="qnum"></div>
+    <div class="q-text" id="qtext"></div>
+    <div class="opts" id="opts"></div>
+    <div class="fb" id="fb"></div>
+    <button class="next-btn" id="nextbtn" onclick="nextQ()">Следующий вопрос →</button>
+  </div>
+
+  <div class="result" id="result-body">
+    <div class="result-ring">
+      <svg viewBox="0 0 120 120">
+        <circle class="ring-bg" cx="60" cy="60" r="51"/>
+        <circle class="ring-fill" id="ring" cx="60" cy="60" r="51"/>
+      </svg>
+      <div class="ring-num" id="rnum"></div>
+    </div>
+    <div class="result-title" id="rtitle"></div>
+    <div class="result-msg" id="rmsg"></div>
+    <button class="restart" onclick="restart()">Пройти ещё раз</button>
+  </div>
+</div>
+
+<script>
+const Q=[
+  {q:"Что такое люстра?",opts:["Настольный светильник с абажуром","Электрический прибор, подвешиваемый к потолку для освещения помещений","Встроенный точечный светильник","Бра, крепящееся к стене"],ans:1,exp:"Люстра подвешивается к потолку. Её задача — не только давать свет, но и скрывать технические элементы: провода и отверстия в потолке."},
+  {q:"Какой элемент люстры является несущей конструкцией — «скелетом»?",opts:["Чашка","Патрон","Основание","Декоративная подвеска"],ans:2,exp:"Основание — это каркас люстры. Именно оно держит рожки, абажуры и лампочки. Рожок — ответвление от основания, на котором крепится патрон и абажур."},
+  {q:"Для чего нужна «чашка» в конструкции люстры?",opts:["Рассеивает свет","Регулирует яркость","Крепит люстру к потолку и скрывает провода","Декоративное украшение"],ans:2,exp:"Чашка — функциональный элемент: крепит к потолку и прячет провода с отверстием. Её тип выбирается под конструкцию потолка клиента."},
+  {q:"В чём отличие крепления «Колокольчик» от «Планочного»?",opts:["Колокольчик только для хрустальных люстр","Колокольчик требует крюка на потолке, планочное — только вывода проводов","Планочное только для высоких потолков","Колокольчик — более современный вариант"],ans:1,exp:"Колокольчик цепляется за потолочный крюк и сдвигается вверх, скрывая узлы. Планочное — крюк не нужен: к потолку крепится металлическая скоба, к ней болтами фиксируется основание чашки."},
+  {q:"Из чего преимущественно изготавливают абажур?",opts:["Стекло и металл","Текстиль (ткань)","Гипс и керамика","Хрусталь"],ans:1,exp:"Абажур — текстильный элемент, закручивающийся на лампочку или надеваемый сверху. Он заглушает свет, создавая мягкий и уютный вид."},
+  {q:"В чём ключевое отличие плафона от абажура?",opts:["Плафон всегда крупнее","Абажур не рассеивает свет, плафон — рассеивает","Плафон из твёрдых материалов (стекло, металл, гипс), абажур — из текстиля","Плафон крепится на крючке, абажур — на планке"],ans:2,exp:"Оба рассеивают свет, но по-разному. Плафон — закрытый рассеиватель из твёрдых материалов. Абажур — мягкий, текстильный. Именно материал определяет визуальный эффект."},
+  {q:"Как визуально определить подвесную люстру?",opts:["Она тяжелее потолочной","Между чашкой и основанием есть цепь или тросик","У неё больше рожков","Она крепится планочным способом"],ans:1,exp:"Визуальный маркер подвесной люстры — цепь или тросик между потолочной чашкой и основным каркасом. Есть видимый зазор от потолка."},
+  {q:"Для каких помещений идеальна подвесная люстра?",opts:["Ванная с низким потолком","Помещения с высокими потолками — чтобы опустить свет к жилой зоне","Любое помещение — высота не важна","Только коридоры и прихожие"],ans:1,exp:"Подвесная люстра опускает источник света ближе к жилой зоне и подчёркивает объём пространства. Идеальна для высоких потолков."},
+  {q:"Главный визуальный маркер потолочной люстры — это:",opts:["Длинная цепь","Большой диаметр","Основание вплотную к потолку, цепь отсутствует","Хрустальные подвески"],ans:2,exp:"Потолочная люстра крепится прямо под потолком без цепей и тросиков. Основание сливается с потолком — это её главный маркер."},
+  {q:"В чём главное преимущество универсальной (2 в 1) люстры для клиента?",opts:["Она дешевле других","Подходит под любую высоту потолка — клиент не ограничен в выборе модели","Всегда идёт с несколькими абажурами","Потребляет меньше энергии"],ans:1,exp:"Универсальная люстра объединяет оба типа крепления. Клиент может поставить её вплотную к потолку или использовать цепь для подвеса — независимо от высоты."},
+  {q:"Клиент: «Низкий потолок в спальне, хочу роскошный свет без бликов». Ваш выбор?",opts:["Подвесная с текстильными абажурами","Потолочная с плафонами из матового стекла","Любая — высота не важна","Подвесная с хрустальными подвесками"],ans:1,exp:"Правильно: потолочная (или универсальная без цепи) + планочное крепление + матовые плафоны. Высоту не «съедает», свет рассеивает — в глаза не бьёт."},
+  {q:"На что смотреть в первую очередь при подборе люстры-вентилятора?",opts:["Цвет лопастей","Материал корпуса","Диаметр лопастей и мощность света","Количество скоростей"],ans:2,exp:"Два ключевых параметра: диаметр лопастей и мощность света. Рекомендуются модели с тёплым белым LED-светом для максимального комфорта."}
+];
+
+let cur=0,score=0,answered=false,dots=[];
+
+function initDots(){
+  const s=document.getElementById('streak');
+  s.innerHTML='';
+  dots=[];
+  Q.forEach(()=>{
+    const d=document.createElement('div');
+    d.className='streak-dot';
+    s.appendChild(d);
+    dots.push(d);
+  });
+}
+
+function render(){
+  const q=Q[cur];
+  document.getElementById('qnum').textContent='Вопрос '+(cur+1)+' из '+Q.length;
+  document.getElementById('qtext').textContent=q.q;
+  document.getElementById('prog').style.width=((cur/Q.length)*100)+'%';
+  document.getElementById('sbadge').textContent=score+' / '+Q.length;
+  const opts=document.getElementById('opts');
+  opts.innerHTML='';
+  const L=['А','Б','В','Г'];
+  q.opts.forEach((o,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt entry';
+    btn.innerHTML='<span class="letter">'+L[i]+'</span><span class="opt-text">'+o+'</span>';
+    btn.onclick=()=>pick(i);
+    opts.appendChild(btn);
+  });
+  const fb=document.getElementById('fb');
+  fb.className='fb';
+  fb.textContent='';
+  document.getElementById('nextbtn').className='next-btn';
+  answered=false;
+}
+
+function pick(i){
+  if(answered)return;
+  answered=true;
+  const q=Q[cur];
+  const btns=document.querySelectorAll('.opt');
+  btns.forEach(b=>b.disabled=true);
+  const fb=document.getElementById('fb');
+  if(i===q.ans){
+    btns[i].classList.add('correct','pop');
+    score++;
+    dots[cur].classList.add('ok');
+    fb.className='fb ok show';
+    fb.textContent='Верно! '+q.exp;
+  } else {
+    btns[i].classList.add('wrong','shake');
+    btns[q.ans].classList.add('correct');
+    dots[cur].classList.add('fail');
+    fb.className='fb fail show';
+    fb.textContent='Неверно. '+q.exp;
+  }
+  document.getElementById('sbadge').textContent=score+' / '+Q.length;
+  document.getElementById('nextbtn').className='next-btn show';
+  document.getElementById('nextbtn').textContent=cur+1<Q.length?'Следующий вопрос →':'Посмотреть результат';
+}
+
+function nextQ(){
+  cur++;
+  if(cur>=Q.length){showResult();}else{render();}
+}
+
+function showResult(){
+  document.getElementById('quiz-body').style.display='none';
+  const rb=document.getElementById('result-body');
+  rb.style.display='block';
+  document.getElementById('rnum').textContent=score;
+  const pct=score/Q.length;
+  setTimeout(()=>{
+    const offset=320-(320*pct);
+    document.getElementById('ring').style.strokeDashoffset=offset;
+  },100);
+  let title,msg;
+  if(score===Q.length){title='Блестяще!';msg='Вы — эксперт по люстрам. Клиент в надёжных руках от анатомии до подбора.';}
+  else if(score>=10){title='Отличный результат!';msg='Материал усвоен хорошо. Повторите разделы по анатомии — и будет идеально.';}
+  else if(score>=7){title='Хороший старт';msg='Рекомендуем перечитать разделы про виды крепления и классификацию люстр.';}
+  else{title='Нужно повторить';msg='Пройдите презентацию ещё раз, особенно анатомию и виды люстр — там основа всего.';}
+  document.getElementById('rtitle').textContent=title;
+  document.getElementById('rmsg').textContent=msg;
+}
+
+function restart(){
+  cur=0;score=0;answered=false;
+  document.getElementById('result-body').style.display='none';
+  document.getElementById('quiz-body').style.display='block';
+  initDots();
+  render();
+}
+
+initDots();
+render();
+</script>

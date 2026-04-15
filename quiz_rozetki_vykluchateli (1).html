@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Розетки и Выключатели — Svet.kz</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f0f4f8;
+  min-height: 100vh;
+  padding: 32px 20px 60px;
+  color: #1a2438;
+}
+
+header { text-align: center; margin-bottom: 32px; }
+.logo { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5B2D8E; margin-bottom: 8px; }
+h1 { font-size: 24px; font-weight: 800; color: #1a2438; margin-bottom: 6px; }
+header p { font-size: 14px; color: #7a8a9a; }
+
+/* Progress */
+.progress-wrap { max-width: 660px; margin: 0 auto 24px; }
+.progress-info { display: flex; justify-content: space-between; font-size: 13px; color: #7a8a9a; margin-bottom: 8px; }
+.progress-bar { height: 6px; background: #dde4ec; border-radius: 10px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #5B2D8E, #9b6fd4); border-radius: 10px; transition: width 0.4s ease; }
+
+/* Card */
+.card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px;
+  max-width: 660px;
+  margin: 0 auto 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+}
+
+/* Scenario bubble */
+.scenario {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: #f7f4fd;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+
+.avatar.customer { background: #ede8f9; }
+.avatar.task     { background: #e6f7f0; }
+
+.bubble-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+.label-customer { color: #5B2D8E; }
+.label-task     { color: #0f6e56; }
+.bubble-text { font-size: 14px; line-height: 1.6; color: #1a2438; }
+
+.section-badge {
+  display: inline-block; padding: 4px 14px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 14px;
+}
+.badge-socket { background: #e8f4fd; color: #185FA5; }
+.badge-switch { background: #fef3e2; color: #854F0B; }
+.badge-both   { background: #ede8f9; color: #5B2D8E; }
+
+.question-num { font-size: 11px; font-weight: 600; color: #b0b8c8; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+.question-text { font-size: 17px; font-weight: 700; line-height: 1.5; color: #1a2438; margin-bottom: 20px; }
+
+/* === SORT QUESTION === */
+.sort-area { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 4px; }
+.sort-zone-wrap { }
+.sort-zone-title {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: #9aa0b0; margin-bottom: 8px; text-align: center;
+}
+.sort-zone {
+  min-height: 100px;
+  border: 2px dashed #d0d8e8;
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.sort-zone.drag-over { background: #f0ebfa; border-color: #5B2D8E; border-style: solid; }
+.sort-zone.correct-zone { border-color: #1D9E75; border-style: solid; background: #f0fdf6; }
+.sort-zone.wrong-zone   { border-color: #e05050; border-style: solid; background: #fef2f2; }
+
+.sort-bank {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  background: #f7f9fc; border-radius: 12px; padding: 12px;
+  margin-bottom: 16px; min-height: 50px;
+}
+
+.sort-card {
+  background: #fff;
+  border: 2px solid #d0d8e8;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2a3448;
+  cursor: grab;
+  user-select: none;
+  transition: all 0.15s;
+  line-height: 1.4;
+}
+.sort-card:hover { border-color: #5B2D8E; background: #f0ebfa; }
+.sort-card:active { cursor: grabbing; opacity: 0.5; }
+.sort-card.correct { background: #e6f7f0; border-color: #1D9E75; color: #085041; }
+.sort-card.wrong   { background: #fdeaea; border-color: #e05050; color: #7a1a1a; }
+.sort-card.locked  { cursor: default; }
+
+/* === MCQ QUESTION === */
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option {
+  background: #f7f9fc;
+  border: 2px solid #d0d8e8;
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2a3448;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  line-height: 1.4;
+  width: 100%;
+}
+.option:hover:not(.disabled) { border-color: #5B2D8E; background: #f0ebfa; transform: translateX(4px); }
+.option.correct { background: #e6f7f0; border-color: #1D9E75; color: #085041; }
+.option.wrong   { background: #fdeaea; border-color: #e05050; color: #7a1a1a; animation: shake 0.3s; }
+.option.show-correct { background: #e6f7f0; border-color: #1D9E75; color: #085041; }
+.option.disabled { cursor: default; }
+
+@keyframes shake { 0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)} }
+
+/* Explanation */
+.explanation {
+  margin-top: 16px; padding: 13px 16px; border-radius: 12px;
+  font-size: 13px; line-height: 1.6; display: none;
+}
+.explanation.show { display: block; }
+.explanation.ok   { background: #e6f7f0; color: #085041; border-left: 4px solid #1D9E75; }
+.explanation.fail { background: #fdeaea; color: #7a1a1a; border-left: 4px solid #e05050; }
+
+/* Nav */
+.nav-btn { max-width: 660px; margin: 0 auto; display: flex; justify-content: flex-end; }
+.btn-next {
+  background: #5B2D8E; color: #fff; border: none; border-radius: 12px;
+  padding: 13px 32px; font-size: 14px; font-weight: 700; cursor: pointer;
+  display: none; box-shadow: 0 4px 14px rgba(91,45,142,0.3); transition: all 0.15s;
+}
+.btn-next:hover { background: #4a2275; transform: translateY(-1px); }
+.btn-next.show  { display: block; }
+
+/* Result */
+.result-screen {
+  display: none; background: #fff; border-radius: 20px; padding: 40px 32px;
+  max-width: 660px; margin: 0 auto; text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+}
+.result-screen.show { display: block; }
+.result-emoji { font-size: 52px; margin-bottom: 16px; }
+.result-score { font-size: 52px; font-weight: 800; margin-bottom: 8px; }
+.score-good { color: #1D9E75; }
+.score-mid  { color: #BA7517; }
+.score-bad  { color: #e05050; }
+.result-title { font-size: 20px; font-weight: 700; color: #1a2438; margin-bottom: 8px; }
+.result-msg   { font-size: 14px; color: #7a8a9a; line-height: 1.6; margin-bottom: 28px; }
+.btn-retry {
+  background: #5B2D8E; color: #fff; border: none; border-radius: 12px;
+  padding: 14px 40px; font-size: 15px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 4px 14px rgba(91,45,142,0.3); transition: all 0.15s;
+}
+.btn-retry:hover { background: #4a2275; transform: translateY(-1px); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Svet.kz — Обучение стажёров</div>
+  <h1>Розетки и Выключатели</h1>
+  <p>5 вопросов по материалу урока</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-info">
+    <span id="progress-label">Вопрос 1 из 5</span>
+    <span id="progress-score">0 правильных</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+</div>
+
+<div id="questions-wrap"></div>
+
+<div class="nav-btn">
+  <button class="btn-next" id="btn-next" onclick="nextQuestion()">Следующий →</button>
+</div>
+
+<div class="result-screen" id="result-screen">
+  <div class="result-emoji" id="res-emoji"></div>
+  <div class="result-score" id="res-score"></div>
+  <div class="result-title" id="res-title"></div>
+  <div class="result-msg"   id="res-msg"></div>
+  <button class="btn-retry" onclick="restart()">Пройти ещё раз</button>
+</div>
+
+<script>
+/* ============================================================
+   ДАННЫЕ ВОПРОСОВ
+   type: 'mcq'  — выбор одного ответа
+   type: 'sort' — разложи по зонам
+============================================================ */
+const questions = [
+
+  /* Q1 — SORT: накладная vs встроенная */
+  {
+    type: 'sort',
+    badge: 'badge-socket',
+    badgeText: 'Розетки',
+    num: 1,
+    scenario: null,
+    text: 'Раздели розетки на два вида по способу монтажа',
+    zones: [
+      { id: 'zone-builtin',  label: '📦 Встроенная (скрытая проводка)' },
+      { id: 'zone-surface',  label: '🔩 Накладная (открытая проводка)' },
+    ],
+    cards: [
+      { id: 'c1', text: 'Провода полностью скрыты в стене', zone: 'zone-builtin' },
+      { id: 'c2', text: 'Крепится на поверхность стены', zone: 'zone-surface' },
+      { id: 'c3', text: 'Видна только лицевая панель', zone: 'zone-builtin' },
+      { id: 'c4', text: 'Вся конструкция выпирает из стены — видна снаружи', zone: 'zone-surface' },
+      { id: 'c5', text: 'Самый распространённый вид в квартирах', zone: 'zone-builtin' },
+
+    ],
+    explanation: 'Встроенная розетка — провода скрыты в стене, видна только лицевая панель. Накладная — крепится на поверхность стены поверх проводки, используется там где скрытую проводку сделать нельзя.',
+  },
+
+  /* Q2 — MCQ: выключатель */
+  {
+    type: 'mcq',
+    badge: 'badge-switch',
+    badgeText: 'Выключатели',
+    num: 2,
+    scenario: { type: 'customer', text: 'В гостиной у меня две зоны: основная люстра и декоративные бра. Хочу управлять ими по отдельности.' },
+    text: 'Какой выключатель предложишь покупателю?',
+    options: [
+      'Одноклавишный — один выключатель на всё',
+      'Двухклавишный — две клавиши, две независимые группы освещения',
+      'Трёхклавишный — три клавиши для трёх зон',
+      'Любой — все выключатели одинаковые',
+    ],
+    correct: 1,
+    explanation: 'Двухклавишный выключатель управляет двумя независимыми группами. Люстра и бра — это ровно две зоны. Одна клавиша включает люстру, другая — бра. Идеальное решение.',
+  },
+
+  /* Q3 — MCQ: дополнительные функции */
+  {
+    type: 'mcq',
+    badge: 'badge-socket',
+    badgeText: 'Розетки',
+    num: 3,
+    scenario: { type: 'customer', text: 'У нас маленькие дети, хочу чтобы они не могли засунуть пальцы в розетку.' },
+    text: 'Какую розетку порекомендуешь?',
+    options: [
+      'Накладную — она более заметная',
+      'Силовую — она мощнее',
+      'С защитными шторками — специально для защиты детей',
+      'Двойную — больше гнёзд, удобнее',
+    ],
+    correct: 2,
+    explanation: 'Розетки с защитными шторками специально созданы для безопасности детей. Шторки закрывают гнёзда и открываются только при одновременном нажатии двумя штырьками вилки.',
+  },
+
+  /* Q4 — SORT: розетка vs выключатель */
+  {
+    type: 'sort',
+    badge: 'badge-both',
+    badgeText: 'Розетки и Выключатели',
+    num: 4,
+    scenario: null,
+    text: 'Раздели утверждения по категориям',
+    zones: [
+      { id: 'zone-socket',  label: '🔌 Розетка' },
+      { id: 'zone-switch',  label: '💡 Выключатель' },
+    ],
+    cards: [
+      { id: 'd1', text: 'Передаёт электроэнергию к прибору',       zone: 'zone-socket' },
+      { id: 'd2', text: 'Включает и выключает освещение',           zone: 'zone-switch' },
+      { id: 'd3', text: 'Бывает одно-, двух- и трёхклавишным',     zone: 'zone-switch' },
+      { id: 'd4', text: 'Имеет гнездо для электрической вилки',    zone: 'zone-socket' },
+
+      { id: 'd6', text: 'Управляет независимыми группами освещения', zone: 'zone-switch' },
+    ],
+    explanation: 'Розетка — устройство для подключения приборов к сети, имеет гнездо для вилки. Выключатель — прибор для управления светом, бывает с разным количеством клавиш для разных зон.',
+  },
+
+  /* Q5 — MCQ: правило серии */
+  {
+    type: 'mcq',
+    badge: 'badge-both',
+    badgeText: 'Важно знать',
+    num: 5,
+    scenario: { type: 'customer', text: 'Хочу сделать ремонт в квартире. Буду покупать и розетки, и выключатели.' },
+    text: 'Что важно знать покупателю при выборе розеток и выключателей?',
+    options: [
+      'Розетки и выключатели можно брать из разных коллекций — главное чтобы работали',
+      'Важна только мощность, стиль не имеет значения',
+      'Розетки и выключатели в одной комнате подбираются в одной серии — одинаковый стиль, цвет и отделка',
+      'Выключатели и розетки никак не связаны между собой',
+    ],
+    correct: 2,
+    explanation: 'Розетки и выключатели в одной комнате всегда подбираются в одной дизайнерской серии — одинаковый стиль, цвет и отделка. Это создаёт единый аккуратный вид интерьера.',
+  },
+];
+
+/* ============================================================
+   СОСТОЯНИЕ
+============================================================ */
+let current = 0;
+let score   = 0;
+let answered = false;
+
+/* — sort state — */
+let sortDragCard = null;
+let sortAnswered = false;
+
+/* ============================================================
+   РЕНДЕР
+============================================================ */
+function renderQuestion(idx) {
+  const wrap = document.getElementById('questions-wrap');
+  wrap.innerHTML = '';
+  answered = false;
+  sortAnswered = false;
+
+  const q = questions[idx];
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  /* сценарий */
+  let scHtml = '';
+  if (q.scenario) {
+    const isCust = q.scenario.type === 'customer';
+    scHtml = `<div class="scenario">
+      <div class="avatar ${isCust?'customer':'task'}">${isCust?'🧑':'📋'}</div>
+      <div>
+        <div class="bubble-label ${isCust?'label-customer':'label-task'}">${isCust?'Говорит покупатель':'Задание'}</div>
+        <div class="bubble-text">${q.scenario.text}</div>
+      </div>
+    </div>`;
+  }
+
+  card.innerHTML = `${scHtml}
+    <div class="section-badge ${q.badge}">${q.badgeText}</div>
+    <div class="question-num">Вопрос ${idx+1} из ${questions.length}</div>
+    <div class="question-text">${q.text}</div>
+    <div id="q-body"></div>
+    <div class="explanation" id="explanation"></div>`;
+
+  wrap.appendChild(card);
+
+  if (q.type === 'mcq')  renderMCQ(q);
+  if (q.type === 'sort') renderSort(q);
+
+  document.getElementById('btn-next').classList.remove('show');
+  updateProgress();
+}
+
+/* --- MCQ --- */
+function renderMCQ(q) {
+  const body = document.getElementById('q-body');
+  const div  = document.createElement('div');
+  div.className = 'options';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.textContent = opt;
+    btn.onclick = () => answerMCQ(i, q.correct, q.explanation);
+    div.appendChild(btn);
+  });
+  body.appendChild(div);
+}
+
+function answerMCQ(chosen, correct, explanation) {
+  if (answered) return;
+  answered = true;
+
+  document.querySelectorAll('.option').forEach((btn, i) => {
+    btn.classList.add('disabled');
+    if (i === correct) btn.classList.add(chosen === correct ? 'correct' : 'show-correct');
+    if (i === chosen && chosen !== correct) btn.classList.add('wrong');
+  });
+
+  const expEl = document.getElementById('explanation');
+  expEl.textContent = explanation;
+  expEl.classList.add('show');
+
+  if (chosen === correct) {
+    expEl.classList.add('ok');
+    score++;
+  } else {
+    expEl.classList.add('fail');
+  }
+
+  updateProgress();
+  showNextBtn();
+}
+
+/* --- SORT --- */
+function renderSort(q) {
+  const body = document.getElementById('q-body');
+
+  /* банк карточек */
+  const bank = document.createElement('div');
+  bank.className = 'sort-bank';
+  bank.id = 'sort-bank';
+
+  const shuffled = [...q.cards].sort(() => Math.random() - 0.5);
+  shuffled.forEach(c => bank.appendChild(makeSortCard(c)));
+  body.appendChild(bank);
+
+  /* зоны */
+  const sortArea = document.createElement('div');
+  sortArea.className = 'sort-area';
+
+  q.zones.forEach(z => {
+    const wrap = document.createElement('div');
+    wrap.className = 'sort-zone-wrap';
+    wrap.innerHTML = `<div class="sort-zone-title">${z.label}</div>`;
+    const zone = document.createElement('div');
+    zone.className = 'sort-zone';
+    zone.id = z.id;
+    zone.dataset.zone = z.id;
+
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      if (sortDragCard && !sortAnswered) zone.appendChild(sortDragCard);
+    });
+
+    /* touch */
+    zone.addEventListener('touchend', e => {
+      if (!sortDragCard || sortAnswered) return;
+      const t = e.changedTouches[0];
+      const under = document.elementFromPoint(t.clientX, t.clientY);
+      const targetZone = under && under.closest('.sort-zone');
+      if (targetZone) targetZone.appendChild(sortDragCard);
+      if (sortDragCard._clone) { sortDragCard._clone.remove(); sortDragCard._clone = null; }
+      sortDragCard = null;
+    });
+
+    wrap.appendChild(zone);
+    sortArea.appendChild(wrap);
+  });
+
+  body.appendChild(sortArea);
+
+  /* кнопка проверить */
+  const checkBtn = document.createElement('button');
+  checkBtn.className = 'btn-next show';
+  checkBtn.style.cssText = 'display:block;margin:16px auto 0;background:#185FA5;';
+  checkBtn.textContent = 'Проверить ✓';
+  checkBtn.id = 'sort-check-btn';
+  checkBtn.onclick = () => checkSort(q);
+  body.appendChild(checkBtn);
+}
+
+function makeSortCard(c) {
+  const el = document.createElement('div');
+  el.className = 'sort-card';
+  el.id = `sc-${c.id}`;
+  el.textContent = c.text;
+  el.draggable = true;
+  el.dataset.correctZone = c.zone;
+
+  el.addEventListener('dragstart', () => {
+    sortDragCard = el;
+    setTimeout(() => el.style.opacity = '0.4', 0);
+  });
+  el.addEventListener('dragend', () => {
+    el.style.opacity = '1';
+    sortDragCard = null;
+  });
+
+  /* touch */
+  let clone = null, offX = 0, offY = 0;
+  el.addEventListener('touchstart', e => {
+    sortDragCard = el;
+    const t = e.touches[0];
+    const r = el.getBoundingClientRect();
+    offX = t.clientX - r.left;
+    offY = t.clientY - r.top;
+    clone = el.cloneNode(true);
+    clone.style.cssText = `position:fixed;pointer-events:none;opacity:0.85;z-index:9999;width:${r.width}px;`;
+    document.body.appendChild(clone);
+    el._clone = clone;
+  }, { passive: true });
+
+  el.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const t = e.touches[0];
+    if (clone) { clone.style.left=(t.clientX-offX)+'px'; clone.style.top=(t.clientY-offY)+'px'; }
+    document.querySelectorAll('.sort-zone').forEach(z => z.classList.remove('drag-over'));
+    const under = document.elementFromPoint(t.clientX, t.clientY);
+    const z = under && under.closest('.sort-zone');
+    if (z) z.classList.add('drag-over');
+  }, { passive: false });
+
+  el.addEventListener('touchend', e => {
+    if (clone) { clone.remove(); clone = null; el._clone = null; }
+    document.querySelectorAll('.sort-zone').forEach(z => z.classList.remove('drag-over'));
+    const t = e.changedTouches[0];
+    const under = document.elementFromPoint(t.clientX, t.clientY);
+    const z = under && under.closest('.sort-zone');
+    if (z && !sortAnswered) z.appendChild(el);
+    sortDragCard = null;
+  });
+
+  return el;
+}
+
+function checkSort(q) {
+  if (sortAnswered) return;
+  sortAnswered = true;
+  answered = true;
+
+  /* проверяем только карточки в зонах (не в банке) */
+  let allCorrect = true;
+  let anyPlaced  = false;
+
+  q.cards.forEach(c => {
+    const el = document.getElementById(`sc-${c.id}`);
+    if (!el) return;
+    const parentZone = el.closest('.sort-zone');
+    if (!parentZone) return; /* в банке — не считаем */
+    anyPlaced = true;
+    el.classList.add('locked');
+    if (parentZone.dataset.zone === c.zone) {
+      el.classList.add('correct');
+    } else {
+      el.classList.add('wrong');
+      allCorrect = false;
+    }
+  });
+
+  /* перекраска зон */
+  q.zones.forEach(z => {
+    const zone = document.getElementById(z.id);
+    const cards = zone.querySelectorAll('.sort-card');
+    const allOk = [...cards].every(c => c.dataset.correctZone === z.id);
+    zone.classList.add(allOk ? 'correct-zone' : 'wrong-zone');
+  });
+
+  /* убираем кнопку Проверить */
+  const checkBtn = document.getElementById('sort-check-btn');
+  if (checkBtn) checkBtn.style.display = 'none';
+
+  /* объяснение */
+  const expEl = document.getElementById('explanation');
+  expEl.textContent = q.explanation;
+  expEl.classList.add('show');
+
+  if (allCorrect) {
+    expEl.classList.add('ok');
+    score++;
+  } else {
+    expEl.classList.add('fail');
+  }
+
+  updateProgress();
+  showNextBtn();
+}
+
+/* ============================================================
+   НАВИГАЦИЯ
+============================================================ */
+function showNextBtn() {
+  const btn = document.getElementById('btn-next');
+  btn.textContent = current === questions.length - 1 ? 'Посмотреть результат →' : 'Следующий →';
+  btn.classList.add('show');
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) showResult();
+  else renderQuestion(current);
+}
+
+function updateProgress() {
+  const pct = Math.round(current / questions.length * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `Вопрос ${current+1} из ${questions.length}`;
+  document.getElementById('progress-score').textContent = `${score} правильных`;
+}
+
+/* ============================================================
+   РЕЗУЛЬТАТ
+============================================================ */
+function showResult() {
+  document.getElementById('questions-wrap').innerHTML = '';
+  document.getElementById('btn-next').classList.remove('show');
+  document.querySelector('.progress-wrap').style.display = 'none';
+
+  const screen = document.getElementById('result-screen');
+  screen.classList.add('show');
+
+  const pct = Math.round(score / questions.length * 100);
+  const scoreEl = document.getElementById('res-score');
+  scoreEl.textContent = `${score} / ${questions.length}`;
+
+  if (pct === 100) {
+    document.getElementById('res-emoji').textContent = '🏆';
+    scoreEl.className = 'result-score score-good';
+    document.getElementById('res-title').textContent = 'Отличный результат!';
+    document.getElementById('res-msg').textContent   = 'Все верно! Ты отлично знаешь тему розеток и выключателей.';
+  } else if (pct >= 60) {
+    document.getElementById('res-emoji').textContent = '👍';
+    scoreEl.className = 'result-score score-mid';
+    document.getElementById('res-title').textContent = 'Хороший результат!';
+    document.getElementById('res-msg').textContent   = 'Большинство верно. Повтори моменты, в которых ошибся, и попробуй снова.';
+  } else {
+    document.getElementById('res-emoji').textContent = '📚';
+    scoreEl.className = 'result-score score-bad';
+    document.getElementById('res-title').textContent = 'Нужно повторить материал';
+    document.getElementById('res-msg').textContent   = 'Рекомендуем ещё раз посмотреть PDF и видео по теме.';
+  }
+}
+
+function restart() {
+  current = 0; score = 0;
+  document.getElementById('result-screen').classList.remove('show');
+  document.querySelector('.progress-wrap').style.display = 'block';
+  renderQuestion(0);
+}
+
+renderQuestion(0);
+</script>
+</body>
+</html>
