@@ -303,6 +303,29 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
 .toast.show { transform: translateY(0); opacity: 1; }
 .toast.ok { border-color: var(--correct); color: var(--correct); }
 
+/* TIMER BTN */
+.timer-wrap { padding: 14px 18px 16px; }
+.timer-btn {
+  width: 100%; padding: 13px 24px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-family: 'Onest', sans-serif;
+  font-size: 14px; font-weight: 600;
+  color: var(--muted); cursor: default;
+  transition: all 0.3s; text-align: center;
+}
+.timer-btn.ready {
+  background: linear-gradient(135deg, var(--purple), #6B3FA0);
+  border-color: transparent; color: #fff; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(74,45,143,0.4);
+}
+.timer-btn.ready:hover { opacity: 0.88; transform: translateY(-1px); }
+.timer-btn.done {
+  background: linear-gradient(135deg, #2A7A50, #3DB87A);
+  border-color: transparent; color: #fff; cursor: default;
+}
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
@@ -353,8 +376,10 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="video-wrap">
         <iframe src="https://www.youtube.com/embed/DQjphDkltnQ" allowfullscreen></iframe>
       </div>
-      <div style="padding:16px 18px">
-        <button class="complete-btn" onclick="completeLesson(1)">✓ Просмотрено</button>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-1" data-seconds="21" data-lesson="1">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
       </div>
     </div>
   </div>
@@ -374,8 +399,10 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="video-wrap">
         <iframe src="https://www.youtube.com/embed/bww08mgD5gk" allowfullscreen></iframe>
       </div>
-      <div style="padding:16px 18px">
-        <button class="complete-btn" onclick="completeLesson(2)">✓ Просмотрено</button>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-2" data-seconds="720" data-lesson="2">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
       </div>
     </div>
   </div>
@@ -493,8 +520,10 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="video-wrap">
         <iframe src="https://www.youtube.com/embed/mTUvi9UYuik" allowfullscreen></iframe>
       </div>
-      <div style="padding:16px 18px">
-        <button class="complete-btn" onclick="completeLesson(3)">✓ Просмотрено</button>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-3" data-seconds="65" data-lesson="3">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
       </div>
     </div>
   </div>
@@ -588,8 +617,10 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="video-wrap">
         <iframe src="https://www.youtube.com/embed/Z-B99K1uB70" allowfullscreen></iframe>
       </div>
-      <div style="padding:16px 18px">
-        <button class="complete-btn" onclick="completeLesson(5)">✓ Просмотрено</button>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-5" data-seconds="39" data-lesson="5">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
       </div>
     </div>
   </div>
@@ -687,8 +718,10 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="video-wrap">
         <iframe src="https://www.youtube.com/embed/QgnzlXNJ6w4" allowfullscreen></iframe>
       </div>
-      <div style="padding:16px 18px">
-        <button class="complete-btn" onclick="completeLesson(7)">✓ Просмотрено</button>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-7" data-seconds="48" data-lesson="7">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
       </div>
     </div>
   </div>
@@ -775,8 +808,10 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="video-wrap">
         <iframe src="https://www.youtube.com/embed/adPCgsMZEdE" allowfullscreen></iframe>
       </div>
-      <div style="padding:16px 18px">
-        <button class="complete-btn" onclick="completeLesson(9)">✓ Просмотрено</button>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-9" data-seconds="48" data-lesson="9">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
       </div>
     </div>
   </div>
@@ -880,8 +915,10 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="video-wrap">
         <iframe src="https://www.youtube.com/embed/1pEcOJO2e4c" allowfullscreen></iframe>
       </div>
-      <div style="padding:16px 18px">
-        <button class="complete-btn" onclick="completeLesson(11)">✓ Просмотрено</button>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-11" data-seconds="38" data-lesson="11">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
       </div>
     </div>
   </div>
@@ -975,8 +1012,10 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="video-wrap">
         <iframe src="https://www.youtube.com/embed/TD0NugkPzOM" allowfullscreen></iframe>
       </div>
-      <div style="padding:16px 18px">
-        <button class="complete-btn" onclick="completeLesson(15)">✓ Просмотрено</button>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-15" data-seconds="168" data-lesson="15">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
       </div>
     </div>
   </div>
@@ -1014,8 +1053,10 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="video-wrap">
         <iframe src="https://www.youtube.com/embed/HIC9t9S13n8" allowfullscreen></iframe>
       </div>
-      <div style="padding:16px 18px">
-        <button class="complete-btn" onclick="completeLesson(17)">✓ Просмотрено</button>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-17" data-seconds="210" data-lesson="17">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
       </div>
     </div>
   </div>
@@ -1052,8 +1093,10 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="video-wrap">
         <iframe src="https://www.youtube.com/embed/pUM4ZdHcy_M" allowfullscreen></iframe>
       </div>
-      <div style="padding:16px 18px">
-        <button class="complete-btn" onclick="completeLesson(19)">✓ Просмотрено</button>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-19" data-seconds="168" data-lesson="19">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
       </div>
     </div>
   </div>
@@ -1090,8 +1133,10 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="video-wrap">
         <iframe src="https://www.youtube.com/embed/8Yd4dtKYTn4" allowfullscreen></iframe>
       </div>
-      <div style="padding:16px 18px">
-        <button class="complete-btn" onclick="completeLesson(21)">✓ Просмотрено</button>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-21" data-seconds="168" data-lesson="21">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
       </div>
     </div>
   </div>
@@ -1128,8 +1173,10 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="video-wrap">
         <iframe src="https://www.youtube.com/embed/RdNjT2yODOw" allowfullscreen></iframe>
       </div>
-      <div style="padding:16px 18px">
-        <button class="complete-btn" onclick="completeLesson(23)">✓ Просмотрено</button>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-23" data-seconds="210" data-lesson="23">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
       </div>
     </div>
   </div>
@@ -1166,8 +1213,10 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="video-wrap">
         <iframe src="https://www.youtube.com/embed/5iuWHMReRI0" allowfullscreen></iframe>
       </div>
-      <div style="padding:16px 18px">
-        <button class="complete-btn" onclick="completeLesson(25)">✓ Просмотрено</button>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-25" data-seconds="210" data-lesson="25">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
       </div>
     </div>
   </div>
@@ -1915,6 +1964,56 @@ const questions_quiz_lampochki_container = [
   {text:'Почему светодиодные лампочки безопасны для натяжных потолков?',options:['Они меньше по размеру','Они практически не нагреваются','Они легче','Они дешевле'],correct:1,explanation:'Светодиодные лампочки почти не нагреваются — ключевое преимущество для натяжных потолков.'},
   {text:'Что такое цоколь лампочки?',options:['Стеклянная колба','Часть лампочки которая вкручивается в патрон светильника','Элемент рассеивающий свет','Нить накаливания'],correct:1,explanation:'Цоколь — «ножка» лампочки, которая вставляется в патрон.'},
 ];
+
+// TIMERS
+const activeTimers = {};
+
+function startTimer(lessonNum) {
+  const btn = document.getElementById('timer-btn-' + lessonNum);
+  if (!btn || btn.classList.contains('ready') || btn.classList.contains('done')) return;
+  
+  const totalSeconds = parseInt(btn.dataset.seconds);
+  let remaining = totalSeconds;
+  
+  function fmt(s) {
+    if (s >= 60) return Math.ceil(s/60) + ' мин';
+    return s + ' сек';
+  }
+  
+  btn.textContent = '⏳ Досмотрите видео — осталось ' + fmt(remaining);
+  
+  activeTimers[lessonNum] = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(activeTimers[lessonNum]);
+      btn.textContent = '✓ Просмотрено — нажмите чтобы продолжить';
+      btn.classList.add('ready');
+      btn.style.cursor = 'pointer';
+      btn.onclick = () => {
+        completeLesson(lessonNum);
+        btn.classList.remove('ready');
+        btn.classList.add('done');
+        btn.textContent = '✓ Выполнено';
+        btn.onclick = null;
+      };
+    } else {
+      btn.textContent = '⏳ Досмотрите видео — осталось ' + fmt(remaining);
+    }
+  }, 1000);
+}
+
+// Запуск таймера при открытии урока с видео
+const _origToggleForTimer = toggleLesson;
+toggleLesson = function(n) {
+  _origToggleForTimer(n);
+  const lessonEl = document.getElementById('lesson-' + n);
+  if (lessonEl && lessonEl.classList.contains('open')) {
+    const btn = document.getElementById('timer-btn-' + n);
+    if (btn && !btn.classList.contains('ready') && !btn.classList.contains('done')) {
+      setTimeout(() => startTimer(n), 500);
+    }
+  }
+};
 
 init();
 </script>
