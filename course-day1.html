@@ -380,6 +380,104 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
     </div>
   </div>
 
+  <!-- 2.1 Тест: Корпоративный кодекс -->
+  <div class="lesson-item" id="lesson-2b">
+    <div class="lesson-header" onclick="toggleLesson('2b')">
+      <div class="lesson-status">✅</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 2 · Тест</div>
+        <div class="lesson-name">Проверочное задание: Корпоративный кодекс</div>
+        <span class="lesson-type-badge badge-test">✓ Тест</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="test-block" id="test-2b">
+        <div class="test-question" id="tq-2b-1">
+          <div class="question-label">Вопрос 1 из 7</div>
+          <div class="question-text">Как вы понимаете, что такое «Кодекс»?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('2b-1','wrong',this)">Список сотрудников компании</button>
+            <button class="option-btn" onclick="answerQ('2b-1','correct',this)">Свод правил и норм поведения, обязательных для всех</button>
+            <button class="option-btn" onclick="answerQ('2b-1','wrong',this)">Прайс-лист на товары</button>
+            <button class="option-btn" onclick="answerQ('2b-1','wrong',this)">График работы салонов</button>
+          </div>
+          <div class="feedback-msg" id="fb-2b-1"></div>
+        </div>
+        <div class="test-question" id="tq-2b-2" style="display:none">
+          <div class="question-label">Вопрос 2 из 7</div>
+          <div class="question-text">Почему важно соблюдать правила, изложенные в Кодексе?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('2b-2','wrong',this)">Чтобы куратор не сделал замечание</button>
+            <button class="option-btn" onclick="answerQ('2b-2','wrong',this)">Чтобы получить премию</button>
+            <button class="option-btn" onclick="answerQ('2b-2','correct',this)">Чтобы обеспечить единые стандарты и сохранить культуру компании</button>
+            <button class="option-btn" onclick="answerQ('2b-2','wrong',this)">Чтобы не забыть, как себя вести</button>
+          </div>
+          <div class="feedback-msg" id="fb-2b-2"></div>
+        </div>
+        <div class="test-question" id="tq-2b-3" style="display:none">
+          <div class="question-label">Вопрос 3 из 7</div>
+          <div class="question-text">Как вы понимаете Правило открытых дверей?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('2b-3','wrong',this)">Руководство всегда доступно для жалоб</button>
+            <button class="option-btn" onclick="answerQ('2b-3','wrong',this)">Сотрудникам разрешено приходить на работу в любое время</button>
+            <button class="option-btn" onclick="answerQ('2b-3','correct',this)">В компании двери открыты для тех, кто хочет учиться и расти; если человек не готов — дверь открыта на выход</button>
+            <button class="option-btn" onclick="answerQ('2b-3','wrong',this)">Все двери в салоне должны быть распахнуты</button>
+          </div>
+          <div class="feedback-msg" id="fb-2b-3"></div>
+        </div>
+        <div class="test-question" id="tq-2b-4" style="display:none">
+          <div class="question-label">Вопрос 4 из 7</div>
+          <div class="question-text">Какой основной приоритет компании при работе с сотрудниками?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('2b-4','correct',this)">Поддержка сотрудников в профессиональных и личных ситуациях, при этом ожидается лояльность и взаимопомощь</button>
+            <button class="option-btn" onclick="answerQ('2b-4','wrong',this)">Непрерывное обучение и тестирование</button>
+            <button class="option-btn" onclick="answerQ('2b-4','wrong',this)">Независимость сотрудников от команды и руководства</button>
+          </div>
+          <div class="feedback-msg" id="fb-2b-4"></div>
+        </div>
+        <div class="test-question" id="tq-2b-5" style="display:none">
+          <div class="question-label">Вопрос 5 из 7</div>
+          <div class="question-text">Почему важно измерять свои показатели?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('2b-5','wrong',this)">Чтобы сравнивать себя с коллегами</button>
+            <button class="option-btn" onclick="answerQ('2b-5','wrong',this)">Чтобы следить за ошибками</button>
+            <button class="option-btn" onclick="answerQ('2b-5','correct',this)">Чтобы понимать прогресс, видеть зону роста и достигать целей</button>
+            <button class="option-btn" onclick="answerQ('2b-5','wrong',this)">Чтобы не потерять место в рейтинге</button>
+          </div>
+          <div class="feedback-msg" id="fb-2b-5"></div>
+        </div>
+        <div class="test-question" id="tq-2b-6" style="display:none">
+          <div class="question-label">Вопрос 6 из 7</div>
+          <div class="question-text">Что в компании считается «Предательством»?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('2b-6','wrong',this)">Когда сотрудник опоздал на работу</button>
+            <button class="option-btn" onclick="answerQ('2b-6','wrong',this)">Когда сотрудник не сказал «Добрый день»</button>
+            <button class="option-btn" onclick="answerQ('2b-6','correct',this)">Когда сотрудник нарушает доверие и подрывает ценности компании</button>
+          </div>
+          <div class="feedback-msg" id="fb-2b-6"></div>
+        </div>
+        <div class="test-question" id="tq-2b-7" style="display:none">
+          <div class="question-label">Вопрос 7 из 7</div>
+          <div class="question-text">Как вы понимаете принцип Win-Win?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('2b-7','wrong',this)">Побеждает только тот, кто лучший</button>
+            <button class="option-btn" onclick="answerQ('2b-7','wrong',this)">Сотрудник делает всё сам, без помощи</button>
+            <button class="option-btn" onclick="answerQ('2b-7','correct',this)">Все участники взаимодействия выигрывают и получают пользу</button>
+            <button class="option-btn" onclick="answerQ('2b-7','wrong',this)">Нужно всегда уступать клиенту</button>
+          </div>
+          <div class="feedback-msg" id="fb-2b-7"></div>
+        </div>
+        <div class="test-score" id="score-2b">
+          <div class="score-emoji" id="se-2b"></div>
+          <div class="score-val" id="sv-2b"></div>
+          <div class="score-label" id="sl-2b"></div>
+          <button class="complete-btn done" onclick="completeLesson('2b')" style="margin-top:12px">Продолжить →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 3. Цель компании -->
   <div class="lesson-item" id="lesson-3">
     <div class="lesson-header" onclick="toggleLesson(3)">
@@ -845,7 +943,7 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
 
   <!-- 14. Тест: Люстры (встроенный) -->
   <div class="lesson-item" id="lesson-14">
-    <div class="lesson-header" onclick="toggleLesson(14);setTimeout(()=>initQuiz(14),150)">
+    <div class="lesson-header" onclick="toggleLesson(14)">
       <div class="lesson-status">✅</div>
       <div class="lesson-info">
         <div class="lesson-num">Урок 14</div>
@@ -855,9 +953,9 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="lesson-chevron">▼</div>
     </div>
     <div class="lesson-body">
-      <div id="quiz-lustry-container" style="padding:16px"></div>
-      <div style="padding:0 16px 16px">
-        <button class="complete-btn" id="btn-14" onclick="completeLesson(14)" style="display:none">✓ Тест пройден</button>
+      <iframe src="https://dept13quality-star.github.io/ABIS-Academy/%D0%9A%D0%B2%D0%B8%D0%B7%20%D0%BA%20%D0%B0%D0%B7%D0%B1%D1%83%D0%BA%D0%B5%20%D0%BF%D0%BE%20%D0%BF%D1%80%D0%BE%D0%B4%D1%83%D0%BA%D1%82%D1%83%20(%D0%BB%D1%8E%D1%81%D1%82%D1%80%D1%8B)%20(2).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
+      <div style="padding:12px 16px 16px">
+        <button class="complete-btn" onclick="completeLesson(14)">✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -885,7 +983,7 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
 
   <!-- 16-26: Остальные уроки -->
   <div class="lesson-item" id="lesson-16">
-    <div class="lesson-header" onclick="toggleLesson(16);setTimeout(()=>initQuiz(16),150)">
+    <div class="lesson-header" onclick="toggleLesson(16)">
       <div class="lesson-status">✅</div>
       <div class="lesson-info">
         <div class="lesson-num">Урок 16</div>
@@ -895,9 +993,9 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="lesson-chevron">▼</div>
     </div>
     <div class="lesson-body">
-      <div id="quiz-bra-container" style="padding:16px"></div>
-      <div style="padding:0 16px 16px">
-        <button class="complete-btn" id="btn-16" onclick="completeLesson(16)" style="display:none">✓ Тест пройден</button>
+      <iframe src="https://dept13quality-star.github.io/ABIS-Academy/test_bra_torsher_lampa_podves%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
+      <div style="padding:12px 16px 16px">
+        <button class="complete-btn" onclick="completeLesson(16)">✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -923,7 +1021,7 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
   </div>
 
   <div class="lesson-item" id="lesson-18">
-    <div class="lesson-header" onclick="toggleLesson(18);setTimeout(()=>initQuiz(18),150)">
+    <div class="lesson-header" onclick="toggleLesson(18)">
       <div class="lesson-status">✅</div>
       <div class="lesson-info">
         <div class="lesson-num">Урок 18</div>
@@ -933,9 +1031,9 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="lesson-chevron">▼</div>
     </div>
     <div class="lesson-body">
-      <div id="quiz-spoty-container" style="padding:16px"></div>
-      <div style="padding:0 16px 16px">
-        <button class="complete-btn" id="btn-18" onclick="completeLesson(18)" style="display:none">✓ Тест пройден</button>
+      <iframe src="https://dept13quality-star.github.io/ABIS-Academy/test_spoty_treki%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
+      <div style="padding:12px 16px 16px">
+        <button class="complete-btn" onclick="completeLesson(18)">✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -961,7 +1059,7 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
   </div>
 
   <div class="lesson-item" id="lesson-20">
-    <div class="lesson-header" onclick="toggleLesson(20);setTimeout(()=>initQuiz(20),150)">
+    <div class="lesson-header" onclick="toggleLesson(20)">
       <div class="lesson-status">✅</div>
       <div class="lesson-info">
         <div class="lesson-num">Урок 20</div>
@@ -971,9 +1069,9 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="lesson-chevron">▼</div>
     </div>
     <div class="lesson-body">
-      <div id="quiz-nav-container" style="padding:16px"></div>
-      <div style="padding:0 16px 16px">
-        <button class="complete-btn" id="btn-20" onclick="completeLesson(20)" style="display:none">✓ Тест пройден</button>
+      <iframe src="https://dept13quality-star.github.io/ABIS-Academy/test_napravlyayushie_podsvetki%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
+      <div style="padding:12px 16px 16px">
+        <button class="complete-btn" onclick="completeLesson(20)">✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -999,7 +1097,7 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
   </div>
 
   <div class="lesson-item" id="lesson-22">
-    <div class="lesson-header" onclick="toggleLesson(22);setTimeout(()=>initQuiz(22),150)">
+    <div class="lesson-header" onclick="toggleLesson(22)">
       <div class="lesson-status">✅</div>
       <div class="lesson-info">
         <div class="lesson-num">Урок 22</div>
@@ -1009,9 +1107,9 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="lesson-chevron">▼</div>
     </div>
     <div class="lesson-body">
-      <div id="quiz-plaf-container" style="padding:16px"></div>
-      <div style="padding:0 16px 16px">
-        <button class="complete-btn" id="btn-22" onclick="completeLesson(22)" style="display:none">✓ Тест пройден</button>
+      <iframe src="https://dept13quality-star.github.io/ABIS-Academy/test_plafonyi_ulichnye%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
+      <div style="padding:12px 16px 16px">
+        <button class="complete-btn" onclick="completeLesson(22)">✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -1037,7 +1135,7 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
   </div>
 
   <div class="lesson-item" id="lesson-24">
-    <div class="lesson-header" onclick="toggleLesson(24);setTimeout(()=>initQuiz(24),150)">
+    <div class="lesson-header" onclick="toggleLesson(24)">
       <div class="lesson-status">✅</div>
       <div class="lesson-info">
         <div class="lesson-num">Урок 24</div>
@@ -1047,9 +1145,9 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="lesson-chevron">▼</div>
     </div>
     <div class="lesson-body">
-      <div id="quiz-lenty-container" style="padding:16px"></div>
-      <div style="padding:0 16px 16px">
-        <button class="complete-btn" id="btn-24" onclick="completeLesson(24)" style="display:none">✓ Тест пройден</button>
+      <iframe src="https://dept13quality-star.github.io/ABIS-Academy/test_profila_lenty%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
+      <div style="padding:12px 16px 16px">
+        <button class="complete-btn" onclick="completeLesson(24)">✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -1075,7 +1173,7 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
   </div>
 
   <div class="lesson-item" id="lesson-26">
-    <div class="lesson-header" onclick="toggleLesson(26);setTimeout(()=>initQuiz(26),150)">
+    <div class="lesson-header" onclick="toggleLesson(26)">
       <div class="lesson-status">✅</div>
       <div class="lesson-info">
         <div class="lesson-num">Урок 26</div>
@@ -1085,9 +1183,9 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="lesson-chevron">▼</div>
     </div>
     <div class="lesson-body">
-      <div id="quiz-rozetki-container" style="padding:16px"></div>
-      <div style="padding:0 16px 16px">
-        <button class="complete-btn" id="btn-26" onclick="completeLesson(26)" style="display:none">✓ Тест пройден</button>
+      <iframe src="https://dept13quality-star.github.io/ABIS-Academy/quiz_rozetki_vykluchateli%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
+      <div style="padding:12px 16px 16px">
+        <button class="complete-btn" onclick="completeLesson(26)">✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -1121,7 +1219,7 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
 
   <!-- 28. Тест: лампочки -->
   <div class="lesson-item" id="lesson-28">
-    <div class="lesson-header" onclick="toggleLesson(28);setTimeout(()=>initQuiz(28),150)">
+    <div class="lesson-header" onclick="toggleLesson(28)">
       <div class="lesson-status">✅</div>
       <div class="lesson-info">
         <div class="lesson-num">Урок 28</div>
@@ -1131,9 +1229,9 @@ html, body { font-family: 'Onest', sans-serif; background: var(--dark); color: v
       <div class="lesson-chevron">▼</div>
     </div>
     <div class="lesson-body">
-      <div id="quiz-lampochki-container" style="padding:16px"></div>
-      <div style="padding:0 16px 16px">
-        <button class="complete-btn" id="btn-28" onclick="completeLesson(28)" style="display:none">✓ Тест пройден</button>
+      <iframe src="https://dept13quality-star.github.io/ABIS-Academy/quiz_formy_lampochek%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
+      <div style="padding:12px 16px 16px">
+        <button class="complete-btn" onclick="completeLesson(28)">✓ Тест пройден</button>
       </div>
     </div>
   </div>
