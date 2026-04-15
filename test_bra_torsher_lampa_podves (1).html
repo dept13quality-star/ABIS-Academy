@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тест: Бра, Торшер, Настольная лампа, Подвес</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f4f1fa;
+    min-height: 100vh;
+    padding: 32px 24px;
+    color: #2c2338;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  header .logo {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #5B2D8E;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c2338;
+    margin-bottom: 6px;
+  }
+
+  header p {
+    font-size: 14px;
+    color: #7a6d8a;
+  }
+
+  .source-wrap {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(91,45,142,0.08);
+  }
+
+  .source-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #9e8fb0;
+    margin-bottom: 12px;
+  }
+
+  #source {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 48px;
+  }
+
+  .card {
+    background: #f4f1fa;
+    border: 1.5px solid #d4c8e8;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #3d2b5e;
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.1s, box-shadow 0.1s, opacity 0.15s;
+    line-height: 1.4;
+  }
+
+  .card:hover {
+    border-color: #5B2D8E;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(91,45,142,0.15);
+  }
+
+  .card:active { cursor: grabbing; }
+  .card.dragging { opacity: 0.35; }
+
+  .card.correct {
+    background: #e6f7f0;
+    border-color: #1D9E75;
+    color: #0a5c42;
+  }
+
+  .card.wrong {
+    background: #fdeaea;
+    border-color: #e05050;
+    color: #7a1a1a;
+    animation: shake 0.3s ease;
+  }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .zone-wrap {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 12px rgba(91,45,142,0.08);
+  }
+
+  .zone-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1.5px solid #ede8f5;
+  }
+
+  .zone-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .zone-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2c2338;
+  }
+
+  .zone {
+    min-height: 80px;
+    border: 2px dashed #d4c8e8;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-content: flex-start;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .zone.drag-over {
+    background: #f0eaf9;
+    border-color: #5B2D8E;
+    border-style: solid;
+  }
+
+  .zone-hint {
+    font-size: 12px;
+    color: #c0b4d4;
+    align-self: center;
+    width: 100%;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .btn {
+    padding: 11px 28px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+
+  .btn-primary {
+    background: #5B2D8E;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(91,45,142,0.3);
+  }
+
+  .btn-primary:hover {
+    background: #4a2275;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(91,45,142,0.35);
+  }
+
+  .btn-secondary {
+    background: #fff;
+    color: #5B2D8E;
+    border: 1.5px solid #d4c8e8;
+  }
+
+  .btn-secondary:hover {
+    background: #f4f1fa;
+    transform: translateY(-1px);
+  }
+
+  .result {
+    display: none;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px 24px;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(91,45,142,0.08);
+  }
+
+  .result.show { display: block; }
+
+  .result-score {
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .result-score.good { color: #1D9E75; }
+  .result-score.bad { color: #e05050; }
+
+  .result-msg {
+    font-size: 14px;
+    color: #7a6d8a;
+    line-height: 1.6;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: #ede8f5;
+    border-radius: 10px;
+    margin: 14px 0 0;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #5B2D8E, #9b6fd4);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Svet.kz — Обучение стажёров</div>
+  <h1>Определи тип светильника</h1>
+  <p>Перетащи каждое описание в нужную категорию</p>
+</header>
+
+<div class="source-wrap">
+  <div class="source-label">Карточки для сортировки</div>
+  <div id="source"></div>
+</div>
+
+<div class="grid">
+  <div class="zone-wrap">
+    <div class="zone-header">
+      <div class="zone-icon" style="background:#fce8f3;">🪟</div>
+      <div class="zone-title">Бра</div>
+    </div>
+    <div class="zone" id="zone-bra" data-zone="bra">
+      <div class="zone-hint">Перетащи сюда</div>
+    </div>
+  </div>
+
+  <div class="zone-wrap">
+    <div class="zone-header">
+      <div class="zone-icon" style="background:#fff3e0;">🕯️</div>
+      <div class="zone-title">Торшер</div>
+    </div>
+    <div class="zone" id="zone-torsher" data-zone="torsher">
+      <div class="zone-hint">Перетащи сюда</div>
+    </div>
+  </div>
+
+  <div class="zone-wrap">
+    <div class="zone-header">
+      <div class="zone-icon" style="background:#e8f4fd;">💡</div>
+      <div class="zone-title">Настольная лампа</div>
+    </div>
+    <div class="zone" id="zone-lampa" data-zone="lampa">
+      <div class="zone-hint">Перетащи сюда</div>
+    </div>
+  </div>
+
+  <div class="zone-wrap">
+    <div class="zone-header">
+      <div class="zone-icon" style="background:#e8fdf4;">🔗</div>
+      <div class="zone-title">Подвес</div>
+    </div>
+    <div class="zone" id="zone-podves" data-zone="podves">
+      <div class="zone-hint">Перетащи сюда</div>
+    </div>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="btn btn-primary" onclick="checkAnswers()">Проверить ответы</button>
+  <button class="btn btn-secondary" onclick="resetAll()">Сбросить</button>
+</div>
+
+<div class="result" id="result">
+  <div class="result-score" id="score-text"></div>
+  <div class="result-msg" id="score-msg"></div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+</div>
+
+<script>
+const cards = [
+  { id:'c1',  text:'Крепится к стене',                                  answer:'bra' },
+  { id:'c2',  text:'Устанавливается в паре с люстрой в одной комнате',  answer:'bra' },
+  { id:'c3',  text:'Может подсветить картину или зеркало на стене',     answer:'bra' },
+  { id:'c4',  text:'Переносной, стоит на полу',                         answer:'torsher' },
+  { id:'c5',  text:'Состоит из высокой ножки и абажура',                answer:'torsher' },
+  { id:'c6',  text:'Самый высокий из переносных светильников',          answer:'torsher' },
+  { id:'c7',  text:'Вдвое короче торшера',                              answer:'lampa' },
+  { id:'c8',  text:'Можно поставить на стол, тумбу или камин',          answer:'lampa' },
+  { id:'c9',  text:'Переносной настольный светильник',                  answer:'lampa' },
+  { id:'c10', text:'Одиночный светильник, висит на тросе или цепи',     answer:'podves' },
+  { id:'c11', text:'Состоит из планки, провода и плафона',              answer:'podves' },
+];
+
+function shuffle(arr) {
+  for (let i = arr.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+let dragCard = null;
+
+function updateHints() {
+  document.querySelectorAll('.zone').forEach(zone => {
+    let hint = zone.querySelector('.zone-hint');
+    const hasCards = zone.querySelectorAll('.card').length > 0;
+    if (hasCards) {
+      if (hint) hint.style.display = 'none';
+    } else {
+      if (!hint) {
+        hint = document.createElement('div');
+        hint.className = 'zone-hint';
+        hint.textContent = 'Перетащи сюда';
+        zone.appendChild(hint);
+      }
+      hint.style.display = 'block';
+    }
+  });
+}
+
+function createCard(card) {
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.id = card.id;
+  el.textContent = card.text;
+  el.draggable = true;
+  el.dataset.answer = card.answer;
+
+  el.addEventListener('dragstart', e => {
+    dragCard = el;
+    setTimeout(() => el.classList.add('dragging'), 0);
+  });
+  el.addEventListener('dragend', () => {
+    el.classList.remove('dragging');
+    dragCard = null;
+    updateHints();
+  });
+
+  // Touch support
+  let touchClone = null, offX = 0, offY = 0;
+
+  el.addEventListener('touchstart', e => {
+    dragCard = el;
+    const t = e.touches[0];
+    const r = el.getBoundingClientRect();
+    offX = t.clientX - r.left;
+    offY = t.clientY - r.top;
+    touchClone = el.cloneNode(true);
+    touchClone.style.cssText = `position:fixed;pointer-events:none;opacity:0.85;z-index:9999;width:${r.width}px;left:${t.clientX-offX}px;top:${t.clientY-offY}px;`;
+    document.body.appendChild(touchClone);
+  }, { passive: true });
+
+  el.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const t = e.touches[0];
+    if (touchClone) {
+      touchClone.style.left = (t.clientX - offX) + 'px';
+      touchClone.style.top  = (t.clientY - offY) + 'px';
+    }
+    document.querySelectorAll('.zone').forEach(z => z.classList.remove('drag-over'));
+    const under = document.elementFromPoint(t.clientX, t.clientY);
+    const zone = under && under.closest('.zone');
+    if (zone) zone.classList.add('drag-over');
+  }, { passive: false });
+
+  el.addEventListener('touchend', e => {
+    if (touchClone) { touchClone.remove(); touchClone = null; }
+    document.querySelectorAll('.zone').forEach(z => z.classList.remove('drag-over'));
+    const t = e.changedTouches[0];
+    const under = document.elementFromPoint(t.clientX, t.clientY);
+    const zone = under && under.closest('.zone');
+    if (zone && dragCard) zone.appendChild(dragCard);
+    dragCard = null;
+    updateHints();
+  });
+
+  return el;
+}
+
+document.querySelectorAll('.zone').forEach(zone => {
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    if (dragCard) zone.appendChild(dragCard);
+    updateHints();
+  });
+});
+
+function checkAnswers() {
+  let correct = 0, total = 0;
+  document.querySelectorAll('.zone .card').forEach(el => {
+    total++;
+    el.classList.remove('correct','wrong');
+    if (el.closest('.zone').dataset.zone === el.dataset.answer) {
+      el.classList.add('correct'); correct++;
+    } else {
+      el.classList.add('wrong');
+    }
+  });
+
+  const result = document.getElementById('result');
+  const scoreText = document.getElementById('score-text');
+  const scoreMsg = document.getElementById('score-msg');
+  const fill = document.getElementById('progress-fill');
+
+  result.classList.add('show');
+  scoreText.textContent = `${correct} / ${cards.length}`;
+
+  const pct = Math.round(correct / cards.length * 100);
+  fill.style.width = pct + '%';
+
+  if (correct === cards.length) {
+    scoreText.className = 'result-score good';
+    scoreMsg.textContent = 'Отлично! Все карточки на своих местах!';
+  } else if (correct >= cards.length * 0.7) {
+    scoreText.className = 'result-score good';
+    scoreMsg.textContent = 'Хороший результат! Красные карточки — перетащи их правильно и проверь снова.';
+  } else {
+    scoreText.className = 'result-score bad';
+    scoreMsg.textContent = 'Нужно повторить материал. Красные карточки — не там. Попробуй ещё раз!';
+  }
+}
+
+function resetAll() {
+  const source = document.getElementById('source');
+  document.querySelectorAll('.card').forEach(el => {
+    el.classList.remove('correct','wrong');
+    source.appendChild(el);
+  });
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('progress-fill').style.width = '0%';
+  updateHints();
+}
+
+const source = document.getElementById('source');
+shuffle(cards).forEach(c => source.appendChild(createCard(c)));
+updateHints();
+</script>
+</body>
+</html>
