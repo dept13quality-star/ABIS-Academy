@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тест: УТП SVET.KZ</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple: #4A2D8F;
+  --purple-light: #7B5EA7;
+  --gold: #D4A843;
+  --gold-light: #F0C96A;
+  --dark: #0F0B18;
+  --surface: #1A1228;
+  --surface2: #221830;
+  --text: #F0EAF8;
+  --muted: #9B87B5;
+  --border: rgba(255,255,255,0.08);
+  --correct: #3DB87A;
+  --wrong: #E24B4A;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Onest', sans-serif;
+  background: var(--dark);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 32px 20px 60px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.logo {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 14px;
+}
+
+h1 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+h1 span { color: var(--gold-light); }
+
+header p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.instruction {
+  background: rgba(123,94,167,0.15);
+  border: 1px solid rgba(123,94,167,0.3);
+  border-radius: 14px;
+  padding: 14px 20px;
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 700px;
+  margin: 0 auto 28px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.instruction strong { color: var(--gold-light); }
+
+.score-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 20px;
+  max-width: 700px;
+  margin: 0 auto 24px;
+}
+
+.score-num {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+
+.score-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.match-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 700px;
+  margin: 0 auto 28px;
+}
+
+@media (max-width: 580px) {
+  .match-area { grid-template-columns: 1fr; }
+}
+
+.col-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 10px;
+  opacity: 0.7;
+}
+
+.items-col { display: flex; flex-direction: column; gap: 10px; }
+
+.item-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.18s;
+  line-height: 1.4;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.item-card:hover:not(.matched):not(.correct):not(.wrong) {
+  border-color: var(--purple-light);
+  background: var(--surface2);
+  transform: translateY(-1px);
+}
+
+.item-card.selected {
+  border-color: var(--gold);
+  background: rgba(212,168,67,0.15);
+  color: var(--gold-light);
+  transform: scale(1.02);
+}
+
+.item-card.correct {
+  border-color: var(--correct);
+  background: rgba(61,184,122,0.12);
+  color: var(--correct);
+  cursor: default;
+}
+
+.item-card.wrong {
+  border-color: var(--wrong);
+  background: rgba(226,75,74,0.1);
+  animation: shake 0.35s ease;
+}
+
+.item-card.matched {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
+
+/* Left side — преимущества */
+.left-card {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.left-card .number {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--purple);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.left-card-inner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* Result */
+.result-screen {
+  display: none;
+  background: var(--surface);
+  border: 1px solid rgba(212,168,67,0.3);
+  border-radius: 20px;
+  padding: 40px 32px;
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  animation: fadeUp 0.4s ease;
+}
+
+.result-screen.show { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.result-emoji { font-size: 52px; margin-bottom: 14px; }
+
+.result-score {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--gold-light);
+  margin-bottom: 6px;
+}
+
+.result-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.result-msg {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.btn-retry {
+  background: linear-gradient(135deg, var(--purple), #6B3FA0);
+  border: none;
+  border-radius: 12px;
+  padding: 14px 40px;
+  font-family: 'Onest', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-retry:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.match-feedback {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  min-height: 20px;
+  margin-bottom: 12px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  transition: all 0.3s;
+}
+
+.match-feedback.ok { color: var(--correct); }
+.match-feedback.fail { color: #F09595; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">✦ SVET.KZ · Обучение стажёров</div>
+  <h1>Уникальное <span>торговое предложение</span></h1>
+  <p>Сопоставь преимущество компании с выгодой для клиента</p>
+</header>
+
+<div class="instruction">
+  👆 Нажми на <strong>преимущество</strong> слева — оно подсветится.<br>
+  Затем нажми на <strong>нужную выгоду</strong> справа.
+</div>
+
+<div class="score-bar" id="score-bar">
+  <div>
+    <div class="score-num" id="score-num">0 / 7</div>
+    <div class="score-label">правильных пар</div>
+  </div>
+  <div style="font-size:13px;color:var(--muted)">УТП SVET.KZ</div>
+</div>
+
+<div class="match-feedback" id="feedback"></div>
+
+<div class="match-area" id="match-area">
+  <div>
+    <div class="col-label">Преимущество</div>
+    <div class="items-col" id="left-col"></div>
+  </div>
+  <div>
+    <div class="col-label">Выгода для клиента</div>
+    <div class="items-col" id="right-col"></div>
+  </div>
+</div>
+
+<div class="result-screen" id="result-screen">
+  <div class="result-emoji" id="r-emoji"></div>
+  <div class="result-score" id="r-score"></div>
+  <div class="result-title" id="r-title"></div>
+  <div class="result-msg" id="r-msg"></div>
+  <button class="btn-retry" onclick="init()">Попробовать снова</button>
+</div>
+
+<script>
+const pairs = [
+  {
+    left: '16 лет на рынке Казахстана',
+    right: 'Компания надёжная — ей можно доверять',
+    id: 'a'
+  },
+  {
+    left: '3 этапа проверки качества и комплектации',
+    right: 'Получите товар без боя и в полной комплектации',
+    id: 'b'
+  },
+  {
+    left: 'Гарантия на товары от 2 до 5 лет',
+    right: 'Светильник будет радовать долгие годы',
+    id: 'c'
+  },
+  {
+    left: 'Доставка во все 16 регионов Казахстана',
+    right: 'Получите товар в своём городе в целости и сохранности',
+    id: 'd'
+  },
+  {
+    left: 'Рассрочка без переплат',
+    right: 'Можно купить прямо сейчас без полной суммы на руках',
+    id: 'e'
+  },
+  {
+    left: 'База более 700 лояльных дизайнеров',
+    right: 'Ассортимент проверен профессионалами с разными вкусами',
+    id: 'f'
+  },
+  {
+    left: 'Детская зона в салоне',
+    right: 'Дети заняты — вы спокойно выбираете светильники',
+    id: 'g'
+  },
+];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+let selected = null;
+let matched = {};
+let correct = 0;
+const total = pairs.length;
+
+function init() {
+  selected = null;
+  matched = {};
+  correct = 0;
+
+  document.getElementById('score-num').textContent = `0 / ${total}`;
+  document.getElementById('result-screen').classList.remove('show');
+  document.getElementById('score-bar').style.display = '';
+  document.getElementById('match-area').style.display = '';
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'match-feedback';
+
+  const leftCol = document.getElementById('left-col');
+  const rightCol = document.getElementById('right-col');
+  leftCol.innerHTML = '';
+  rightCol.innerHTML = '';
+
+  const shuffledLeft = shuffle(pairs);
+  const shuffledRight = shuffle(pairs);
+
+  shuffledLeft.forEach((p, i) => {
+    const el = document.createElement('div');
+    el.className = 'item-card left-card';
+    el.id = `left-${p.id}`;
+    el.dataset.id = p.id;
+    el.innerHTML = `<div class="left-card-inner"><span class="number">${i+1}</span>${p.left}</div>`;
+    el.onclick = () => selectLeft(p.id);
+    leftCol.appendChild(el);
+  });
+
+  shuffledRight.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'item-card';
+    el.id = `right-${p.id}`;
+    el.dataset.id = p.id;
+    el.textContent = p.right;
+    el.onclick = () => selectRight(p.id);
+    rightCol.appendChild(el);
+  });
+}
+
+function selectLeft(id) {
+  if (matched[id]) return;
+  document.querySelectorAll('.left-card').forEach(el => {
+    if (!matched[el.dataset.id]) el.classList.remove('selected');
+  });
+  selected = id;
+  document.getElementById(`left-${id}`).classList.add('selected');
+  setFeedback('Теперь выбери выгоду справа →', '');
+}
+
+function selectRight(rightId) {
+  if (!selected) {
+    setFeedback('Сначала выбери преимущество слева!', 'fail');
+    return;
+  }
+  if (matched[rightId]) return;
+
+  const leftEl = document.getElementById(`left-${selected}`);
+  const rightEl = document.getElementById(`right-${rightId}`);
+
+  if (selected === rightId) {
+    // ПРАВИЛЬНО
+    leftEl.classList.remove('selected');
+    leftEl.classList.add('correct', 'matched');
+    rightEl.classList.add('correct', 'matched');
+    matched[selected] = true;
+    correct++;
+    document.getElementById('score-num').textContent = `${correct} / ${total}`;
+    setFeedback('✓ Верно! Отличное знание УТП!', 'ok');
+    selected = null;
+    if (correct === total) setTimeout(showResult, 600);
+  } else {
+    // НЕПРАВИЛЬНО
+    leftEl.classList.remove('selected');
+    leftEl.classList.add('wrong');
+    rightEl.classList.add('wrong');
+    setFeedback('✗ Не та пара. Попробуй ещё раз!', 'fail');
+    setTimeout(() => {
+      leftEl.classList.remove('wrong', 'selected');
+      rightEl.classList.remove('wrong');
+      selected = null;
+    }, 500);
+  }
+}
+
+function setFeedback(text, type) {
+  const el = document.getElementById('feedback');
+  el.textContent = text;
+  el.className = 'match-feedback' + (type ? ' ' + type : '');
+}
+
+function showResult() {
+  document.getElementById('result-screen').classList.add('show');
+  document.getElementById('score-bar').style.display = 'none';
+  document.getElementById('match-area').style.display = 'none';
+  document.getElementById('feedback').style.display = 'none';
+
+  document.getElementById('r-emoji').textContent = '🏆';
+  document.getElementById('r-score').textContent = `${correct} / ${total}`;
+  document.getElementById('r-title').textContent = 'Все пары найдены!';
+  document.getElementById('r-msg').textContent = 'Отлично! Ты знаешь УТП компании SVET.KZ и сможешь уверенно рассказать клиенту о наших преимуществах.';
+}
+
+init();
+</script>
+</body>
+</html>
