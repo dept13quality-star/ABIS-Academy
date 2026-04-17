@@ -1,0 +1,158 @@
+
+<style>
+  .ex-wrap { font-family: 'Onest', sans-serif; padding: 1rem 0; }
+  .ex-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 16px; }
+  .stage-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--color-background-primary);
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    cursor: grab;
+    user-select: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    font-size: 14px;
+    color: var(--color-text-primary);
+  }
+  .stage-item:active { cursor: grabbing; }
+  .stage-item.dragging { opacity: 0.4; border-color: #3A9E1A; }
+  .stage-item.over { border-color: #3A9E1A; box-shadow: 0 0 0 2px rgba(58,158,26,0.2); }
+  .drag-handle { color: var(--color-text-secondary); font-size: 14px; flex-shrink: 0; }
+  .stage-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(58,158,26,0.1);
+    color: #3A9E1A;
+    font-size: 11px; font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .check-btn {
+    margin-top: 16px;
+    padding: 10px 24px;
+    border-radius: var(--border-radius-md);
+    border: 1px solid #3A9E1A;
+    background: #3A9E1A;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.15s;
+  }
+  .check-btn:hover { opacity: 0.88; }
+  .result-msg {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: var(--border-radius-md);
+    font-size: 13px;
+    display: none;
+  }
+  .result-msg.ok { background: rgba(58,158,26,0.1); color: #2D7A14; border: 1px solid rgba(58,158,26,0.25); }
+  .result-msg.fail { background: rgba(220,50,50,0.07); color: #a03030; border: 1px solid rgba(220,50,50,0.2); }
+  .stage-item.wrong { border-color: #e05555; background: rgba(220,50,50,0.05); }
+  .stage-item.correct { border-color: #3A9E1A; background: rgba(58,158,26,0.07); }
+  .reset-btn {
+    margin-top: 10px;
+    padding: 8px 20px;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--color-border-tertiary);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .reset-btn:hover { border-color: var(--color-border-primary); }
+</style>
+
+<div class="ex-wrap">
+  <div class="ex-title">Расставь этапы воронки продаж в правильном порядке — перетащи карточки</div>
+  <div id="list"></div>
+  <button class="check-btn" onclick="checkOrder()">Проверить</button>
+  <div class="result-msg" id="result"></div>
+  <button class="reset-btn" id="resetBtn" onclick="reset()" style="display:none">Попробовать снова</button>
+</div>
+
+<script>
+const CORRECT = [
+  "ЛИД заходит в магазин",
+  "ЛИД сел за стол переговоров",
+  "ЛИД рассказал потребность",
+  "Презентация товара",
+  "Отправить КП / Подборку",
+  "Завершение сделки"
+];
+
+const SHUFFLED = [
+  "Завершение сделки",
+  "ЛИД рассказал потребность",
+  "Отправить КП / Подборку",
+  "ЛИД заходит в магазин",
+  "Презентация товара",
+  "ЛИД сел за стол переговоров"
+];
+
+let order = [...SHUFFLED];
+let dragSrc = null;
+
+function render() {
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  order.forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = 'stage-item';
+    el.draggable = true;
+    el.dataset.index = i;
+    el.innerHTML = `<span class="drag-handle">&#8942;&#8942;</span><span class="stage-num">?</span><span>${item}</span>`;
+    el.addEventListener('dragstart', e => { dragSrc = i; el.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+    el.addEventListener('dragend', () => el.classList.remove('dragging'));
+    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('over'); });
+    el.addEventListener('dragleave', () => el.classList.remove('over'));
+    el.addEventListener('drop', e => {
+      e.preventDefault(); el.classList.remove('over');
+      if (dragSrc === null || dragSrc === i) return;
+      const tmp = order[dragSrc]; order[dragSrc] = order[i]; order[i] = tmp;
+      render();
+    });
+    list.appendChild(el);
+  });
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('resetBtn').style.display = 'none';
+}
+
+function checkOrder() {
+  const items = document.querySelectorAll('.stage-item');
+  let allOk = true;
+  items.forEach((el, i) => {
+    el.classList.remove('wrong', 'correct');
+    const numEl = el.querySelector('.stage-num');
+    numEl.textContent = i + 1;
+    if (order[i] === CORRECT[i]) {
+      el.classList.add('correct');
+    } else {
+      el.classList.add('wrong');
+      allOk = false;
+    }
+  });
+  const msg = document.getElementById('result');
+  msg.style.display = 'block';
+  if (allOk) {
+    msg.className = 'result-msg ok';
+    msg.textContent = '✓ Отлично! Все этапы в правильном порядке.';
+    document.getElementById('resetBtn').style.display = 'none';
+  } else {
+    msg.className = 'result-msg fail';
+    const wrong = [...items].filter(el => el.classList.contains('wrong')).length;
+    msg.textContent = `Не совсем — ${wrong} этап(а) не на своём месте. Попробуй ещё раз.`;
+    document.getElementById('resetBtn').style.display = 'block';
+  }
+}
+
+function reset() {
+  order = [...SHUFFLED];
+  render();
+}
+
+render();
+</script>
