@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SVET.KZ — Шпаргалка продавца</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #3A9E1A;
+    --gold-light: #2D8014;
+    --gold-dim: #4CAF2A;
+    --dark: #FFFFFF;
+    --dark2: #F4F8F2;
+    --dark3: #EBF4E7;
+    --card: #FFFFFF;
+    --border: rgba(60,158,26,0.25);
+    --text: #1A1A1A;
+    --muted: #666;
+    --accent-red: #D92B35;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #F4F8F2;
+    color: var(--text);
+    font-family: 'Onest', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.15;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .header .logo {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .header h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: clamp(20px, 5vw, 32px);
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .header h1 span { color: var(--gold); }
+
+  .header p {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.03em;
+  }
+
+  /* Tab navigation */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    animation: fadeDown 0.6s 0.1s ease both;
+  }
+
+  .tab {
+    padding: 8px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Onest', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .tab:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .tab.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #FFFFFF;
+    font-weight: 700;
+  }
+
+  /* Sections */
+  .section { display: none; animation: fadeUp 0.4s ease both; }
+  .section.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Stage cards */
+  .stage-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .stage-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .stage-card:hover {
+    border-color: var(--gold-dim);
+    transform: translateY(-2px);
+  }
+
+  .stage-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+
+  .stage-num {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .stage-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 14px;
+    line-height: 1.3;
+  }
+
+  .stage-goal {
+    font-size: 11px;
+    color: var(--gold);
+    background: rgba(60,158,26,0.08);
+    border: 1px solid rgba(60,158,26,0.2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .phrase-list { list-style: none; }
+
+  .phrase-list li {
+    font-size: 13px;
+    color: var(--text);
+    padding: 7px 0 7px 16px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    position: relative;
+    line-height: 1.4;
+  }
+
+  .phrase-list li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 16px;
+    line-height: 1;
+    top: 7px;
+  }
+
+  .phrase-list li:last-child { border-bottom: none; }
+
+  .phrase-list li em {
+    display: block;
+    font-style: italic;
+    color: var(--gold);
+    font-size: 12px;
+    margin-top: 3px;
+    font-weight: 500;
+  }
+
+  .warning {
+    background: rgba(255,80,80,0.06);
+    border: 1px solid rgba(255,80,80,0.15);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: #ff8080;
+    margin-top: 10px;
+  }
+
+  /* Objections table */
+  .obj-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .obj-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .obj-card:hover { border-color: var(--gold-dim); }
+
+  .obj-header {
+    background: rgba(60,158,26,0.07);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .obj-header .label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .obj-header .trigger {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .obj-steps { padding: 12px 16px; }
+
+  .obj-step {
+    display: flex;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .obj-step:last-child { border-bottom: none; }
+
+  .obj-step .step-num {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #FFFFFF;
+    font-size: 9px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+  }
+
+  .obj-step .step-text { color: var(--text); }
+  .obj-step .step-text span { color: var(--gold-light); font-style: italic; }
+
+  /* Benefits table */
+  .benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .benefit-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+
+  .benefit-card:hover { border-color: var(--gold-dim); }
+
+  .benefit-prop {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+  }
+
+  .benefit-phrase {
+    font-size: 12px;
+    color: #444;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* Rules */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .rule-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+
+  .rule-card:hover { border-color: var(--gold-dim); }
+
+  .rule-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .rule-text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  .rule-text strong {
+    display: block;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  /* Alternatives */
+  .alt-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .alt-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+
+  .alt-old {
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #666;
+    text-decoration: line-through;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .alt-new {
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  /* Section header */
+  .section-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .section-header h2 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .section-header p {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .divider {
+    width: 40px;
+    height: 2px;
+    background: var(--gold);
+    margin: 10px auto;
+    border-radius: 2px;
+  }
+
+  /* Metrics bar */
+  .metrics {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+    animation: fadeDown 0.6s 0.15s ease both;
+  }
+
+  .metric {
+    background: rgba(60,158,26,0.08);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .obj-filter {
+    padding: 7px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Onest', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .obj-filter:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .obj-filter.active { background: var(--gold); border-color: var(--gold); color: #FFFFFF; font-weight: 700; }
+
+  .obj-grid2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .obj2 {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .obj2:hover { border-color: var(--gold-dim); transform: translateY(-2px); }
+
+  .obj2-trigger {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(60,158,26,0.06);
+  }
+
+  .obj2-tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 100px;
+    flex-shrink: 0;
+  }
+  .obj2-tag.price { background: rgba(255,180,0,0.15); color: #FFB400; }
+  .obj2-tag.time  { background: rgba(100,160,255,0.15); color: #64A0FF; }
+  .obj2-tag.doubt { background: rgba(200,100,255,0.15); color: #C864FF; }
+  .obj2-tag.other { background: rgba(76,175,42,0.15); color: var(--gold); }
+
+  .obj2-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .obj2-flow {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .obj2-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--text);
+  }
+  .obj2-step.listen  { background: rgba(0,0,0,0.02); }
+  .obj2-step.ask     { background: rgba(100,160,255,0.08); }
+  .obj2-step.confirm { background: rgba(0,0,0,0.02); }
+  .obj2-step.arg     { background: rgba(60,158,26,0.08); border-left: 2px solid var(--gold); font-weight: 500; }
+  .obj2-step.agree   { background: rgba(0,0,0,0.02); }
+  .obj2-step.action  { background: rgba(60,158,26,0.12); border-left: 2px solid var(--gold); font-weight: 700; color: var(--gold); }
+
+  .obj2-arrow {
+    text-align: center;
+    color: #CCC;
+    font-size: 11px;
+    line-height: 1;
+    margin: 0 auto;
+  }
+
+  .sl { flex-shrink: 0; font-size: 13px; margin-top: 1px; }
+
+  .obj2.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">✦ Since 2010 ✦</div>
+  <h1>S<span style="color:var(--gold)">V</span>ET.KZ</h1>
+  <p style="color:var(--gold);font-size:12px;font-weight:600;letter-spacing:0.1em;margin-bottom:6px;">ГИПЕРМАРКЕТ ПРАВИЛЬНОГО СВЕТА</p>
+  <p>Шпаргалка продавца — быстрый доступ к скриптам, отработке возражений и фразам</p>
+</div>
+
+<div class="metrics">
+  <div class="metric">Конверсия: <span>ЛИД → стол</span></div>
+  <div class="metric">ЛИД → <span>подборка/КП</span></div>
+  <div class="metric">ЛИД → <span>оплата</span></div>
+  <div class="metric">📈 <span>Средний чек</span></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showSection('rules', this)">📌 Правила</button>
+  <button class="tab" onclick="showSection('stages', this)">🔄 Этапы</button>
+  <button class="tab" onclick="showSection('techno', this)">⚡ Техно</button>
+  <button class="tab" onclick="showSection('objections', this)">🛡️ Возражения</button>
+  <button class="tab" onclick="showSection('benefits', this)">💡 Свойства → Выгода</button>
+  <button class="tab" onclick="showSection('phrases', this)">💬 Альтернативы</button>
+</div>
+
+<!-- ЭТАПЫ -->
+<div id="stages" class="section">
+  <div class="section-header">
+    <h2>5 этапов воронки продаж</h2>
+    <div class="divider"></div>
+    <p>Ключевые фразы для каждого этапа</p>
+  </div>
+  <div class="stage-grid">
+
+    <div class="stage-card">
+      <div class="stage-num">ЭТАП 01</div>
+      <div class="stage-title">ЛИД заходит в магазин</div>
+      <div class="stage-goal">🎯 Установить контакт, вызвать интерес</div>
+      <ul class="phrase-list">
+        <li>Добро пожаловать! <em>(Дать 10–15 сек осмотреться)</em></li>
+        <li>Куда подбираете люстру? <em>(Открытый вопрос)</em></li>
+        <li>Кстати, у нас сейчас акции на ряд коллекций — покажу пока смотрите! <em>(заинтересовать остаться в салоне)</em></li>
+        <li>Есть ли фото понравившихся моделей?</li>
+        <li>У нас здесь не весь ассортимент — это малая часть. Давайте покажу! <em>(провести экскурсию по салонам)</em></li>
+        <li>Если вам нужна помощь — я рядом <em>(если клиент молчит)</em></li>
+        <li>Конечно, осматривайтесь. Могу предложить кофе или чай? <em>(на «я только посмотрю»)</em></li>
+      </ul>
+      <div class="warning">❌ Не использовать: «ищете», «подыскиваете»</div>
+    </div>
+
+    <div class="stage-card">
+      <div class="stage-num">ЭТАП 02</div>
+      <div class="stage-title">ЛИД сел за стол переговоров</div>
+      <div class="stage-goal">🎯 Создать комфорт, подогреть интерес к покупке</div>
+      <ul class="phrase-list">
+        <li>Присаживайтесь, так удобнее будет подобрать</li>
+        <li>Вам чай или кофе? <em>(Снижает напряжение)</em></li>
+        <li>Как я могу к вам обращаться?</li>
+        <li>На какой стадии ремонт? Когда планируете установку?</li>
+      </ul>
+    </div>
+
+    <div class="stage-card">
+      <div class="stage-num">ЭТАП 03</div>
+      <div class="stage-title">ЛИД рассказал потребность</div>
+      <div class="stage-goal">🎯 Собрать данные для точного подбора</div>
+      <ul class="phrase-list">
+        <li>Куда подбираем освещение?</li>
+        <li>Вы ранее у нас покупали?</li>
+        <li>Какой стиль интерьера?</li>
+        <li>Квадратура комнаты?</li>
+        <li>Высота потолков?</li>
+        <li>Есть дополнительный свет — споты, треки, бра?</li>
+        <li>Яркий или приглушённый свет предпочитаете?</li>
+        <li>В другие комнаты тоже подберём?</li>
+        <li>Есть дизайн-проект? <em>(Если есть — многие вопросы не нужны)</em></li>
+        <li>Можно ваше имя и номер телефона для создания корзины под вас?</li>
+      </ul>
+    </div>
+
+    <div class="stage-card">
+      <div class="stage-num">ЭТАП 04</div>
+      <div class="stage-title">Презентация товара</div>
+      <div class="stage-goal">🎯 Показать выгоды, убедить в покупке</div>
+      <ul class="phrase-list">
+        <li>Вы сказали, что важна яркость и стиль — вот именно такая модель <em>(от пожелания клиента)</em></li>
+        <li>Обратите внимание — 8 лампочек, как раз для вашей комнаты</li>
+        <li>Этого хватит, чтобы хорошо осветить всё пространство</li>
+        <li>Как вам по стилю и яркости? <em>(Вопрос согласия)</em></li>
+        <li>От 1 до 10 — насколько нравится эта модель?</li>
+        <li>Тогда внесу в корзину и посмотрим другие комнаты? <em>(К действию)</em></li>
+      </ul>
+    </div>
+
+    <div class="stage-card">
+      <div class="stage-num">ЭТАП 04.5</div>
+      <div class="stage-title">Отправить КП / Подборку</div>
+      <div class="stage-goal">🎯 Сохранить контакт, закрыть сделку удалённо</div>
+      <ul class="phrase-list">
+        <li>Как вас записать? Скину на WhatsApp фото, цены, размеры <em>(Взять контакт)</em></li>
+        <li>Какие модели точно понравились — включу в подборку?</li>
+        <li>Я отправлю до 18:00. Завтра в обед уточню — удобно?<em>(Назначить шаг)</em></li>
+      </ul>
+    </div>
+
+    <div class="stage-card">
+      <div class="stage-num">ЭТАП 05</div>
+      <div class="stage-title">Завершение сделки</div>
+      <div class="stage-goal">🎯 Мягко, уверенно перевести к оплате</div>
+      <ul class="phrase-list">
+        <li>Проходите на кассу — я уже создала ваш заказ</li>
+        <li>Оплата наличными или картой?</li>
+        <li>На кассе всё готово — можете оплатить</li>
+        <li>Не забудьте: лампочки, бра, освещение в другие комнаты <em>(Допродажа!)</em></li>
+      </ul>
+      <div class="warning">⚠️ Без чёткой команды клиент уйдёт «подумать»</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ВОЗРАЖЕНИЯ -->
+<div id="objections" class="section">
+  <div class="section-header">
+    <h2>Отработка возражений</h2>
+    <div class="divider"></div>
+    <p>Услышь → Уточни → Подтверди → Аргументируй → Согласие → Действие</p>
+  </div>
+
+  <div style="max-width:960px;margin:0 auto 20px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+    <button class="obj-filter active" onclick="filterObj('all', this)">Все</button>
+    <button class="obj-filter" onclick="filterObj('price', this)">💰 Цена</button>
+    <button class="obj-filter" onclick="filterObj('time', this)">⏳ Время</button>
+    <button class="obj-filter" onclick="filterObj('doubt', this)">🤔 Сомнение</button>
+    <button class="obj-filter" onclick="filterObj('other', this)">💬 Другое</button>
+  </div>
+
+  <div class="obj-grid2" id="objGrid">
+
+    <!-- ДОРОГО -->
+    <div class="obj2" data-cat="price">
+      <div class="obj2-trigger">
+        <span class="obj2-tag price">💰 Цена</span>
+        <span class="obj2-title">«Дорого»</span>
+      </div>
+      <div class="obj2-flow">
+        <div class="obj2-step listen"><span class="sl">👂</span><span>Понял(а) вас</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step ask"><span class="sl">❓</span><span>Скажите, на какую сумму рассчитывали? Сколько для вас будет не дорого?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step confirm"><span class="sl">✓</span><span>Понял(а), спасибо</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step arg"><span class="sl">💡</span><span>Все люстры от европейского производителя — 3-этапная проверка качества. 30% египетский хрусталь — будет сверкать годами. Медная проводка — исключает нагрев и замыкание. Безопасность превыше всего!</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step agree"><span class="sl">🤝</span><span>Безопасность и долговечность для вас важны, согласны?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step action"><span class="sl">🎯</span><span>Та небольшая разница не станет препятствием — зато будете наслаждаться люстрой долгие годы. Оформляем?</span></div>
+      </div>
+    </div>
+
+    <!-- СКИДКА МАЛЕНЬКАЯ -->
+    <div class="obj2" data-cat="price">
+      <div class="obj2-trigger">
+        <span class="obj2-tag price">💰 Цена</span>
+        <span class="obj2-title">«Скидка маленькая»</span>
+      </div>
+      <div class="obj2-flow">
+        <div class="obj2-step listen"><span class="sl">👂</span><span>Понял(а)!</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step ask"><span class="sl">❓</span><span>Скажите, а на какую скидку рассчитывали?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step confirm"><span class="sl">✓</span><span>Понял(а)</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step arg"><span class="sl">💡</span><span>Цены от производителя — без скрытых наценок и подводных камней. Скидка по регламенту: от 50 тыс → 3%, от 200 тыс → 5%, от 700 тыс → 7%, от 1,5 млн → 10% (максимум)</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step agree"><span class="sl">🤝</span><span>Для вас же важно купить у проверенной компании и быть уверенным в качестве, верно?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step action"><span class="sl">🎯</span><span>Оформим со скидкой — наличными или картой?</span></div>
+      </div>
+    </div>
+
+    <!-- ДОЛГО ЖДАТЬ -->
+    <div class="obj2" data-cat="time">
+      <div class="obj2-trigger">
+        <span class="obj2-tag time">⏳ Время</span>
+        <span class="obj2-title">«Долго ждать»</span>
+      </div>
+      <div class="obj2-flow">
+        <div class="obj2-step listen"><span class="sl">👂</span><span>Понял(а) вас</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step ask"><span class="sl">❓</span><span>Скажите, сколько вы готовы ждать?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step confirm"><span class="sl">✓</span><span>Поняла</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step arg"><span class="sl">💡</span><span>Две недели — небольшой срок по сравнению с тем, сколько лет вас будут радовать именно эти люстры. Сейчас закажем — как раз к готовому интерьеру всё будет</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step agree"><span class="sl">🤝</span><span>Согласны, лучше подождать 2 недели и радоваться, чем жалеть что не купили именно эти модели?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step action"><span class="sl">🎯</span><span>Давайте оформим заказ сейчас, чтобы точно успеть?</span></div>
+      </div>
+    </div>
+
+    <!-- СРОЧНЫЕ СРОКИ / ОТКРЫТИЕ -->
+    <div class="obj2" data-cat="time">
+      <div class="obj2-trigger">
+        <span class="obj2-tag time">⏳ Время</span>
+        <span class="obj2-title">«У нас открытие, сроки не устраивают»</span>
+      </div>
+      <div class="obj2-flow">
+        <div class="obj2-step listen"><span class="sl">👂</span><span>Поняла</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step ask"><span class="sl">❓</span><span>Скажите, у вас когда срок открытия?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step confirm"><span class="sl">✓</span><span>Хорошо, поняла</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step arg"><span class="sl">💡</span><span>У нас есть авиадоставка — всего 3 рабочих дня. Как раз успеем получить и установить к открытию</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step agree"><span class="sl">🤝</span><span>Если успеваем по срокам — решаем вопрос?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step action"><span class="sl">🎯</span><span>Уточню стоимость авиа и свяжусь с вами — это не больше 100 000 тг. Хорошо?</span></div>
+      </div>
+    </div>
+
+    <!-- ПОМЕЩЕНИЕ НЕ ГОТОВО -->
+    <div class="obj2" data-cat="time">
+      <div class="obj2-trigger">
+        <span class="obj2-tag time">⏳ Время</span>
+        <span class="obj2-title">«Помещение не готово, хранить негде»</span>
+      </div>
+      <div class="obj2-flow">
+        <div class="obj2-step listen"><span class="sl">👂</span><span>Понял(а) вас</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step ask"><span class="sl">❓</span><span>Когда планируете закончить ремонт?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step confirm"><span class="sl">✓</span><span>Спасибо, учту это</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step arg"><span class="sl">💡</span><span>Это не проблема — мы бесплатно храним оплаченный заказ на складе столько, сколько нужно. Как только будете готовы — доставим в течение 2 дней по вашему звонку</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step agree"><span class="sl">🤝</span><span>Удобно, когда не надо переживать о сроках хранения?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step action"><span class="sl">🎯</span><span>Это очень удачная сделка — предлагаю не медлить и оформить заказ сегодня</span></div>
+      </div>
+    </div>
+
+    <!-- Я ПОДУМАЮ -->
+    <div class="obj2" data-cat="doubt">
+      <div class="obj2-trigger">
+        <span class="obj2-tag doubt">🤔 Сомнение</span>
+        <span class="obj2-title">«Я подумаю / Ещё подумаю»</span>
+      </div>
+      <div class="obj2-flow">
+        <div class="obj2-step listen"><span class="sl">👂</span><span>Вы правы, подумать нужно</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step ask"><span class="sl">❓</span><span>Скажите, что-то вас смущает? Спрашивайте — дам самую точную информацию. В чём ещё есть сомнение?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step confirm"><span class="sl">✓</span><span>Спасибо, что поделились</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step arg"><span class="sl">💡</span><span>Maytoni (Германия) — ведущий европейский бренд, фабричное производство, строгий контроль качества. Самые распространённые виды ламп — запасную найдёте везде. Абажуры: можно менять под новый интерьер, не слепят глаза</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step agree"><span class="sl">🤝</span><span>На мой взгляд — самая элегантная из всех что смотрели. Вы согласны?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step action"><span class="sl">🎯</span><span>Давайте закреплю модель за вами — подумаете спокойно</span></div>
+      </div>
+    </div>
+
+    <!-- УХОД ЗА АБАЖУРАМИ И ХРУСТАЛЁМ -->
+    <div class="obj2" data-cat="doubt">
+      <div class="obj2-trigger">
+        <span class="obj2-tag doubt">🤔 Сомнение</span>
+        <span class="obj2-title">«Сложно ухаживать за абажурами / хрусталём»</span>
+      </div>
+      <div class="obj2-flow">
+        <div class="obj2-step listen"><span class="sl">👂</span><span>Понял(а)</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step ask"><span class="sl">❓</span><span>А в чём именно сомневаетесь?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step confirm"><span class="sl">✓</span><span>Понял(а), спасибо</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step arg"><span class="sl">💡</span><span>Абажуры: пылеотталкивающее напыление — пыль не въедается, раз в месяц губкой с мыльным раствором. Хрусталь: побрызгать специальным средством прямо на весу — дать стечь, и сверкает как новый! Оба средства есть у нас в продаже</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step agree"><span class="sl">🤝</span><span>Намного проще чем раньше, согласны?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step action"><span class="sl">🎯</span><span>Тогда давайте оформим — и средство для ухода сразу добавим к заказу?</span></div>
+      </div>
+    </div>
+
+    <!-- Я ПРОСТО ПОСМОТРЮ -->
+    <div class="obj2" data-cat="other">
+      <div class="obj2-trigger">
+        <span class="obj2-tag other">💬 Другое</span>
+        <span class="obj2-title">«Я просто посмотрю»</span>
+      </div>
+      <div class="obj2-flow">
+        <div class="obj2-step listen"><span class="sl">👂</span><span>Конечно, смотрите спокойно</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step ask"><span class="sl">❓</span><span>Для какой комнаты подбираете?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step confirm"><span class="sl">✓</span><span>Спасибо — чтобы понимала что показать</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step arg"><span class="sl">💡</span><span>Покажу 2–3 варианта, которые точно подойдут — сэкономит ваше время</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step agree"><span class="sl">🤝</span><span>Удобно, когда сразу видны лучшие варианты?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step action"><span class="sl">🎯</span><span>Давайте подберу и покажу прямо сейчас</span></div>
+      </div>
+    </div>
+
+    <!-- РЕШАЕТ ДИЗАЙНЕР / ЗАКАЗЧИК -->
+    <div class="obj2" data-cat="other">
+      <div class="obj2-trigger">
+        <span class="obj2-tag other">💬 Другое</span>
+        <span class="obj2-title">«Решает дизайнер / заказчик»</span>
+      </div>
+      <div class="obj2-flow">
+        <div class="obj2-step listen"><span class="sl">👂</span><span>Понял(а) вас</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step ask"><span class="sl">❓</span><span>Как вы считаете, почему заказчик сомневается? Какие ещё варианты рассматривает?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step confirm"><span class="sl">✓</span><span>Спасибо, понял(а) ситуацию</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step arg"><span class="sl">💡</span><span>Может заказчику удобно приехать в салон и лично посмотреть? Или может дополнительная скидка повлияет на решение?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step agree"><span class="sl">🤝</span><span>Удобно если я сам(а) поговорю с заказчиком — отвечу на все вопросы напрямую?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step action"><span class="sl">🎯</span><span>Подготовлю всё и позвоню — дайте пожалуйста номер телефона заказчика</span></div>
+      </div>
+    </div>
+
+    <!-- ОТКАЗЫВАЕТСЯ, ИЩЕТ ДРУГОЙ ВАРИАНТ -->
+    <div class="obj2" data-cat="other">
+      <div class="obj2-trigger">
+        <span class="obj2-tag other">💬 Другое</span>
+        <span class="obj2-title">«Решили поискать другой вариант»</span>
+      </div>
+      <div class="obj2-flow">
+        <div class="obj2-step listen"><span class="sl">👂</span><span>Мне было приятно с вами работать, жаль что не угадала с первого раза</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step ask"><span class="sl">❓</span><span>Что хотелось бы изменить в том, что уже подобрали? Расскажите подробнее — что важно, на что должно быть похоже?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step confirm"><span class="sl">✓</span><span>Спасибо, поняла вас</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step arg"><span class="sl">💡</span><span>У нас на днях ожидается новая коллекция / акция — как раз по тем вариантам что вы подбирали</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step agree"><span class="sl">🤝</span><span>Давайте я сделаю новую подборку с учётом всех ваших замечаний?</span></div>
+        <div class="obj2-arrow">↓</div>
+        <div class="obj2-step action"><span class="sl">🎯</span><span>Отправлю предложение сегодня вечером — завтра обсудим. Хорошо?</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- СВОЙСТВА → ВЫГОДЫ -->
+<div id="benefits" class="section">
+  <div class="section-header">
+    <h2>Свойство → Выгода для клиента</h2>
+    <div class="divider"></div>
+    <p>Никаких голых характеристик — только польза</p>
+  </div>
+  <div class="benefits-grid">
+
+    <div class="benefit-card">
+      <div class="benefit-prop">🔩 Гальваническое покрытие</div>
+      <div class="benefit-phrase">«Металл не ржавеет и не тускнеет — люстра будет как новая даже через годы»</div>
+    </div>
+
+    <div class="benefit-card">
+      <div class="benefit-prop">💡 8 лампочек</div>
+      <div class="benefit-phrase">«Хватит, чтобы хорошо осветить всю вашу комнату»</div>
+    </div>
+
+    <div class="benefit-card">
+      <div class="benefit-prop">📐 Регулируемая высота</div>
+      <div class="benefit-phrase">«Выберете нужную высоту при установке — под свой потолок»</div>
+    </div>
+
+    <div class="benefit-card">
+      <div class="benefit-prop">🔦 Стандартный цоколь</div>
+      <div class="benefit-phrase">«Лампы можно менять самому, не вызывая мастеров»</div>
+    </div>
+
+    <div class="benefit-card">
+      <div class="benefit-prop">🛡️ Гарантия 5 лет (EGLO)</div>
+      <div class="benefit-phrase">«Можете быть спокойны — в течение 5 лет мы обеспечим гарантию»</div>
+    </div>
+
+    <div class="benefit-card">
+      <div class="benefit-prop">🧹 Пылеотталкивающие абажуры</div>
+      <div class="benefit-phrase">«Пыль не впитывается — протёрли и всё чисто»</div>
+    </div>
+
+    <div class="benefit-card">
+      <div class="benefit-prop">🔋 Медная проводка</div>
+      <div class="benefit-phrase">«Безопасная проводка — ничего не нагревается, всё работает стабильно»</div>
+    </div>
+
+    <div class="benefit-card">
+      <div class="benefit-prop">✅ 3 этапа проверки</div>
+      <div class="benefit-phrase">«Точно получите товар без брака — каждый светильник проверен трижды»</div>
+    </div>
+
+    <div class="benefit-card">
+      <div class="benefit-prop">🌍 Европейская сертификация</div>
+      <div class="benefit-phrase">«Материалы безвредны — можно ставить в любой зоне»</div>
+    </div>
+
+    <div class="benefit-card">
+      <div class="benefit-prop">💎 Хрусталь Asfour (премиум)</div>
+      <div class="benefit-phrase">«Красиво переливается — в интерьере будет смотреться дорого и элегантно»</div>
+    </div>
+
+    <div class="benefit-card">
+      <div class="benefit-prop">🏪 15 лет на рынке, официальный салон</div>
+      <div class="benefit-phrase">«Если что-то случится — мы здесь, рядом. В Китай вы ведь не поедете?»</div>
+    </div>
+
+    <div class="benefit-card">
+      <div class="benefit-prop">🔒 Усиленные патроны</div>
+      <div class="benefit-phrase">«Никаких замыканий или проблем с подключением»</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ПРАВИЛА -->
+<div id="rules" class="section active">
+  <div class="section-header">
+    <h2>Главные правила продавца</h2>
+    <div class="divider"></div>
+    <p>Держи в голове всегда</p>
+  </div>
+  <div class="rules-grid">
+
+    <div class="rule-card">
+      <div class="rule-icon">🎯</div>
+      <div class="rule-text"><strong>Инициатива</strong>Продавец всегда ведёт общение. Инициативу не отдаёт.</div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-icon">❓</div>
+      <div class="rule-text"><strong>Управление через вопросы</strong>Кто задаёт вопросы — тот управляет продажей.</div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-icon">🔚</div>
+      <div class="rule-text"><strong>Вопрос в конце каждого ответа</strong>Каждый ответ продавца заканчивается вопросом.</div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-icon">🤝</div>
+      <div class="rule-text"><strong>Основа продаж — доверие</strong>① К продавцу → ② К компании → ③ К товару</div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-icon">👂</div>
+      <div class="rule-text"><strong>Слушать — не перебивать</strong>Продавец слушает, держит контакт глазами.</div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-icon">💬</div>
+      <div class="rule-text"><strong>Только открытые вопросы</strong>«Куда подбираете?» а не «Вы хотите люстру?»</div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-icon">🚫</div>
+      <div class="rule-text"><strong>Запрещённые слова</strong>«ну», «как бы», «вроде», «типа», «ищете», «подыскиваете»</div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-icon">📞</div>
+      <div class="rule-text"><strong>После КП — обязательный перезвон</strong>Менеджеры, которые перезванивают, закрывают в 2–3 раза больше сделок.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- АЛЬТЕРНАТИВНЫЕ ФРАЗЫ -->
+<div id="phrases" class="section">
+  <div class="section-header">
+    <h2>Живые фразы вместо шаблонных</h2>
+    <div class="divider"></div>
+    <p>Звучи естественно, не как робот по скрипту</p>
+  </div>
+  <div class="alt-grid">
+
+    <div class="alt-card">
+      <div class="alt-old">Здравствуйте! / Добрый день! / Куда подбираете освещение? / В какую комнату подбираете?</div>
+      <div class="alt-new">
+        ✨ Добрый день! Что освещаем — дом, квартира, офис?<br>
+        ✨ Добрый день! Люстра для себя или, может, объект?
+      </div>
+    </div>
+
+    <div class="alt-card">
+      <div class="alt-old">Здесь представлена не вся коллекция — это только небольшая часть. Можем ещё посмотреть варианты по каталогу.</div>
+      <div class="alt-new">
+        ✨ Здесь у нас только часть — остальное в каталоге, там выбор намного шире<br>
+        ✨ Это витрина, а не весь ассортимент. Давайте заглянем в каталог — там найдём точно под вас
+      </div>
+    </div>
+
+    <div class="alt-card">
+      <div class="alt-old">Ремонт на какой стадии? Когда люстры должны висеть?</div>
+      <div class="alt-new">
+        ✨ Торопимся или есть время спокойно подобрать?<br>
+        ✨ Установка скоро или ещё в процессе — чтобы понять, смотрим со склада или под заказ?
+      </div>
+    </div>
+
+    <div class="alt-card">
+      <div class="alt-old">Как я могу к вам обращаться? / Можно ваш номер телефона для открытия корзины?</div>
+      <div class="alt-new">
+        ✨ Будем знакомы — я Ерке. А вас как зовут?<br>
+        ✨ Давайте я открою вам корзину — так удобнее сохранять понравившиеся модели. Номер телефона подскажете?<br>
+        ✨ Чтобы ничего не потерялось — запишу всё на ваш номер. Можно?<br>
+        <br>
+        <span style="color: var(--muted); font-size: 11px;">Если клиент спрашивает «зачем номер»:</span><br>
+        ✨ Это просто чтобы сохранить подборку — никаких звонков без вашего разрешения<br>
+        ✨ Номер нужен только для корзины — чтобы в конце всё было готово и не пришлось искать заново<br>
+        ✨ Это как в любом магазине — просто чтобы заказ был на вас. Спам не шлём 😊
+      </div>
+    </div>
+
+    <div class="alt-card">
+      <div class="alt-old">Яркий или приглушённый свет?</div>
+      <div class="alt-new">
+        ✨ Любите когда светло и бодро, или мягкий тёплый свет ближе?
+      </div>
+    </div>
+
+    <div class="alt-card">
+      <div class="alt-old">В другие комнаты подобрал или нет?</div>
+      <div class="alt-new">
+        ✨ Только гостиная или ещё что-то закрываем сегодня?<br>
+        ✨ Остальные комнаты уже решены или тоже в процессе?<br>
+        ✨ Весь дом освещаем или пока одна комната?
+      </div>
+    </div>
+
+    <div class="alt-card">
+      <div class="alt-old">Опыт работы с нами: покупал ли ранее?</div>
+      <div class="alt-new">
+        ✨ Расскажите — вы с нами уже работали или первый визит?
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ТЕХНО -->
+<div id="techno" class="section">
+  <div class="section-header">
+    <h2>Техническое освещение</h2>
+    <div class="divider"></div>
+    <p>Узнай имя и опыт — проводи до специалиста</p>
+  </div>
+  <div class="stage-grid">
+
+    <div class="stage-card">
+      <div class="stage-num">ПРОДУКТ 01</div>
+      <div class="stage-title">🔦 Споты</div>
+      <div class="stage-goal">🎯 Тёплый захват → имя → опыт → передача</div>
+      <ul class="phrase-list">
+        <li>Споты — отличный выбор! Это как раз направление нашего технического отдела, там специалист подберёт всё точно под ваш проект <em>(тёплый захват)</em></li>
+        <li>Кстати, давайте познакомимся — меня зовут Ерке, а вас как зовут? <em>(имя)</em></li>
+        <li>Вы к нам впервые или уже работали с нами раньше? <em>(опыт)</em></li>
+        <li>[Имя], я вас провожу к нашему специалисту. [Имя менеджера], познакомься — это [имя клиента], смотрит споты [первый раз / уже наш клиент] <em>(передача)</em></li>
+      </ul>
+      <div class="warning">💡 Для точного подбора — передаём специалисту технического отдела</div>
+    </div>
+
+    <div class="stage-card">
+      <div class="stage-num">ПРОДУКТ 02</div>
+      <div class="stage-title">💡 Светодиодные ленты</div>
+      <div class="stage-goal">🎯 Тёплый захват → имя → опыт → передача</div>
+      <ul class="phrase-list">
+        <li>Ленты — у нас целый стенд с вариантами, и специалист сразу всё рассчитает под ваши размеры. Давайте провожу <em>(тёплый захват)</em></li>
+        <li>Кстати, давайте познакомимся — меня зовут Ерке, а вас как зовут? <em>(имя)</em></li>
+        <li>Вы к нам впервые или уже бывали у нас? <em>(опыт)</em></li>
+        <li>[Имя], я вас провожу к нашему специалисту. [Имя менеджера], познакомься — это [имя клиента], интересуют светодиодные ленты [первый раз / уже наш клиент] <em>(передача)</em></li>
+      </ul>
+      <div class="warning">💡 Для точного подбора — передаём специалисту технического отдела</div>
+    </div>
+
+    <div class="stage-card">
+      <div class="stage-num">ПРОДУКТ 03</div>
+      <div class="stage-title">🔲 Трековые системы</div>
+      <div class="stage-goal">🎯 Тёплый захват → имя → опыт → передача</div>
+      <ul class="phrase-list">
+        <li>Трековые системы — это к нашему специалисту, у нас отдельный салон по этому направлению с большим выбором. Давайте провожу <em>(тёплый захват)</em></li>
+        <li>Кстати, меня зовут Ерке — а вас как? <em>(имя)</em></li>
+        <li>Вы впервые к нам или уже работали с нами? <em>(опыт)</em></li>
+        <li>[Имя], я вас провожу. [Имя менеджера], познакомься — это [имя клиента], смотрит трековые системы [первый раз / уже наш клиент] <em>(передача)</em></li>
+      </ul>
+      <div class="warning">💡 Для точного подбора — передаём специалисту технического отдела</div>
+    </div>
+
+    <div class="stage-card">
+      <div class="stage-num">ПРОДУКТ 04</div>
+      <div class="stage-title">🔌 Электроустановки</div>
+      <div class="stage-goal">🎯 Тёплый захват → имя → опыт → передача</div>
+      <ul class="phrase-list">
+        <li>Розетки и выключатели — у нас отдельный салон с большим выбором по брендам и стилям. Давайте провожу, специалист поможет подобрать под ваш интерьер <em>(тёплый захват)</em></li>
+        <li>Кстати, меня зовут Ерке — а вас как? <em>(имя)</em></li>
+        <li>Вы к нам впервые или уже покупали у нас? <em>(опыт)</em></li>
+        <li>[Имя], пойдёмте. [Имя менеджера], познакомься — это [имя клиента], интересуют электроустановки [первый раз / уже наш клиент] <em>(передача)</em></li>
+      </ul>
+      <div class="warning">💡 Для точного подбора — передаём специалисту технического отдела</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function showSection(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function filterObj(cat, btn) {
+    document.querySelectorAll('.obj-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.obj2').forEach(card => {
+      if (cat === 'all' || card.dataset.cat === cat) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+  }
+</script>
+</body>
+</html>
