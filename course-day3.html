@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>День 3 — Стажёрский срок SVET.KZ</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #1E8A3C;
+  --green-light: #2DB54F;
+  --green-dark: #166A2E;
+  --green-pale: #E8F5EC;
+  --purple: #4A2D8F;
+  --purple-light: #7B5EA7;
+  --text: #1A1A2E;
+  --muted: #6B7280;
+  --border: rgba(0,0,0,0.08);
+  --correct: #1E8A3C;
+  --wrong: #E24B4A;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(--text); min-height: 100vh; }
+
+.course-header {
+  background: linear-gradient(135deg, #166A2E 0%, #1E8A3C 50%, #2DB54F 100%);
+  padding: 24px 24px 20px;
+  position: sticky; top: 0; z-index: 100;
+  border-bottom: 3px solid var(--green-dark);
+  box-shadow: 0 2px 20px rgba(30,138,60,0.3);
+}
+
+.header-top { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+
+.back-btn {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 10px; padding: 8px 14px;
+  font-family: 'Onest', sans-serif; font-size: 13px;
+  color: #fff; cursor: pointer; text-decoration: none; transition: all 0.2s;
+}
+.back-btn:hover { background: rgba(255,255,255,0.3); }
+
+.course-day-badge { font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.8); margin-bottom: 4px; }
+.course-title { font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 700; color: #fff; line-height: 1.3; }
+
+.progress-info { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.progress-text { font-size: 12px; color: rgba(255,255,255,0.8); }
+.progress-count { font-size: 12px; font-weight: 600; color: #fff; }
+.progress-bar-outer { background: rgba(255,255,255,0.2); border-radius: 100px; height: 5px; overflow: hidden; }
+.progress-bar-inner { height: 100%; background: #fff; border-radius: 100px; transition: width 0.5s ease; }
+
+.content { max-width: 720px; margin: 0 auto; padding: 24px 16px 80px; }
+
+.section-header { display: flex; align-items: center; gap: 12px; padding: 20px 0 12px; }
+.section-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), var(--green-light));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Unbounded', sans-serif; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.section-title { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; color: var(--green-dark); }
+
+.lesson-item {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 16px; margin-bottom: 10px; overflow: hidden;
+  transition: all 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.lesson-item.completed { border-color: rgba(30,138,60,0.3); }
+.lesson-header { display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; }
+.lesson-status {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; border: 2px solid var(--border); background: #F5F5F5; transition: all 0.3s;
+}
+.lesson-item.completed .lesson-status { background: rgba(30,138,60,0.1); border-color: var(--correct); }
+.lesson-info { flex: 1; }
+.lesson-num { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+.lesson-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.lesson-type-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 100px; margin-top: 4px; display: inline-block; }
+.badge-video { background: var(--green-pale); color: var(--green-dark); }
+.badge-test { background: rgba(74,45,143,0.1); color: var(--purple); }
+.badge-task { background: #FFF0F0; color: #C0392B; }
+.badge-read { background: #F0F4FF; color: #3B5BDB; }
+.badge-link { background: #FFF8E7; color: #8B6000; }
+.lesson-chevron { font-size: 12px; color: var(--muted); transition: transform 0.3s; }
+.lesson-item.open .lesson-chevron { transform: rotate(180deg); }
+.lesson-body { display: none; border-top: 1px solid var(--border); }
+.lesson-item.open .lesson-body { display: block; }
+
+.video-wrap { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
+.video-wrap iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:0; }
+
+.timer-wrap { padding: 14px 18px 16px; }
+.timer-btn {
+  width: 100%; padding: 13px 24px; background: #F5F5F5;
+  border: 1px solid var(--border); border-radius: 12px;
+  font-family: 'Onest', sans-serif; font-size: 14px; font-weight: 600;
+  color: var(--muted); cursor: default; transition: all 0.3s; text-align: center;
+}
+.timer-btn.ready {
+  background: linear-gradient(135deg, var(--purple), #6B3FA0);
+  border-color: transparent; color: #fff; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(74,45,143,0.3);
+}
+.timer-btn.ready:hover { opacity: 0.88; transform: translateY(-1px); }
+.timer-btn.done { background: linear-gradient(135deg, var(--green-dark), var(--green)); border-color: transparent; color: #fff; }
+
+.complete-btn {
+  background: linear-gradient(135deg, var(--purple), #6B3FA0);
+  border: none; border-radius: 12px; padding: 13px 24px;
+  font-family: 'Onest', sans-serif; font-size: 14px; font-weight: 600;
+  color: #fff; cursor: pointer; transition: all 0.2s; width: 100%;
+}
+.complete-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.complete-btn.done { background: linear-gradient(135deg, var(--green-dark), var(--green)); }
+
+.task-block { padding: 20px 18px; }
+.task-desc {
+  background: #F5F5F5; border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px; margin-bottom: 16px;
+}
+.task-desc h4 { font-size: 14px; font-weight: 600; color: var(--green-dark); margin-bottom: 8px; }
+.task-desc p, .task-desc li { font-size: 13px; color: var(--muted); line-height: 1.7; }
+.task-desc ul { padding-left: 18px; margin-top: 8px; }
+.task-desc li { margin-bottom: 4px; }
+
+.pdf-block { padding: 20px 18px; }
+.pdf-card {
+  background: #F5F5F5; border: 1px solid rgba(30,138,60,0.2);
+  border-radius: 14px; padding: 18px 20px;
+  display: flex; align-items: center; gap: 16px;
+  text-decoration: none; transition: all 0.2s; color: var(--text);
+}
+.pdf-card:hover { border-color: var(--green); transform: translateY(-1px); }
+.pdf-icon { font-size: 32px; flex-shrink: 0; }
+.pdf-info h4 { font-size: 14px; font-weight: 600; color: var(--green-dark); margin-bottom: 4px; }
+.pdf-info p { font-size: 12px; color: var(--muted); }
+
+/* TEST */
+.test-block { padding: 20px 18px; }
+.test-question { margin-bottom: 20px; }
+.question-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--green); margin-bottom: 8px; }
+.question-text { font-size: 15px; font-weight: 500; color: var(--text); line-height: 1.5; margin-bottom: 12px; }
+.options { display: flex; flex-direction: column; gap: 8px; }
+.option-btn {
+  background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px;
+  font-family: 'Onest', sans-serif; font-size: 14px; color: var(--text);
+  text-align: left; cursor: pointer; transition: all 0.2s; width: 100%;
+}
+.option-btn:hover:not(:disabled) { border-color: var(--green-light); background: var(--green-pale); }
+.option-btn.correct { border-color: var(--correct); background: rgba(30,138,60,0.08); color: var(--green-dark); }
+.option-btn.wrong { border-color: var(--wrong); background: rgba(226,75,74,0.06); color: #C0392B; }
+.option-btn:disabled { cursor: default; }
+.feedback-msg { margin-top: 8px; font-size: 13px; padding: 10px 14px; border-radius: 10px; display: none; }
+.feedback-msg.show { display: block; }
+.feedback-msg.ok { background: rgba(30,138,60,0.08); color: var(--green-dark); }
+.feedback-msg.fail { background: rgba(226,75,74,0.06); color: #C0392B; }
+.test-score { background: #F5F5F5; border: 1px solid var(--border); border-radius: 14px; padding: 20px; text-align: center; display: none; margin-top: 16px; }
+.test-score.show { display: block; }
+.score-emoji { font-size: 36px; margin-bottom: 8px; }
+.score-val { font-family: 'Unbounded', sans-serif; font-size: 28px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+.score-label { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 18px;
+  font-size: 14px; color: var(--text); z-index: 9999;
+  transform: translateY(80px); opacity: 0;
+  transition: all 0.3s; max-width: 300px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok { border-color: var(--correct); color: var(--correct); }
+</style>
+</head>
+<body>
+
+<div class="course-header">
+  <div class="header-top">
+    <a href="index.html" class="back-btn">← Назад</a>
+    <div>
+      <div class="course-day-badge">✦ Стажёрский срок · SVET.KZ</div>
+      <div class="course-title">День 3: Бренды и работа с клиентами</div>
+    </div>
+  </div>
+  <div>
+    <div class="progress-info">
+      <span class="progress-text">Прогресс дня</span>
+      <span class="progress-count" id="progressCount">0 / 19</span>
+    </div>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- SECTION 1: БРЕНДЫ -->
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <div class="section-title">Бренды SVET.KZ</div>
+  </div>
+
+  <!-- 1. Приветственное видео -->
+  <div class="lesson-item" id="lesson-1">
+    <div class="lesson-header" onclick="toggleLesson(1)">
+      <div class="lesson-status">👋</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 1</div>
+        <div class="lesson-name">Приветственное сообщение — День 3</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap">
+        <iframe src="https://www.youtube.com/embed/e1wQklz67zw" allowfullscreen></iframe>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-1" data-seconds="24" data-lesson="1">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Maytoni, Eglo, Crystal Lux -->
+  <div class="lesson-item" id="lesson-2">
+    <div class="lesson-header" onclick="toggleLesson(2)">
+      <div class="lesson-status">🏷️</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 2</div>
+        <div class="lesson-name">Бренды: Maytoni, Eglo и Crystal Lux</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap">
+        <iframe src="https://www.youtube.com/embed/EwpNI8feSwc" allowfullscreen></iframe>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-2" data-seconds="504" data-lesson="2">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Тест по Maytoni, Eglo, Crystal Lux -->
+  <div class="lesson-item" id="lesson-3">
+    <div class="lesson-header" onclick="toggleLesson(3)">
+      <div class="lesson-status">✅</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 3</div>
+        <div class="lesson-name">Проверочное задание: Maytoni, Eglo и Crystal Lux</div>
+        <span class="lesson-type-badge badge-test">✓ Тест</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="test-block">
+
+        <div class="test-question" id="tq-3-1">
+          <div class="question-label">Вопрос 1 из 5</div>
+          <div class="question-text">В каком году был основан бренд Maytoni?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('3-1','wrong',this)">1998</button>
+            <button class="option-btn" onclick="answerQ('3-1','correct',this)">2009</button>
+            <button class="option-btn" onclick="answerQ('3-1','wrong',this)">1969</button>
+            <button class="option-btn" onclick="answerQ('3-1','wrong',this)">2015</button>
+          </div>
+          <div class="feedback-msg" id="fb-3-1"></div>
+        </div>
+
+        <div class="test-question" id="tq-3-2" style="display:none">
+          <div class="question-label">Вопрос 2 из 5</div>
+          <div class="question-text">Где находится головной офис Maytoni?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('3-2','wrong',this)">Вена</button>
+            <button class="option-btn" onclick="answerQ('3-2','correct',this)">Гамбург</button>
+            <button class="option-btn" onclick="answerQ('3-2','wrong',this)">Мадрид</button>
+            <button class="option-btn" onclick="answerQ('3-2','wrong',this)">Алматы</button>
+          </div>
+          <div class="feedback-msg" id="fb-3-2"></div>
+        </div>
+
+        <div class="test-question" id="tq-3-3" style="display:none">
+          <div class="question-label">Вопрос 3 из 5</div>
+          <div class="question-text">Какая гарантия на светодиоды у Maytoni?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('3-3','wrong',this)">1 год</button>
+            <button class="option-btn" onclick="answerQ('3-3','wrong',this)">2 года</button>
+            <button class="option-btn" onclick="answerQ('3-3','correct',this)">3 года</button>
+            <button class="option-btn" onclick="answerQ('3-3','wrong',this)">5 лет</button>
+          </div>
+          <div class="feedback-msg" id="fb-3-3"></div>
+        </div>
+
+        <div class="test-question" id="tq-3-4" style="display:none">
+          <div class="question-label">Вопрос 4 из 5</div>
+          <div class="question-text">Какой бренд имеет систему умного освещения Eglo CONNECT?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('3-4','wrong',this)">Maytoni</button>
+            <button class="option-btn" onclick="answerQ('3-4','correct',this)">Eglo</button>
+            <button class="option-btn" onclick="answerQ('3-4','wrong',this)">Crystal Lux</button>
+          </div>
+          <div class="feedback-msg" id="fb-3-4"></div>
+        </div>
+
+        <div class="test-question" id="tq-3-5" style="display:none">
+          <div class="question-label">Вопрос 5 из 5</div>
+          <div class="question-text">Какой бренд использует кристаллы Asfour и имеет собственное дизайн-бюро?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('3-5','wrong',this)">Eglo</button>
+            <button class="option-btn" onclick="answerQ('3-5','wrong',this)">Crystal Lux</button>
+            <button class="option-btn" onclick="answerQ('3-5','correct',this)">Maytoni</button>
+          </div>
+          <div class="feedback-msg" id="fb-3-5"></div>
+        </div>
+
+        <div class="test-score" id="score-3">
+          <div class="score-emoji" id="se-3"></div>
+          <div class="score-val" id="sv-3"></div>
+          <div class="score-label" id="sl-3"></div>
+          <button class="complete-btn done" onclick="completeLesson(3)" style="margin-top:12px">Продолжить →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Остальные бренды — документ -->
+  <div class="lesson-item" id="lesson-4">
+    <div class="lesson-header" onclick="toggleLesson(4)">
+      <div class="lesson-status">📖</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 4</div>
+        <div class="lesson-name">Бренды: изучите информацию по остальным брендам</div>
+        <span class="lesson-type-badge badge-read">📄 Документ</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="pdf-block">
+        <a class="pdf-card" href="https://drive.google.com/file/d/1Jce-ws1LhQUahnxqPaGRug2AapO3psCP/view?usp=drive_link" target="_blank">
+          <div class="pdf-icon">📚</div>
+          <div class="pdf-info">
+            <h4>Книга по брендам SVET.KZ</h4>
+            <p>Нажмите чтобы открыть документ → изучите все бренды</p>
+          </div>
+        </a>
+        <div style="padding-top:16px">
+          <button class="complete-btn" onclick="completeLesson(4)">✓ Изучено</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Квиз по брендам -->
+  <div class="lesson-item" id="lesson-5">
+    <div class="lesson-header" onclick="toggleLesson(5)">
+      <div class="lesson-status">✅</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 5</div>
+        <div class="lesson-name">Проверочное задание: Квиз по брендам + работа с планшетом</div>
+        <span class="lesson-type-badge badge-test">✓ Тест</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <iframe src="https://dept13quality-star.github.io/ABIS-Academy/brand_quiz_white.html" style="width:100%;height:560px;border:none;border-radius:0 0 0 0"></iframe>
+      <div class="task-block">
+        <div class="task-desc">
+          <h4>💻 Работа с планшетом</h4>
+          <p>Зайдите на сайт <strong>offline.svet.kz</strong> и выполните задание с планшетом.</p>
+          <p style="margin-top:6px">Подойдите к куратору и попросите объяснить выполнение задания.</p>
+        </div>
+        <button class="complete-btn" onclick="completeLesson(5)">✓ Задание выполнено</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: РЕГЛАМЕНТ -->
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">Регламент работы с клиентами</div>
+  </div>
+
+  <!-- 6. Полный регламент PDF -->
+  <div class="lesson-item" id="lesson-6">
+    <div class="lesson-header" onclick="toggleLesson(6)">
+      <div class="lesson-status">📋</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 6</div>
+        <div class="lesson-name">Полная версия регламента по работе с клиентами</div>
+        <span class="lesson-type-badge badge-read">📄 Документ</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="pdf-block">
+        <a class="pdf-card" href="https://drive.google.com/file/d/1Vo3EU-HTTGFCWD7UrrOuvZjIzRyt_J35/view?usp=drive_link" target="_blank">
+          <div class="pdf-icon">📋</div>
+          <div class="pdf-info">
+            <h4>Регламент по работе с клиентами (полная версия)</h4>
+            <p>Нажмите чтобы открыть и изучить полный регламент</p>
+          </div>
+        </a>
+        <div style="padding-top:16px">
+          <button class="complete-btn" onclick="completeLesson(6)">✓ Изучено</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Краткая версия регламента -->
+  <div class="lesson-item" id="lesson-7">
+    <div class="lesson-header" onclick="toggleLesson(7)">
+      <div class="lesson-status">📝</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 7</div>
+        <div class="lesson-name">Регламент по работе с клиентами (краткая версия)</div>
+        <span class="lesson-type-badge badge-read">📄 Шпаргалка</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <iframe src="https://dept13quality-star.github.io/ABIS-Academy/svet_kz_cheatsheet_v3.html" style="width:100%;height:600px;border:none"></iframe>
+      <div style="padding:12px 16px 16px">
+        <button class="complete-btn" onclick="completeLesson(7)">✓ Изучено</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: ЭТАПЫ РАБОТЫ С КЛИЕНТОМ -->
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <div class="section-title">Этапы работы с клиентом</div>
+  </div>
+
+  <!-- 8–18: Видео этапов -->
+  <div class="lesson-item" id="lesson-8">
+    <div class="lesson-header" onclick="toggleLesson(8)">
+      <div class="lesson-status">👋</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 8</div>
+        <div class="lesson-name">Этап: Приветствие</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap"><iframe src="https://www.youtube.com/embed/YbKpzxXyJAM" allowfullscreen></iframe></div>
+      <div class="timer-wrap"><div class="timer-btn" id="timer-btn-8" data-seconds="63" data-lesson="8">⏳ Кнопка станет активной когда досмотрите видео</div></div>
+    </div>
+  </div>
+
+  <div class="lesson-item" id="lesson-9">
+    <div class="lesson-header" onclick="toggleLesson(9)">
+      <div class="lesson-status">🙋</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 9</div>
+        <div class="lesson-name">Этап: Представился</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap"><iframe src="https://www.youtube.com/embed/iY57Fvwhzks" allowfullscreen></iframe></div>
+      <div class="timer-wrap"><div class="timer-btn" id="timer-btn-9" data-seconds="65" data-lesson="9">⏳ Кнопка станет активной когда досмотрите видео</div></div>
+    </div>
+  </div>
+
+  <div class="lesson-item" id="lesson-10">
+    <div class="lesson-header" onclick="toggleLesson(10)">
+      <div class="lesson-status">🎁</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 10</div>
+        <div class="lesson-name">Этап: Рассказал про акции</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap"><iframe src="https://www.youtube.com/embed/erLad6XVwtI" allowfullscreen></iframe></div>
+      <div class="timer-wrap"><div class="timer-btn" id="timer-btn-10" data-seconds="50" data-lesson="10">⏳ Кнопка станет активной когда досмотрите видео</div></div>
+    </div>
+  </div>
+
+  <div class="lesson-item" id="lesson-11">
+    <div class="lesson-header" onclick="toggleLesson(11)">
+      <div class="lesson-status">🏪</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 11</div>
+        <div class="lesson-name">Этап: Представлено не всё</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap"><iframe src="https://www.youtube.com/embed/E-fegOL1Ico" allowfullscreen></iframe></div>
+      <div class="timer-wrap"><div class="timer-btn" id="timer-btn-11" data-seconds="54" data-lesson="11">⏳ Кнопка станет активной когда досмотрите видео</div></div>
+    </div>
+  </div>
+
+  <div class="lesson-item" id="lesson-12">
+    <div class="lesson-header" onclick="toggleLesson(12)">
+      <div class="lesson-status">🔍</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 12</div>
+        <div class="lesson-name">Этап: Выявление потребностей</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap"><iframe src="https://www.youtube.com/embed/YE9miYfNBLI" allowfullscreen></iframe></div>
+      <div class="timer-wrap"><div class="timer-btn" id="timer-btn-12" data-seconds="202" data-lesson="12">⏳ Кнопка станет активной когда досмотрите видео</div></div>
+    </div>
+  </div>
+
+  <div class="lesson-item" id="lesson-13">
+    <div class="lesson-header" onclick="toggleLesson(13)">
+      <div class="lesson-status">🎤</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 13</div>
+        <div class="lesson-name">Этап: Презентация</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap"><iframe src="https://www.youtube.com/embed/jgOeqBFXGuE" allowfullscreen></iframe></div>
+      <div class="timer-wrap"><div class="timer-btn" id="timer-btn-13" data-seconds="102" data-lesson="13">⏳ Кнопка станет активной когда досмотрите видео</div></div>
+    </div>
+  </div>
+
+  <div class="lesson-item" id="lesson-14">
+    <div class="lesson-header" onclick="toggleLesson(14)">
+      <div class="lesson-status">🛎️</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 14</div>
+        <div class="lesson-name">Этап: Рассказать про услуги</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap"><iframe src="https://www.youtube.com/embed/jgOeqBFXGuE" allowfullscreen></iframe></div>
+      <div class="timer-wrap"><div class="timer-btn" id="timer-btn-14" data-seconds="101" data-lesson="14">⏳ Кнопка станет активной когда досмотрите видео</div></div>
+    </div>
+  </div>
+
+  <div class="lesson-item" id="lesson-15">
+    <div class="lesson-header" onclick="toggleLesson(15)">
+      <div class="lesson-status">🎨</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 15</div>
+        <div class="lesson-name">Этап: Рассказать про краски</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap"><iframe src="https://www.youtube.com/embed/-4PVfdMtXng" allowfullscreen></iframe></div>
+      <div class="timer-wrap"><div class="timer-btn" id="timer-btn-15" data-seconds="111" data-lesson="15">⏳ Кнопка станет активной когда досмотрите видео</div></div>
+    </div>
+  </div>
+
+  <div class="lesson-item" id="lesson-16">
+    <div class="lesson-header" onclick="toggleLesson(16)">
+      <div class="lesson-status">📱</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 16</div>
+        <div class="lesson-name">Этап: Взять номер</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap"><iframe src="https://www.youtube.com/embed/qnQUWRD2CDE" allowfullscreen></iframe></div>
+      <div class="timer-wrap"><div class="timer-btn" id="timer-btn-16" data-seconds="22" data-lesson="16">⏳ Кнопка станет активной когда досмотрите видео</div></div>
+    </div>
+  </div>
+
+  <div class="lesson-item" id="lesson-17">
+    <div class="lesson-header" onclick="toggleLesson(17)">
+      <div class="lesson-status">📣</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 17</div>
+        <div class="lesson-name">Этап: Откуда узнал и краски</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap"><iframe src="https://www.youtube.com/embed/liZuze5nQWs" allowfullscreen></iframe></div>
+      <div class="timer-wrap"><div class="timer-btn" id="timer-btn-17" data-seconds="15" data-lesson="17">⏳ Кнопка станет активной когда досмотрите видео</div></div>
+    </div>
+  </div>
+
+  <div class="lesson-item" id="lesson-18">
+    <div class="lesson-header" onclick="toggleLesson(18)">
+      <div class="lesson-status">⭐</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 18</div>
+        <div class="lesson-name">Этап: Отзыв</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap"><iframe src="https://www.youtube.com/embed/OvBRD9X6HL4" allowfullscreen></iframe></div>
+      <div class="timer-wrap"><div class="timer-btn" id="timer-btn-18" data-seconds="13" data-lesson="18">⏳ Кнопка станет активной когда досмотрите видео</div></div>
+    </div>
+  </div>
+
+  <!-- 19. Задание к регламенту -->
+  <div class="lesson-item" id="lesson-19">
+    <div class="lesson-header" onclick="toggleLesson(19)">
+      <div class="lesson-status">🎯</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 19</div>
+        <div class="lesson-name">Задание: Расставь этапы работы с клиентом</div>
+        <span class="lesson-type-badge badge-task">📋 Практика</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <iframe src="https://dept13quality-star.github.io/ABIS-Academy/stages_sorting_exercise.html" style="width:100%;height:600px;border:none;border-radius:0 0 16px 16px"></iframe>
+      <div style="padding:12px 16px 16px">
+        <button class="complete-btn" onclick="completeLesson(19)">✓ Задание выполнено</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://dbgvztgsstwooxygnmxs.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiZ3Z6dGdzc3R3b294eWdubXhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMTA5MDMsImV4cCI6MjA5MDc4NjkwM30.252xuEfsitrAi0iV5p8XV-vHgyHSs4k6JhLLZdUeL2Q';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const TOTAL = 19;
+let completed = new Set();
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+}
+
+function toggleLesson(n) {
+  const el = document.getElementById('lesson-' + n);
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.lesson-item.open').forEach(e => e.classList.remove('open'));
+  if (!isOpen) {
+    el.classList.add('open');
+    setTimeout(() => startTimer(n), 500);
+  }
+}
+
+async function completeLesson(n) {
+  completed.add(String(n));
+  const el = document.getElementById('lesson-' + n);
+  if (el) {
+    el.classList.add('completed');
+    el.classList.remove('open');
+    const status = el.querySelector('.lesson-status');
+    if (status) status.textContent = '✓';
+  }
+  updateProgress();
+  toast('Урок завершён! 🎉');
+}
+
+function updateProgress() {
+  const count = completed.size;
+  const pct = Math.round(count / TOTAL * 100);
+  document.getElementById('progressCount').textContent = count + ' / ' + TOTAL;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+const activeTimers = {};
+function startTimer(lessonNum) {
+  const btn = document.getElementById('timer-btn-' + lessonNum);
+  if (!btn || btn.classList.contains('ready') || btn.classList.contains('done')) return;
+  const totalSeconds = parseInt(btn.dataset.seconds);
+  let remaining = totalSeconds;
+  function fmt(s) { return s >= 60 ? Math.ceil(s/60) + ' мин' : s + ' сек'; }
+  btn.textContent = '⏳ Досмотрите видео — осталось ' + fmt(remaining);
+  activeTimers[lessonNum] = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(activeTimers[lessonNum]);
+      btn.textContent = '✓ Просмотрено — нажмите чтобы продолжить';
+      btn.classList.add('ready');
+      btn.onclick = () => {
+        completeLesson(lessonNum);
+        btn.classList.remove('ready');
+        btn.classList.add('done');
+        btn.textContent = '✓ Выполнено';
+        btn.onclick = null;
+      };
+    } else {
+      btn.textContent = '⏳ Досмотрите видео — осталось ' + fmt(remaining);
+    }
+  }, 1000);
+}
+
+// TEST ENGINE
+const testState = {};
+function answerQ(qid, result, btn) {
+  const parts = qid.split('-');
+  const lessonNum = parts[0];
+  const qNum = parts[1];
+  if (testState[qid]) return;
+  testState[qid] = true;
+
+  const allBtns = btn.closest('.options').querySelectorAll('.option-btn');
+  allBtns.forEach(b => b.disabled = true);
+  btn.classList.add(result);
+
+  const fb = document.getElementById('fb-' + qid);
+  if (fb) {
+    fb.className = 'feedback-msg show ' + (result === 'correct' ? 'ok' : 'fail');
+    fb.textContent = result === 'correct' ? '✓ Верно!' : '✗ Неверно. Пересмотри видео и попробуй снова.';
+  }
+
+  // Next question or score
+  const currentQ = document.getElementById('tq-' + qid);
+  const nextQid = lessonNum + '-' + (parseInt(qNum) + 1);
+  const nextQ = document.getElementById('tq-' + nextQid);
+
+  setTimeout(() => {
+    if (nextQ) {
+      currentQ.style.display = 'none';
+      nextQ.style.display = 'block';
+    } else {
+      // Show score
+      currentQ.style.display = 'none';
+      showTestScore(lessonNum);
+    }
+  }, 1000);
+}
+
+function showTestScore(lessonNum) {
+  const scoreEl = document.getElementById('score-' + lessonNum);
+  if (!scoreEl) return;
+
+  // Count correct answers
+  let correct = 0, total = 0;
+  Object.entries(testState).forEach(([qid, answered]) => {
+    if (qid.startsWith(lessonNum + '-')) {
+      total++;
+      const btn = document.querySelector(`[onclick="answerQ('${qid}','correct',this)"]`);
+      if (btn && btn.classList.contains('correct')) correct++;
+    }
+  });
+
+  const pct = Math.round(correct / total * 100);
+  document.getElementById('se-' + lessonNum).textContent = pct === 100 ? '🌟' : pct >= 60 ? '🎉' : '💪';
+  document.getElementById('sv-' + lessonNum).textContent = correct + ' / ' + total;
+  document.getElementById('sl-' + lessonNum).textContent = pct === 100 ? 'Идеально!' : pct >= 60 ? 'Хороший результат!' : 'Повтори материал';
+  scoreEl.classList.add('show');
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast show ok';
+  setTimeout(() => el.className = 'toast', 2500);
+}
+
+init();
+</script>
+</body>
+</html>
