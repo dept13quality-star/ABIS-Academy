@@ -50,12 +50,37 @@
 .restart:hover{opacity:0.88}
 .entry{animation:fadeUp .3s}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* Drag & Drop */
+.dd-wrap{display:flex;flex-direction:column;gap:14px;animation:fadeUp .3s}
+.dd-arena{position:relative;width:100%;max-width:340px;margin:0 auto;height:400px;background:rgba(255,255,255,0.7);border-radius:20px;border:2px dashed rgba(0,0,0,0.1);overflow:hidden}
+.drop-zone{position:absolute;border:2px dashed rgba(30,138,60,0.35);border-radius:10px;display:flex;align-items:center;justify-content:center;transition:background .2s,border-color .2s;background:rgba(30,138,60,0.03)}
+.drop-zone.over{background:rgba(30,138,60,0.14);border-color:#1E8A3C}
+.drop-zone.placed{border:2px solid #1E8A3C;background:rgba(30,138,60,0.06);pointer-events:none}
+.drop-zone .zone-label{font-size:9px;color:rgba(0,0,0,0.28);text-align:center;line-height:1.3;padding:2px;pointer-events:none;font-weight:500;letter-spacing:.04em}
+.parts-tray{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:14px;background:#fff;border-radius:14px;border:1px solid rgba(0,0,0,0.07)}
+.part{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:grab;padding:9px 11px;border-radius:10px;background:#F7F8FA;border:1.5px solid rgba(0,0,0,0.08);transition:transform .15s,box-shadow .15s,opacity .2s;user-select:none;touch-action:none}
+.part:hover{transform:translateY(-3px);box-shadow:0 5px 14px rgba(0,0,0,0.1)}
+.part.dragging-src{opacity:0.35;transform:scale(0.92)}
+.part-label{font-size:10px;color:#6B7280;font-weight:500;text-align:center;line-height:1.2}
+.ghost{position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%) scale(1.1);opacity:0.92;filter:drop-shadow(0 8px 18px rgba(0,0,0,0.22))}
+.dd-fb{margin-top:4px;padding:12px 14px;border-radius:10px;font-size:13.5px;line-height:1.6;display:none;border-left:3px solid transparent}
+.dd-fb.show{display:block}
+.dd-fb.ok{background:rgba(30,138,60,0.08);color:#166A2E;border-color:#1E8A3C}
+.dd-fb.fail{background:rgba(226,75,74,0.06);color:#C0392B;border-color:#E24B4A}
+.dd-next{margin-top:8px;width:100%;padding:13px;border-radius:12px;background:linear-gradient(135deg,#4A2D8F,#6B3FA0);color:#fff;font-size:15px;font-weight:500;border:none;cursor:pointer;display:none;transition:opacity .15s}
+.dd-next:hover{opacity:.88}
+.dd-next.show{display:block}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 6px #FFD700) drop-shadow(0 0 16px #FFA000)}50%{filter:drop-shadow(0 0 18px #FFD700) drop-shadow(0 0 32px #FF8C00)}}
+.lit{animation:glow 1.6s ease-in-out infinite}
+@keyframes celebrate{0%{transform:scale(1)}35%{transform:scale(1.05)}70%{transform:scale(.97)}100%{transform:scale(1)}}
+.dd-arena.done{animation:celebrate .5s ease}
 </style>
 
 <div class="shell">
   <div class="header">
     <span class="logo">ABIS GROUP · Азбука по продукту</span>
-    <span class="score-badge" id="sbadge">0 / 12</span>
+    <span class="score-badge" id="sbadge">0 / 13</span>
   </div>
   <div class="prog-track"><div class="prog-fill" id="prog" style="width:0%"></div></div>
 
@@ -95,7 +120,8 @@ const Q=[
   {q:"Главный визуальный маркер потолочной люстры — это:",opts:["Длинная цепь","Большой диаметр","Основание вплотную к потолку, цепь отсутствует","Хрустальные подвески"],ans:2,exp:"Потолочная люстра крепится прямо под потолком без цепей и тросиков. Основание сливается с потолком — это её главный маркер."},
   {q:"В чём главное преимущество универсальной (2 в 1) люстры для клиента?",opts:["Она дешевле других","Подходит под любую высоту потолка — клиент не ограничен в выборе модели","Всегда идёт с несколькими абажурами","Потребляет меньше энергии"],ans:1,exp:"Универсальная люстра объединяет оба типа крепления. Клиент может поставить её вплотную к потолку или использовать цепь для подвеса — независимо от высоты."},
   {q:"Клиент: «Низкий потолок в спальне, хочу роскошный свет без бликов». Ваш выбор?",opts:["Подвесная с текстильными абажурами","Потолочная с плафонами из матового стекла","Любая — высота не важна","Подвесная с хрустальными подвесками"],ans:1,exp:"Правильно: потолочная (или универсальная без цепи) + планочное крепление + матовые плафоны. Высоту не «съедает», свет рассеивает — в глаза не бьёт."},
-  {q:"На что смотреть в первую очередь при подборе люстры-вентилятора?",opts:["Цвет лопастей","Материал корпуса","Диаметр лопастей и мощность света","Количество скоростей"],ans:2,exp:"Два ключевых параметра: диаметр лопастей и мощность света. Рекомендуются модели с тёплым белым LED-светом для максимального комфорта."}
+  {q:"На что смотреть в первую очередь при подборе люстры-вентилятора?",opts:["Цвет лопастей","Материал корпуса","Диаметр лопастей и мощность света","Количество скоростей"],ans:2,exp:"Два ключевых параметра: диаметр лопастей и мощность света. Рекомендуются модели с тёплым белым LED-светом для максимального комфорта."},
+  {q:"__DRAGDROP__",opts:[],ans:-1,exp:""}
 ];
 
 let cur=0,score=0,answered=false,dots=[];
@@ -115,9 +141,22 @@ function initDots(){
 function render(){
   const q=Q[cur];
   document.getElementById('qnum').textContent='Вопрос '+(cur+1)+' из '+Q.length;
-  document.getElementById('qtext').textContent=q.q;
   document.getElementById('prog').style.width=((cur/Q.length)*100)+'%';
   document.getElementById('sbadge').textContent=score+' / '+Q.length;
+  const fb=document.getElementById('fb');
+  fb.className='fb'; fb.textContent='';
+  document.getElementById('nextbtn').className='next-btn';
+  answered=false;
+
+  if(q.q==='__DRAGDROP__'){
+    document.getElementById('qtext').textContent='Собери люстру: перетащи каждую деталь на своё место';
+    document.getElementById('opts').innerHTML='';
+    document.getElementById('nextbtn').style.display='none';
+    renderDragDrop();
+    return;
+  }
+  document.getElementById('nextbtn').style.display='';
+  document.getElementById('qtext').textContent=q.q;
   const opts=document.getElementById('opts');
   opts.innerHTML='';
   const L=['А','Б','В','Г'];
@@ -128,11 +167,6 @@ function render(){
     btn.onclick=()=>pick(i);
     opts.appendChild(btn);
   });
-  const fb=document.getElementById('fb');
-  fb.className='fb';
-  fb.textContent='';
-  document.getElementById('nextbtn').className='next-btn';
-  answered=false;
 }
 
 function pick(i){
@@ -191,6 +225,179 @@ function restart(){
   initDots();
   render();
 }
+
+
+// ═══════════════════════════════════════════
+// DRAG & DROP — сборка люстры
+// ═══════════════════════════════════════════
+const PARTS=[
+  {id:"chashka",  label:"Чашка",     zone:"z-chashka",
+   svg:'<svg width="52" height="28" viewBox="0 0 52 28"><ellipse cx="26" cy="14" rx="25" ry="12" fill="#c0c8d0" stroke="#8a96a2" stroke-width="1.5"/><ellipse cx="26" cy="10" rx="18" ry="7" fill="#d8dfe6"/><circle cx="26" cy="10" r="3" fill="#8a96a2"/></svg>'},
+  {id:"tsep",     label:"Цепь",      zone:"z-tsep",
+   svg:'<svg width="20" height="54" viewBox="0 0 20 54"><ellipse cx="10" cy="5" rx="6" ry="3.5" fill="#c8cfd6" stroke="#8a96a2" stroke-width="1.5"/><ellipse cx="10" cy="13" rx="6" ry="3.5" fill="#c8cfd6" stroke="#8a96a2" stroke-width="1.5"/><ellipse cx="10" cy="21" rx="6" ry="3.5" fill="#c8cfd6" stroke="#8a96a2" stroke-width="1.5"/><ellipse cx="10" cy="29" rx="6" ry="3.5" fill="#c8cfd6" stroke="#8a96a2" stroke-width="1.5"/><ellipse cx="10" cy="37" rx="6" ry="3.5" fill="#c8cfd6" stroke="#8a96a2" stroke-width="1.5"/><ellipse cx="10" cy="45" rx="6" ry="3.5" fill="#c8cfd6" stroke="#8a96a2" stroke-width="1.5"/></svg>'},
+  {id:"osnova",   label:"Основание", zone:"z-osnova",
+   svg:'<svg width="70" height="32" viewBox="0 0 70 32"><rect x="2" y="6" width="66" height="20" rx="10" fill="#b8c2cc" stroke="#8a96a2" stroke-width="1.5"/><rect x="14" y="10" width="42" height="12" rx="6" fill="#cdd5dc"/></svg>'},
+  {id:"rozhok1",  label:"Рожок Л",  zone:"z-r1",
+   svg:'<svg width="42" height="52" viewBox="0 0 42 52"><path d="M36 2 Q38 26 22 50" stroke="#a0aab4" stroke-width="3" fill="none" stroke-linecap="round"/></svg>'},
+  {id:"rozhok2",  label:"Рожок Ц",  zone:"z-r2",
+   svg:'<svg width="16" height="52" viewBox="0 0 16 52"><line x1="8" y1="2" x2="8" y2="50" stroke="#a0aab4" stroke-width="3" stroke-linecap="round"/></svg>'},
+  {id:"rozhok3",  label:"Рожок П",  zone:"z-r3",
+   svg:'<svg width="42" height="52" viewBox="0 0 42 52"><path d="M6 2 Q4 26 20 50" stroke="#a0aab4" stroke-width="3" fill="none" stroke-linecap="round"/></svg>'},
+  {id:"plafon1",  label:"Плафон Л", zone:"z-p1",
+   svg:'<svg width="46" height="42" viewBox="0 0 46 42"><path d="M8 30 Q6 12 23 8 Q40 12 38 30" fill="#dce3ea" stroke="#a0aab4" stroke-width="1.5"/><ellipse cx="23" cy="30" rx="20" ry="10" fill="#e8edf2" stroke="#a0aab4" stroke-width="1.5"/></svg>'},
+  {id:"plafon2",  label:"Плафон Ц", zone:"z-p2",
+   svg:'<svg width="46" height="42" viewBox="0 0 46 42"><path d="M8 30 Q6 12 23 8 Q40 12 38 30" fill="#dce3ea" stroke="#a0aab4" stroke-width="1.5"/><ellipse cx="23" cy="30" rx="20" ry="10" fill="#e8edf2" stroke="#a0aab4" stroke-width="1.5"/></svg>'},
+  {id:"plafon3",  label:"Плафон П", zone:"z-p3",
+   svg:'<svg width="46" height="42" viewBox="0 0 46 42"><path d="M8 30 Q6 12 23 8 Q40 12 38 30" fill="#dce3ea" stroke="#a0aab4" stroke-width="1.5"/><ellipse cx="23" cy="30" rx="20" ry="10" fill="#e8edf2" stroke="#a0aab4" stroke-width="1.5"/></svg>'},
+];
+
+const ZONES=[
+  {id:"z-chashka", label:"Чашка",      x:33, y:2,  w:34, h:14},
+  {id:"z-tsep",    label:"Цепь",       x:44, y:17, w:12, h:18},
+  {id:"z-osnova",  label:"Основание",  x:22, y:36, w:56, h:13},
+  {id:"z-r1",      label:"Рожок Л",    x:4,  y:50, w:28, h:18},
+  {id:"z-r2",      label:"Рожок Ц",   x:38, y:50, w:12, h:18},
+  {id:"z-r3",      label:"Рожок П",    x:58, y:50, w:28, h:18},
+  {id:"z-p1",      label:"Плафон Л",  x:0,  y:69, w:34, h:22},
+  {id:"z-p2",      label:"Плафон Ц",  x:33, y:69, w:34, h:22},
+  {id:"z-p3",      label:"Плафон П",  x:66, y:69, w:34, h:22},
+];
+
+let ddPlaced={}, ddDragging=null, ddGhost=null;
+
+function renderDragDrop(){
+  ddPlaced={}; ddDragging=null;
+  const optsEl=document.getElementById("opts");
+  optsEl.innerHTML="";
+
+  const wrap=document.createElement("div");
+  wrap.className="dd-wrap";
+
+  const arena=document.createElement("div");
+  arena.className="dd-arena"; arena.id="dd-arena";
+
+  ZONES.forEach(z=>{
+    const dz=document.createElement("div");
+    dz.className="drop-zone"; dz.id=z.id;
+    dz.style.left=z.x+"%"; dz.style.top=z.y+"%";
+    dz.style.width=z.w+"%"; dz.style.height=z.h+"%";
+    dz.innerHTML='<span class="zone-label">'+z.label+'</span>';
+    arena.appendChild(dz);
+  });
+  wrap.appendChild(arena);
+
+  const tray=document.createElement("div");
+  tray.className="parts-tray"; tray.id="dd-tray";
+  const shuffled=[...PARTS].sort(()=>Math.random()-.5);
+  shuffled.forEach(p=>{
+    const el=document.createElement("div");
+    el.className="part"; el.id="part-"+p.id;
+    el.dataset.partId=p.id;
+    el.innerHTML=p.svg+'<span class="part-label">'+p.label+'</span>';
+    tray.appendChild(el);
+  });
+  wrap.appendChild(tray);
+
+  const fb=document.createElement("div");
+  fb.className="dd-fb"; fb.id="dd-fb";
+  wrap.appendChild(fb);
+
+  const nxt=document.createElement("button");
+  nxt.className="dd-next"; nxt.id="dd-next";
+  nxt.textContent="Посмотреть результат";
+  nxt.onclick=()=>{score++;nextQ();};
+  wrap.appendChild(nxt);
+
+  optsEl.appendChild(wrap);
+  setupDragDrop();
+}
+
+function setupDragDrop(){
+  const tray=document.getElementById("dd-tray");
+  if(!tray)return;
+
+  tray.addEventListener("pointerdown",e=>{
+    const part=e.target.closest(".part");
+    if(!part||part.dataset.placed)return;
+    e.preventDefault();
+    startDrag(part,e.clientX,e.clientY);
+  });
+
+  document.addEventListener("pointermove",e=>{
+    if(!ddDragging)return;
+    moveGhost(e.clientX,e.clientY);
+    highlightZone(e.clientX,e.clientY);
+  },{passive:true});
+
+  document.addEventListener("pointerup",e=>{
+    if(!ddDragging)return;
+    dropPart(e.clientX,e.clientY);
+  });
+}
+
+function startDrag(el,cx,cy){
+  ddDragging=el;
+  el.classList.add("dragging-src");
+  ddGhost=el.cloneNode(true);
+  ddGhost.className="ghost";
+  ddGhost.style.left=cx+"px"; ddGhost.style.top=cy+"px";
+  document.body.appendChild(ddGhost);
+}
+
+function moveGhost(cx,cy){
+  if(!ddGhost)return;
+  ddGhost.style.left=cx+"px"; ddGhost.style.top=cy+"px";
+}
+
+function highlightZone(cx,cy){
+  ZONES.forEach(z=>{
+    const el=document.getElementById(z.id);
+    if(!el||el.dataset.placed)return;
+    const r=el.getBoundingClientRect();
+    el.classList.toggle("over",cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom);
+  });
+}
+
+function dropPart(cx,cy){
+  if(!ddDragging)return;
+  const partId=ddDragging.dataset.partId;
+  const part=PARTS.find(p=>p.id===partId);
+  let matched=null;
+  ZONES.forEach(z=>{
+    const el=document.getElementById(z.id);
+    if(!el||el.dataset.placed)return;
+    const r=el.getBoundingClientRect();
+    if(cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom)matched=z;
+  });
+  ZONES.forEach(z=>{const el=document.getElementById(z.id);if(el)el.classList.remove("over");});
+
+  if(matched&&part&&part.zone===matched.id){
+    const zoneEl=document.getElementById(matched.id);
+    zoneEl.innerHTML=part.svg;
+    zoneEl.classList.add("placed");
+    zoneEl.dataset.placed="1";
+    ddDragging.dataset.placed="1";
+    ddDragging.style.opacity=".3";
+    ddDragging.style.pointerEvents="none";
+    ddPlaced[partId]=true;
+    if(Object.keys(ddPlaced).length===PARTS.length)allPlaced();
+  }
+  ddDragging.classList.remove("dragging-src");
+  ddDragging=null;
+  if(ddGhost){ddGhost.remove();ddGhost=null;}
+}
+
+function allPlaced(){
+  const arena=document.getElementById("dd-arena");
+  if(arena)arena.classList.add("done");
+  ZONES.forEach(z=>{const el=document.getElementById(z.id);if(el)el.classList.add("lit");});
+  const fb=document.getElementById("dd-fb");
+  if(fb){fb.className="dd-fb ok show";fb.textContent="🎉 Люстра собрана! Все детали на своих местах. Молодец — ты знаешь конструкцию на отлично!";}
+  if(dots[cur])dots[cur].classList.add("ok");
+  const nxt=document.getElementById("dd-next");
+  if(nxt)nxt.classList.add("show");
+}
+// ═══════════════════════════════════════════
 
 initDots();
 render();
