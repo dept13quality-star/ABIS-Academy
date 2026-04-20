@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Симулятор 1С — Заказ для физ.лица</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #1a1f2e;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+
+  /* ─── FULLSCREEN BUTTON ─── */
+  .fs-btn {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 9999;
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,.4);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background .15s, transform .1s;
+  }
+  .fs-btn:hover { background: #2563eb; transform: scale(1.04); }
+  .fs-btn:active { transform: scale(.97); }
+
+  /* fullscreen adjustments */
+  :fullscreen body,
+  :-webkit-full-screen body,
+  :-moz-full-screen body {
+    padding: 12px;
+    background: #1a1f2e;
+  }
+  :fullscreen .screen-wrap,
+  :-webkit-full-screen .screen-wrap,
+  :-moz-full-screen .screen-wrap {
+    max-width: 100%;
+  }
+  :fullscreen .sim-header,
+  :fullscreen .progress-bar,
+  :fullscreen .tooltip-box,
+  :-webkit-full-screen .sim-header,
+  :-webkit-full-screen .progress-bar,
+  :-webkit-full-screen .tooltip-box {
+    max-width: 100%;
+  }
+
+  /* ─── HEADER ─── */
+  .sim-header {
+    width: 100%;
+    max-width: 980px;
+    background: #0f1422;
+    border: 1px solid #2a3456;
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .sim-logo {
+    background: #e03a1e;
+    color: #fff;
+    font-weight: 800;
+    font-size: 15px;
+    padding: 4px 9px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+  .sim-title {
+    color: #c8d0e8;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .sim-step-label {
+    margin-left: auto;
+    color: #5a7ab0;
+    font-size: 12px;
+  }
+  .progress-bar {
+    width: 100%;
+    max-width: 980px;
+    height: 5px;
+    background: #1e2540;
+    border-radius: 99px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #10b981);
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ─── TOOLTIP ─── */
+  .tooltip-box {
+    width: 100%;
+    max-width: 980px;
+    background: #0a1628;
+    border: 1.5px solid #3b82f6;
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    animation: fadeSlide .3s ease;
+  }
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .tip-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .tip-text {
+    color: #c8d0e8;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  .tip-text b { color: #60a5fa; }
+  .tip-error {
+    border-color: #ef4444;
+    background: #1a0a0a;
+    animation: shake .3s ease;
+  }
+  .tip-error .tip-text { color: #fca5a5; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    60%      { transform: translateX(6px); }
+  }
+  .tip-success {
+    border-color: #10b981;
+    background: #021a10;
+  }
+  .tip-success .tip-text { color: #6ee7b7; }
+
+  /* ─── SCREEN WRAPPER ─── */
+  .screen-wrap {
+    width: 100%;
+    max-width: 980px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #2a3456;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6);
+    position: relative;
+    user-select: none;
+  }
+
+  /* ─── WINDOWS DESKTOP ─── */
+  .win-desktop {
+    background: #1e5a8e url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    min-height: 480px;
+    padding: 20px;
+    display: none;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 10px;
+    position: relative;
+  }
+  .win-desktop.active { display: flex; }
+
+  .desktop-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 72px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    transition: background .15s;
+  }
+  .desktop-icon:hover { background: rgba(255,255,255,.12); }
+  .desktop-icon .icon-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  .desktop-icon span {
+    color: #fff;
+    font-size: 10px;
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(0,0,0,.8);
+  }
+  .icon-1c { background: #e03a1e; color: #fff; font-weight: 900; font-size: 16px; }
+  .icon-folder { background: #f59e0b; color: #fff; }
+
+  .win-taskbar {
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(8px);
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .win-start { background: #0078d4; color: #fff; font-size: 11px; padding: 4px 12px; border-radius: 3px; font-weight: 700; }
+  .win-clock { margin-left: auto; color: #ccc; font-size: 11px; }
+
+  /* ─── 1C BASE SELECTOR ─── */
+  .modal-overlay {
+    background: rgba(0,0,0,.6);
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10;
+  }
+  .win-modal {
+    background: #f0f0f0;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    box-shadow: 4px 4px 16px rgba(0,0,0,.5);
+    width: 380px;
+    overflow: hidden;
+  }
+  .win-modal-title {
+    background: linear-gradient(180deg, #3a6ea5, #0e4d91);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .win-modal-body { padding: 14px; }
+  .modal-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .modal-logo-box {
+    background: #e03a1e;
+    color: #fff;
+    font-weight: 900;
+    font-size: 20px;
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 4px;
+  }
+  .modal-logo-text { font-size: 11px; color: #333; }
+  .modal-logo-text b { display: block; font-size: 13px; color: #000; }
+
+  .base-list { margin: 10px 0; }
+  .base-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #333;
+    transition: background .15s;
+  }
+  .base-item:hover { background: #d0e4f7; }
+  .base-item.selected { background: #0078d4; color: #fff; }
+  .base-item .b-icon { font-size: 18px; }
+
+  .modal-buttons { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+  .btn-1c {
+    padding: 5px 18px;
+    font-size: 12px;
+    border: 1px solid #999;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #f8f8f8, #e0e0e0);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .1s;
+  }
+  .btn-1c:hover { background: linear-gradient(180deg, #e8f0fe, #c8d8f0); }
+  .btn-1c.primary { background: linear-gradient(180deg, #5b9bd5, #2e6da4); color: #fff; border-color: #1a5276; }
+  .btn-1c.primary:hover { background: linear-gradient(180deg, #7ab1e0, #3a82c4); }
+
+  /* ─── 1C LOGIN FORM ─── */
+  .form-row { margin-bottom: 10px; }
+  .form-row label { display: block; font-size: 11px; color: #555; margin-bottom: 3px; }
+  .form-input {
+    width: 100%;
+    border: 1px solid #aaa;
+    border-radius: 2px;
+    padding: 5px 8px;
+    font-size: 12px;
+    font-family: inherit;
+    background: #fff;
+    outline: none;
+  }
+  .form-input:focus { border-color: #0078d4; box-shadow: 0 0 0 2px rgba(0,120,212,.2); }
+
+  /* ─── 1C MAIN INTERFACE ─── */
+  .onec-window {
+    background: #f0f0f0;
+    display: none;
+    flex-direction: column;
+    min-height: 500px;
+  }
+  .onec-window.active { display: flex; }
+
+  .onec-menubar {
+    background: linear-gradient(180deg, #e8e8e8, #d0d0d0);
+    border-bottom: 1px solid #aaa;
+    padding: 2px 6px;
+    display: flex;
+    gap: 2px;
+    font-size: 11px;
+    color: #222;
+  }
+  .menu-item {
+    padding: 3px 8px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .menu-item:hover { background: #c0d0e8; }
+
+  .onec-toolbar {
+    background: linear-gradient(180deg, #f5f5f5, #e8e8e8);
+    border-bottom: 1px solid #bbb;
+    padding: 3px 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .toolbar-sep { width: 1px; height: 18px; background: #bbb; margin: 0 4px; }
+
+  .onec-body { display: flex; flex: 1; }
+  .onec-panel {
+    background: #f7f7f7;
+    border-right: 1px solid #ccc;
+    width: 220px;
+    flex-shrink: 0;
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+  .panel-section { margin-bottom: 14px; }
+  .panel-title {
+    color: #555;
+    font-weight: 700;
+    font-size: 11px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .panel-link {
+    display: block;
+    color: #0558c9;
+    text-decoration: underline;
+    padding: 3px 4px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 11.5px;
+    line-height: 1.5;
+    transition: background .1s;
+  }
+  .panel-link:hover { background: #dde8f8; }
+
+  .onec-content { flex: 1; overflow: hidden; }
+
+  /* ─── ORDER LIST ─── */
+  .list-view {
+    background: #fff;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .list-toolbar {
+    background: linear-gradient(180deg, #e8e8e8, #d8d8d8);
+    border-bottom: 1px solid #bbb;
+    padding: 3px 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+  }
+  .list-title {
+    background: #e0e8f4;
+    border-bottom: 1px solid #c0cce0;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a3a6a;
+  }
+  .list-headers {
+    display: grid;
+    grid-template-columns: 130px 120px 100px 1fr 100px 80px;
+    gap: 0;
+    background: linear-gradient(180deg, #e8e8e8, #d8d8d8);
+    border-bottom: 1px solid #bbb;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #333;
+  }
+  .list-hcell { padding: 4px 6px; border-right: 1px solid #ccc; }
+  .list-row {
+    display: grid;
+    grid-template-columns: 130px 120px 100px 1fr 100px 80px;
+    font-size: 10.5px;
+    border-bottom: 1px solid #eee;
+    color: #222;
+  }
+  .list-row:hover { background: #e8f0fe; }
+  .list-row:nth-child(even) { background: #f8f8f8; }
+  .list-row:nth-child(even):hover { background: #e8f0fe; }
+  .list-cell { padding: 3px 6px; border-right: 1px solid #eee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ─── ORDER FORM ─── */
+  .order-form {
+    background: #f0f0f0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+  }
+  .form-titlebar {
+    background: linear-gradient(180deg, #e8e8e8, #d8d8d8);
+    border-bottom: 1px solid #bbb;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #1a3a6a;
+  }
+  .form-ops-bar {
+    background: linear-gradient(180deg, #f5f5f5, #e8e8e8);
+    border-bottom: 1px solid #bbb;
+    padding: 3px 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    flex-wrap: wrap;
+  }
+  .form-fields {
+    padding: 8px 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 14px;
+  }
+  .ff-row { display: flex; align-items: center; gap: 6px; }
+  .ff-label { color: #555; width: 80px; flex-shrink: 0; font-size: 11px; }
+  .ff-val {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #aaa;
+    border-radius: 2px;
+    padding: 3px 6px;
+    font-size: 11.5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 22px;
+    cursor: text;
+  }
+  .ff-dots {
+    color: #666;
+    font-size: 13px;
+    padding: 0 2px;
+    cursor: pointer;
+    border-left: 1px solid #ccc;
+    padding-left: 4px;
+  }
+  .form-tabs {
+    display: flex;
+    border-bottom: 1px solid #bbb;
+    margin: 4px 10px 0;
+    gap: 2px;
+  }
+  .form-tab {
+    padding: 4px 12px;
+    font-size: 11px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 3px 3px 0 0;
+    background: #e8e8e8;
+    color: #444;
+  }
+  .form-tab.active {
+    background: #fff;
+    border-color: #bbb;
+    color: #000;
+    font-weight: 700;
+  }
+  .form-tab:hover:not(.active) { background: #d8e4f0; }
+
+  .items-table {
+    margin: 0 10px;
+    background: #fff;
+    border: 1px solid #bbb;
+    font-size: 11px;
+  }
+  .items-toolbar {
+    background: linear-gradient(180deg, #e8e8e8, #d8d8d8);
+    border-bottom: 1px solid #bbb;
+    padding: 2px 6px;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .items-headers {
+    display: grid;
+    grid-template-columns: 30px 120px 1fr 70px 70px 80px 80px;
+    background: #e0e0e0;
+    border-bottom: 1px solid #bbb;
+  }
+  .ih { padding: 3px 5px; border-right: 1px solid #ccc; font-size: 10.5px; font-weight: 700; color: #333; }
+  .item-row {
+    display: grid;
+    grid-template-columns: 30px 120px 1fr 70px 70px 80px 80px;
+    border-bottom: 1px solid #eee;
+  }
+  .ir { padding: 3px 5px; border-right: 1px solid #eee; }
+  .input-row {
+    display: grid;
+    grid-template-columns: 30px 120px 1fr 70px 70px 80px 80px;
+    background: #fffff0;
+    border-bottom: 1px solid #bbb;
+  }
+  .input-cell {
+    padding: 0;
+    border-right: 1px solid #eee;
+  }
+  .input-cell input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 11px;
+    font-family: inherit;
+    padding: 3px 5px;
+    outline: none;
+  }
+  .input-cell input:focus { background: #ddeeff; }
+
+  .form-footer {
+    margin-top: auto;
+    padding: 6px 10px;
+    border-top: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f0f0f0;
+    font-size: 11px;
+    color: #444;
+  }
+  .total-row { text-align: right; }
+  .total-row b { font-size: 13px; color: #1a3a6a; }
+
+  /* ─── AUTHORIZATION SCREEN ─── */
+  .auth-screen {
+    background: #c8d8e8;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 400px;
+  }
+  .auth-box {
+    background: #f0f0f0;
+    border: 1px solid #aaa;
+    box-shadow: 3px 3px 10px rgba(0,0,0,.3);
+    border-radius: 3px;
+    width: 340px;
+    overflow: hidden;
+  }
+  .auth-box-title {
+    background: linear-gradient(180deg, #3a6ea5, #0e4d91);
+    color: #fff;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .auth-box-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .scanner-area {
+    width: 120px;
+    height: 90px;
+    background: #222;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f0;
+    font-size: 11px;
+    border: 2px solid #555;
+    position: relative;
+    overflow: hidden;
+  }
+  .scanner-line {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: #0f0;
+    animation: scan 1.5s ease-in-out infinite;
+    box-shadow: 0 0 8px #0f0;
+  }
+  @keyframes scan {
+    0%   { top: 10%; }
+    50%  { top: 80%; }
+    100% { top: 10%; }
+  }
+  .auth-hint { font-size: 12px; color: #444; text-align: center; }
+
+  /* ─── DIALOG ─── */
+  .dialog-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.4);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 20;
+  }
+  .dialog-box {
+    background: #f0f0f0;
+    border: 1px solid #aaa;
+    box-shadow: 4px 4px 16px rgba(0,0,0,.5);
+    border-radius: 4px;
+    width: 300px;
+    overflow: hidden;
+  }
+  .dialog-title {
+    background: linear-gradient(180deg, #3a6ea5, #0e4d91);
+    color: #fff;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .dialog-body { padding: 14px 16px; font-size: 12px; color: #222; line-height: 1.5; }
+  .dialog-btns { display: flex; gap: 8px; justify-content: center; padding: 8px 16px 14px; }
+
+  /* ─── CLIENT LIST ─── */
+  .client-list { margin: 6px 0; max-height: 160px; overflow-y: auto; border: 1px solid #bbb; background: #fff; }
+  .client-row {
+    padding: 5px 8px;
+    font-size: 11px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    color: #222;
+  }
+  .client-row:hover { background: #dde8f8; }
+  .client-row.selected { background: #0078d4; color: #fff; }
+  .cr-phone { color: #666; width: 100px; font-size: 10.5px; }
+  .cr-phone-sel { color: #c8e0ff; }
+
+  /* ─── HIGHLIGHT / PULSE ─── */
+  .highlight {
+    position: relative;
+    z-index: 5;
+  }
+  .highlight::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border: 2.5px solid #f59e0b;
+    border-radius: 4px;
+    animation: pulse 1.2s ease infinite;
+    pointer-events: none;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,.5); }
+    50%      { box-shadow: 0 0 0 6px rgba(245,158,11,0); }
+  }
+  .btn-plus {
+    background: #4caf50;
+    color: #fff;
+    border: 1px solid #388e3c;
+    border-radius: 2px;
+    width: 20px; height: 20px;
+    font-size: 15px;
+    line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .btn-toolbar {
+    background: linear-gradient(180deg, #f8f8f8, #e0e0e0);
+    border: 1px solid #999;
+    border-radius: 2px;
+    padding: 2px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-toolbar:hover { background: linear-gradient(180deg, #e8f0fe, #c8d8f0); }
+
+  /* ─── COMPLETION ─── */
+  .completion-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 480px;
+    background: #0a1628;
+    gap: 20px;
+  }
+  .completion-screen.active { display: flex; }
+  .comp-icon { font-size: 64px; }
+  .comp-title { color: #6ee7b7; font-size: 22px; font-weight: 700; }
+  .comp-sub { color: #8ba4c8; font-size: 14px; max-width: 400px; line-height: 1.6; }
+  .comp-stats {
+    display: flex;
+    gap: 24px;
+    margin-top: 8px;
+  }
+  .comp-stat {
+    background: #0f2040;
+    border: 1px solid #2a4060;
+    border-radius: 8px;
+    padding: 12px 20px;
+    color: #c8d0e8;
+    font-size: 13px;
+  }
+  .comp-stat b { display: block; font-size: 24px; color: #60a5fa; margin-bottom: 2px; }
+  .btn-restart {
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 28px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    transition: background .15s;
+  }
+  .btn-restart:hover { background: #2563eb; }
+
+  .wrong-flash { animation: wrongFlash .4s ease; }
+  @keyframes wrongFlash {
+    0%   { background: rgba(255,0,0,.15); }
+    100% { background: transparent; }
+  }
+
+  /* ─── ADDITIONAL FORM ─── */
+  .dop-grid {
+    padding: 8px 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 14px;
+  }
+
+  /* Search bar for client */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ccc;
+  }
+  .search-bar label { font-size: 11px; color: #555; white-space: nowrap; }
+  .search-bar select, .search-bar input {
+    font-size: 11px;
+    font-family: inherit;
+    border: 1px solid #aaa;
+    border-radius: 2px;
+    padding: 3px 6px;
+    background: #fff;
+  }
+
+  .screen-hidden { display: none !important; }
+
+  /* ─── NEW CLIENT CARD ─── */
+  .nc-form { background: #f0f0f0; flex: 1; display: flex; flex-direction: column; font-size: 12px; }
+  .nc-titlebar { background: linear-gradient(180deg,#e8e8e8,#d8d8d8); border-bottom:1px solid #bbb; padding:3px 8px; font-size:11px; font-weight:700; color:#1a3a6a; display:flex; gap:8px; align-items:center; }
+  .nc-tabs { display:flex; border-bottom:1px solid #bbb; margin:0 10px; gap:2px; padding-top:8px; }
+  .nc-tab { padding:4px 12px; font-size:11px; border:1px solid #bbb; border-bottom:none; border-radius:3px 3px 0 0; background:#e8e8e8; color:#444; cursor:pointer; }
+  .nc-tab.active { background:#fff; font-weight:700; color:#000; }
+  .nc-body { padding:10px; background:#fff; margin:0 10px; border:1px solid #bbb; border-top:none; flex:1; }
+  .nc-row { display:flex; align-items:center; gap:8px; margin-bottom:7px; font-size:11px; }
+  .nc-label { width:120px; flex-shrink:0; color:#444; text-align:right; }
+  .nc-input { flex:1; border:1px solid #aaa; border-radius:2px; padding:3px 6px; font-size:11px; font-family:inherit; background:#fff; outline:none; }
+  .nc-input:focus { border-color:#0078d4; }
+  .nc-checkbox-row { display:flex; align-items:center; gap:14px; margin-bottom:7px; font-size:11px; }
+  .nc-checkbox-item { display:flex; align-items:center; gap:4px; cursor:pointer; }
+  .nc-section-label { font-size:10px; font-weight:700; color:#666; margin:10px 0 5px; border-bottom:1px solid #ddd; padding-bottom:3px; }
+  .group-val { flex:1; border:1px solid #aaa; border-radius:2px; padding:3px 6px; font-size:11px; background:#fff; display:flex; align-items:center; justify-content:space-between; min-height:22px; }
+  .nc-footer { padding:6px 10px; border-top:1px solid #ccc; display:flex; justify-content:flex-end; gap:6px; background:#f0f0f0; }
+  .branch-badge { display:inline-block; background:#fef3c7; border:1px solid #f59e0b; border-radius:4px; padding:3px 8px; font-size:10.5px; color:#92400e; margin:6px 8px; font-weight:600; }
+</style>
+</head>
+<body>
+
+<!-- FULLSCREEN BUTTON -->
+<button class="fs-btn" id="fsBtn" onclick="toggleFullscreen()" title="Развернуть на весь экран">
+  <span id="fsIcon">⛶</span>
+  <span id="fsLabel">Полный экран</span>
+</button>
+
+<!-- HEADER -->
+<div class="sim-header">
+  <div class="sim-logo">1С</div>
+  <div class="sim-title">Симулятор: Создание заказа для физ.лица</div>
+  <div class="sim-step-label" id="stepLabel">Шаг 1 из 19</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar">
+  <div class="progress-fill" id="progressFill" style="width:7%"></div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip-box" id="tooltipBox">
+  <div class="tip-icon">👆</div>
+  <div class="tip-text" id="tipText"><b>Нажми на иконку «Рабочий стол»</b> — это ярлык для входа в 1С удалённый рабочий стол. Он есть на каждом компьютере.</div>
+</div>
+
+<!-- MAIN SCREEN WRAPPER -->
+<div class="screen-wrap" id="screenWrap">
+
+  <!-- S0: WINDOWS DESKTOP -->
+  <div class="win-desktop active" id="s0">
+    <div class="desktop-icon" id="ic_remote" onclick="handleClick('ic_remote')">
+      <div class="icon-img" style="background:#0078d4; font-size:20px;">🖥️</div>
+      <span>Рабочий стол</span>
+    </div>
+    <div class="desktop-icon" onclick="handleClick('wrong')">
+      <div class="icon-img icon-folder">📁</div>
+      <span>Zoom Workplace</span>
+    </div>
+    <div class="desktop-icon" onclick="handleClick('wrong')">
+      <div class="icon-img" style="background:#555;">🎥</div>
+      <span>VLC media player</span>
+    </div>
+    <div class="desktop-icon" onclick="handleClick('wrong')">
+      <div class="icon-img" style="background:#1a6e3c; font-size:18px;">📊</div>
+      <span>Битрикс24</span>
+    </div>
+    <div class="win-taskbar" onclick="handleClick('wrong')">
+      <div class="win-start">⊞</div>
+      <div class="win-clock">11:38 | 05.08.2024</div>
+    </div>
+  </div>
+
+  <!-- S1: BASE SELECTOR (modal over desktop) -->
+  <div class="win-desktop" id="s1" style="position:relative;">
+    <div class="desktop-icon" onclick="handleClick('wrong')"><div class="icon-img" style="background:#0078d4;">🖥️</div><span>Рабочий стол</span></div>
+    <div class="modal-overlay">
+      <div class="win-modal">
+        <div class="win-modal-title">
+          <span>1С:Предприятие — Информационная база</span>
+          <span>✕</span>
+        </div>
+        <div class="win-modal-body">
+          <div class="modal-logo">
+            <div class="modal-logo-box">1С</div>
+            <div class="modal-logo-text"><b>1С:Предприятие 8.3</b>© ООО «1С-Софт»</div>
+          </div>
+          <div class="base-list">
+            <div class="base-item" id="base_aura" onclick="handleClick('base_aura')">
+              <div class="b-icon">🗄️</div> aura
+            </div>
+            <div class="base-item" onclick="handleClick('wrong')">
+              <div class="b-icon">🗄️</div> utp_invest
+            </div>
+            <div class="base-item" onclick="handleClick('wrong')">
+              <div class="b-icon">🗄️</div> zh
+            </div>
+          </div>
+          <div class="modal-buttons">
+            <button class="btn-1c" onclick="handleClick('wrong')">Настройка</button>
+            <button class="btn-1c primary" onclick="handleClick('wrong')">1С:Предприятие</button>
+            <button class="btn-1c" onclick="handleClick('wrong')">Отмена</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2: LOGIN FORM -->
+  <div class="win-desktop" id="s2" style="position:relative;">
+    <div class="modal-overlay">
+      <div class="win-modal" style="width:340px;">
+        <div class="win-modal-title"><span>1С:Предприятие</span><span>✕</span></div>
+        <div class="win-modal-body">
+          <div class="modal-logo">
+            <div class="modal-logo-box">1С</div>
+            <div class="modal-logo-text"><b>Информационная база</b>aura</div>
+          </div>
+          <div class="form-row">
+            <label>Пользователь:</label>
+            <input class="form-input" value="МЕНЕДЖЕР ПО ПРОДАЖАМ АУРА" readonly style="background:#f8f8f8;color:#333;">
+          </div>
+          <div class="form-row">
+            <label>Пароль:</label>
+            <input class="form-input" placeholder="(без пароля)" type="password">
+          </div>
+          <div class="modal-buttons">
+            <button class="btn-1c primary" id="btn_login" onclick="handleClick('btn_login')">Войти</button>
+            <button class="btn-1c" onclick="handleClick('wrong')">Отмена</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3: SCANNER AUTH -->
+  <div class="onec-window" id="s3">
+    <div class="onec-menubar">
+      <span class="menu-item">Правка</span>
+      <span class="menu-item">Окна</span>
+    </div>
+    <div class="auth-screen">
+      <div class="auth-box">
+        <div class="auth-box-title">Рабочее место менеджера по продажам</div>
+        <div class="auth-box-body">
+          <div style="font-size:12px;color:#444;text-align:center;">Авторизация: Введите пароль или прочитайте регистрационную карту</div>
+          <div class="scanner-area">
+            <div class="scanner-line"></div>
+            <span style="position:relative;z-index:1;font-size:22px;">🔳</span>
+          </div>
+          <div class="auth-hint">Наведите сканер на бейджик со штрихкодом и нажмите кнопку на сканере</div>
+          <div class="modal-buttons" style="margin-top:6px;">
+            <button class="btn-1c primary" id="btn_scan" onclick="handleClick('btn_scan')">Считать бейджик ✓</button>
+            <button class="btn-1c" onclick="handleClick('wrong')">Закрыть</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4: MAIN WORKSPACE -->
+  <div class="onec-window" id="s4">
+    <div class="onec-menubar">
+      <span class="menu-item">Файл</span>
+      <span class="menu-item">Правка</span>
+      <span class="menu-item">Дополнительно</span>
+      <span class="menu-item">Цены и валюта</span>
+      <span class="menu-item">Продажи</span>
+      <span class="menu-item">Заказы</span>
+    </div>
+    <div class="onec-toolbar">
+      <button class="btn-toolbar" onclick="handleClick('wrong')">📁</button>
+      <div class="toolbar-sep"></div>
+      <button class="btn-toolbar" onclick="handleClick('wrong')">↩️</button>
+      <button class="btn-toolbar" onclick="handleClick('wrong')">↪️</button>
+    </div>
+    <div style="padding:10px;font-size:14px;font-weight:700;color:#1a3a6a;border-bottom:1px solid #ccc;background:#e8f0fa;">
+      Рабочее место менеджера по продажам
+    </div>
+    <div style="display:flex;flex:1;">
+      <div style="flex:1;padding:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;align-content:start;">
+        <!-- ЗАКАЗЫ -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#333;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            🗂️ Заказы покупателей
+          </div>
+          <div id="link_order" class="panel-link" onclick="handleClick('link_order')" style="font-size:12px;font-weight:600;">
+            Заказ покупателя
+          </div>
+          <div class="panel-link" onclick="handleClick('wrong')">Корректировка заказов покупателей</div>
+          <div class="panel-link" onclick="handleClick('wrong')">Закрытие заказов покупателей</div>
+          <div class="panel-link" onclick="handleClick('wrong')">Коммерческое предложение</div>
+        </div>
+        <!-- РЕАЛИЗАЦИЯ -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#333;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            📦 Реализация товаров услуг
+          </div>
+          <div class="panel-link" onclick="handleClick('wrong')">Реализация товаров услуг</div>
+          <div class="panel-link" onclick="handleClick('wrong')">Возврат товаров от покупателя</div>
+        </div>
+        <!-- ОПЛАТА -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#333;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            💰 Оплата
+          </div>
+          <div class="panel-link" onclick="handleClick('wrong')">Приходный кассовый ордер</div>
+          <div class="panel-link" onclick="handleClick('wrong')">Оплата платёжной картой</div>
+        </div>
+        <!-- СКЛАД -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#333;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            🏭 Склад
+          </div>
+          <div class="panel-link" onclick="handleClick('wrong')">Перемещение товаров</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5: ORDER LIST -->
+  <div class="onec-window" id="s5">
+    <div class="onec-menubar">
+      <span class="menu-item">Файл</span><span class="menu-item">Правка</span><span class="menu-item">Заказы</span>
+    </div>
+    <div class="list-title">Заказы покупателей: Июль 2024 г. — Июль 2024 г.</div>
+    <div class="list-toolbar">
+      <button class="btn-plus" id="btn_plus_list" onclick="handleClick('btn_plus_list')">+</button>
+      <button class="btn-toolbar" onclick="handleClick('wrong')" style="color:red;">✕</button>
+      <button class="btn-toolbar" onclick="handleClick('wrong')">✏️</button>
+      <div class="toolbar-sep"></div>
+      <button class="btn-toolbar" onclick="handleClick('wrong')">🔄</button>
+    </div>
+    <div class="list-view">
+      <div class="list-headers">
+        <div class="list-hcell">Дата</div>
+        <div class="list-hcell">Номер</div>
+        <div class="list-hcell">Сумма</div>
+        <div class="list-hcell">Контрагент</div>
+        <div class="list-hcell">Статус</div>
+        <div class="list-hcell">Ответственный</div>
+      </div>
+      <div class="list-row" onclick="handleClick('wrong')"><div class="list-cell">31.07.2024</div><div class="list-cell">Д-000001268</div><div class="list-cell">599 850</div><div class="list-cell">Уйсумбаева Назгуль</div><div class="list-cell">к отгр.</div><div class="list-cell">Менеджер</div></div>
+      <div class="list-row" onclick="handleClick('wrong')"><div class="list-cell">31.07.2024</div><div class="list-cell">SV000000309</div><div class="list-cell">4 400</div><div class="list-cell">Зарета Д.</div><div class="list-cell">закрыт</div><div class="list-cell">svetkz</div></div>
+      <div class="list-row" onclick="handleClick('wrong')"><div class="list-cell">31.07.2024</div><div class="list-cell">Em000001590</div><div class="list-cell">164 000</div><div class="list-cell">Гос. органы</div><div class="list-cell">к отгр.</div><div class="list-cell">Менеджер</div></div>
+      <div class="list-row" onclick="handleClick('wrong')"><div class="list-cell">31.07.2024</div><div class="list-cell">Em000001593</div><div class="list-cell">22 801</div><div class="list-cell">Джобек Денис</div><div class="list-cell">100%</div><div class="list-cell">Менеджер</div></div>
+      <div class="list-row" onclick="handleClick('wrong')"><div class="list-cell">31.07.2024</div><div class="list-cell">Em000001597</div><div class="list-cell">55 387</div><div class="list-cell">Урумканов Мурат</div><div class="list-cell">к отгр.</div><div class="list-cell">Менеджер</div></div>
+    </div>
+  </div>
+
+  <!-- S6: NEW ORDER FORM (контрагент) -->
+  <div class="onec-window" id="s6">
+    <div class="onec-menubar"><span class="menu-item">Файл</span><span class="menu-item">Правка</span><span class="menu-item">Действия</span></div>
+    <div class="order-form">
+      <div class="form-titlebar">Заказ покупателя: Продажа, комиссия. Новый *</div>
+      <div class="form-ops-bar">
+        <button class="btn-toolbar" onclick="handleClick('wrong')">Операция ▾</button>
+        <button class="btn-toolbar" onclick="handleClick('wrong')">Заполнить и провести</button>
+        <button class="btn-toolbar" onclick="handleClick('wrong')">Анализ</button>
+        <button class="btn-toolbar" onclick="handleClick('wrong')">Оформить реализацию</button>
+      </div>
+      <div class="form-fields">
+        <div class="ff-row">
+          <span class="ff-label">Номер:</span>
+          <div class="ff-val"><span style="color:#888;">авто</span></div>
+        </div>
+        <div class="ff-row">
+          <span class="ff-label">Партнер:</span>
+          <div class="ff-val"><span></span><span class="ff-dots" onclick="handleClick('wrong')">...</span></div>
+        </div>
+        <div class="ff-row">
+          <span class="ff-label">Организация:</span>
+          <div class="ff-val">ТОО «AURA CITY»</div>
+        </div>
+        <div class="ff-row">
+          <span class="ff-label">Состояние:</span>
+          <div class="ff-val"></div>
+        </div>
+        <div class="ff-row">
+          <span class="ff-label">Контрагент:</span>
+          <div class="ff-val" id="contraVal">
+            <span style="color:#888;">не выбран</span>
+            <span class="ff-dots" id="btn_contra_dots" onclick="handleClick('btn_contra_dots')">...</span>
+          </div>
+        </div>
+        <div class="ff-row">
+          <span class="ff-label">Договор:</span>
+          <div class="ff-val">Без договора</div>
+        </div>
+        <div class="ff-row">
+          <span class="ff-label">Отгрузка:</span>
+          <div class="ff-val"></div>
+        </div>
+        <div class="ff-row">
+          <span class="ff-label">Б/счет касса:</span>
+          <div class="ff-val" style="font-size:10px;">KZ4972250000029...</div>
+        </div>
+      </div>
+      <div class="form-tabs">
+        <div class="form-tab active">Товары (0 поз.)</div>
+        <div class="form-tab" onclick="handleClick('wrong')">Услуги (0 поз.)</div>
+        <div class="form-tab" onclick="handleClick('wrong')">Дополнительно</div>
+      </div>
+      <div class="items-table">
+        <div class="items-toolbar">
+          <button class="btn-plus" onclick="handleClick('wrong')">+</button>
+          <button class="btn-toolbar" onclick="handleClick('wrong')" style="color:red;font-size:13px;">✕</button>
+        </div>
+        <div class="items-headers">
+          <div class="ih">№</div><div class="ih">Артикул</div><div class="ih">Наименование</div><div class="ih">Кол-во</div><div class="ih">Цена</div><div class="ih">Сумма</div><div class="ih">Всего</div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <span>Тип цен: РОЗНИЧНАЯ ИСП</span>
+        <div class="total-row">Всего (KZT): <b>0,00</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7: CLIENT SEARCH — NOT FOUND → CREATE NEW -->
+  <div class="onec-window" id="s7" style="position:relative;">
+    <div class="onec-menubar"><span class="menu-item">Файл</span></div>
+    <div class="order-form">
+      <div class="form-titlebar">Заказ покупателя: Продажа, комиссия. Новый *</div>
+      <div class="form-fields" style="opacity:.4;pointer-events:none;">
+        <div class="ff-row"><span class="ff-label">Контрагент:</span><div class="ff-val"><span style="color:#888;">выбор...</span></div></div>
+      </div>
+    </div>
+    <div class="dialog-overlay">
+      <div class="win-modal" style="width:420px;">
+        <div class="win-modal-title"><span>Контрагенты — Выбрать</span><span>✕</span></div>
+        <div style="padding:8px 10px;background:#f0f0f0;border-bottom:1px solid #ccc;">
+          <div class="search-bar">
+            <label>Искать по:</label>
+            <select style="font-size:11px;border:1px solid #aaa;border-radius:2px;padding:2px 4px;">
+              <option>Телефон</option>
+              <option>Полному наименованию</option>
+            </select>
+            <input placeholder="7009999999" value="7009999999" style="flex:1;font-size:11px;border:1px solid #aaa;border-radius:2px;padding:3px 6px;">
+          </div>
+        </div>
+        <div class="client-list" style="min-height:70px;display:flex;align-items:center;justify-content:center;">
+          <span style="color:#aaa;font-size:11px;font-style:italic;">Клиент не найден в базе</span>
+        </div>
+        <div style="background:#fff8e1;border-top:1px solid #ffe082;padding:5px 10px;font-size:10.5px;color:#7b4f00;">
+          💡 Клиента нет в базе? Создай новую карточку — нажми <b>зелёный плюсик</b>
+        </div>
+        <div class="modal-buttons" style="padding:8px 10px;justify-content:flex-start;gap:8px;">
+          <button class="btn-plus" id="btn_create_new" onclick="handleClick('btn_create_new')" style="width:24px;height:24px;font-size:16px;">+</button>
+          <button class="btn-1c" onclick="handleClick('wrong')">Выбрать</button>
+          <button class="btn-1c" onclick="handleClick('wrong')">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7B: NEW CLIENT CARD — FILL NAME -->
+  <div class="onec-window" id="s7b">
+    <div class="onec-menubar"><span class="menu-item">Файл</span><span class="menu-item">Правка</span><span class="menu-item">Действия</span><span class="menu-item">Перейти</span></div>
+    <div class="nc-form">
+      <div class="nc-titlebar">
+        <span>Контрагенты: Создание *</span>
+        <span class="branch-badge">🆕 Новый клиент</span>
+      </div>
+      <div style="padding:8px 10px 0;">
+        <div class="nc-row">
+          <span class="nc-label">Наименование:</span>
+          <input class="nc-input" id="nc_name_input" placeholder="Введи Фамилию Имя Отчество клиента" onclick="handleClick('nc_name_field')">
+          <span style="font-size:11px;color:#888;width:40px;">Код:</span>
+          <input class="nc-input" style="width:60px;flex:none;" readonly placeholder="авто">
+        </div>
+        <div class="nc-row" style="margin-left:128px;gap:4px;">
+          <span style="font-size:10.5px;color:#e03a1e;font-style:italic;">← Шаг 1: нажми и введи Ф.И.О клиента</span>
+        </div>
+      </div>
+      <div class="nc-tabs">
+        <div class="nc-tab active">Общие</div>
+        <div class="nc-tab">Покупатель/Поставщик</div>
+        <div class="nc-tab">Контакты</div>
+        <div class="nc-tab">Прочее</div>
+      </div>
+      <div class="nc-body">
+        <div class="nc-section-label">ТИП И ГРУППА</div>
+        <div class="nc-row">
+          <span class="nc-label">Юр. / физ. лицо:</span>
+          <div style="font-size:11px;">Физ. лицо</div>
+        </div>
+        <div class="nc-checkbox-row" style="margin-left:128px;">
+          <div class="nc-checkbox-item"><input type="checkbox" checked disabled><label>Покупатель</label></div>
+          <div class="nc-checkbox-item"><input type="checkbox" checked disabled><label>Розничный покупатель</label></div>
+          <div class="nc-checkbox-item"><input type="checkbox" disabled><label>Поставщик</label></div>
+          <div class="nc-checkbox-item"><input type="checkbox" disabled><label>Государственное учреждение</label></div>
+        </div>
+        <div class="nc-row">
+          <span class="nc-label">Группа контрагентов:</span>
+          <div class="group-val" style="color:#aaa;font-style:italic;">не выбрана</div>
+        </div>
+        <div class="nc-row">
+          <span class="nc-label">Телефон:</span>
+          <input class="nc-input" placeholder="+7 (___) ___-__-__">
+        </div>
+      </div>
+      <div class="nc-footer">
+        <button class="btn-1c" onclick="handleClick('wrong')">OK</button>
+        <button class="btn-1c" onclick="handleClick('wrong')">Записать</button>
+        <button class="btn-1c" onclick="handleClick('wrong')">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7C: NEW CLIENT CARD — SELECT GROUP -->
+  <div class="onec-window" id="s7c">
+    <div class="onec-menubar"><span class="menu-item">Файл</span><span class="menu-item">Правка</span></div>
+    <div class="nc-form">
+      <div class="nc-titlebar"><span>Контрагенты: Создание *</span><span class="branch-badge">🆕 Новый клиент</span></div>
+      <div style="padding:8px 10px 0;">
+        <div class="nc-row">
+          <span class="nc-label">Наименование:</span>
+          <input class="nc-input" value="Абенов Нурлан Серикович" readonly style="background:#f8f8f8;color:#0a6b0a;font-weight:600;">
+        </div>
+      </div>
+      <div class="nc-tabs">
+        <div class="nc-tab active">Общие</div>
+        <div class="nc-tab">Покупатель/Поставщик</div>
+        <div class="nc-tab">Контакты</div>
+        <div class="nc-tab">Прочее</div>
+      </div>
+      <div class="nc-body">
+        <div class="nc-section-label">ТИП И ГРУППА</div>
+        <div class="nc-row">
+          <span class="nc-label">Юр. / физ. лицо:</span>
+          <div style="font-size:11px;">Физ. лицо</div>
+        </div>
+        <div class="nc-checkbox-row" style="margin-left:128px;">
+          <div class="nc-checkbox-item"><input type="checkbox" checked disabled><label>Покупатель</label></div>
+          <div class="nc-checkbox-item"><input type="checkbox" checked disabled><label>Розничный покупатель</label></div>
+          <div class="nc-checkbox-item"><input type="checkbox" disabled><label>Поставщик</label></div>
+        </div>
+        <div class="nc-row">
+          <span class="nc-label">Группа контрагентов:</span>
+          <div class="group-val" id="nc_group_btn" onclick="handleClick('nc_group_btn')" style="cursor:pointer;">
+            <span style="color:#aaa;font-style:italic;">не выбрана — нажми «...»</span>
+            <span class="ff-dots">...</span>
+          </div>
+        </div>
+        <div style="margin-left:128px;font-size:10.5px;color:#e03a1e;font-style:italic;">← Шаг 2: нажми «...» и выбери группу «Покупатели по Заказам (Физ.лица)»</div>
+        <div class="nc-row" style="margin-top:6px;">
+          <span class="nc-label">Телефон:</span>
+          <input class="nc-input" placeholder="+7 (___) ___-__-__">
+        </div>
+      </div>
+      <div class="nc-footer">
+        <button class="btn-1c" onclick="handleClick('wrong')">OK</button>
+        <button class="btn-1c" onclick="handleClick('wrong')">Записать</button>
+        <button class="btn-1c" onclick="handleClick('wrong')">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7D: GROUP SELECTOR DIALOG -->
+  <div class="onec-window" id="s7d" style="position:relative;">
+    <div class="onec-menubar"><span class="menu-item">Файл</span></div>
+    <div class="nc-form" style="opacity:.3;pointer-events:none;"></div>
+    <div class="dialog-overlay">
+      <div class="win-modal" style="width:380px;">
+        <div class="win-modal-title"><span>Группы контрагентов — Выбрать</span><span>✕</span></div>
+        <div class="client-list" style="max-height:200px;">
+          <div class="client-row" onclick="handleClick('wrong')" style="padding-left:8px;">📁 ABIS компании ЭДО</div>
+          <div class="client-row" onclick="handleClick('wrong')" style="padding-left:8px;">📁 Банки</div>
+          <div class="client-row" onclick="handleClick('wrong')" style="padding-left:8px;">📁 Гос. органы</div>
+          <div class="client-row" onclick="handleClick('wrong')" style="padding-left:8px;">📁 Дизайнеры по ГПХ</div>
+          <div class="client-row" onclick="handleClick('wrong')" style="padding-left:8px;">📁 Инстаграм</div>
+          <div class="client-row" id="nc_group_select" onclick="handleClick('nc_group_select')" style="padding-left:8px;font-weight:700;color:#0a6b0a;">
+            📁 ПОКУПАТЕЛИ по Заказам покупателей (Физ.лица)
+          </div>
+          <div class="client-row" onclick="handleClick('wrong')" style="padding-left:8px;">📁 ПОКУПАТЕЛИ по Заказам покупателей (Юр.лица)</div>
+          <div class="client-row" onclick="handleClick('wrong')" style="padding-left:8px;">📁 Покупатели прочие</div>
+        </div>
+        <div class="modal-buttons" style="padding:8px 10px;">
+          <button class="btn-1c primary" onclick="handleClick('wrong')">Выбрать</button>
+          <button class="btn-1c" onclick="handleClick('wrong')">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7E: NEW CLIENT CARD — FILL PHONE -->
+  <div class="onec-window" id="s7e">
+    <div class="onec-menubar"><span class="menu-item">Файл</span><span class="menu-item">Правка</span></div>
+    <div class="nc-form">
+      <div class="nc-titlebar"><span>Контрагенты: Создание *</span><span class="branch-badge">🆕 Новый клиент</span></div>
+      <div style="padding:8px 10px 0;">
+        <div class="nc-row">
+          <span class="nc-label">Наименование:</span>
+          <input class="nc-input" value="Абенов Нурлан Серикович" readonly style="background:#f8f8f8;color:#0a6b0a;font-weight:600;">
+        </div>
+      </div>
+      <div class="nc-tabs"><div class="nc-tab active">Общие</div><div class="nc-tab">Покупатель/Поставщик</div><div class="nc-tab">Контакты</div><div class="nc-tab">Прочее</div></div>
+      <div class="nc-body">
+        <div class="nc-section-label">ТИП И ГРУППА</div>
+        <div class="nc-row">
+          <span class="nc-label">Юр. / физ. лицо:</span><div style="font-size:11px;">Физ. лицо</div>
+        </div>
+        <div class="nc-checkbox-row" style="margin-left:128px;">
+          <div class="nc-checkbox-item"><input type="checkbox" checked disabled><label>Покупатель</label></div>
+          <div class="nc-checkbox-item"><input type="checkbox" checked disabled><label>Розничный покупатель</label></div>
+        </div>
+        <div class="nc-row">
+          <span class="nc-label">Группа контрагентов:</span>
+          <div class="group-val" style="color:#0a6b0a;font-weight:600;font-size:10.5px;">ПОКУПАТЕЛИ по Заказам покупателей (Физ.лица)</div>
+        </div>
+        <div class="nc-section-label" style="margin-top:8px;">КОНТАКТЫ</div>
+        <div class="nc-row">
+          <span class="nc-label">Телефон:</span>
+          <input class="nc-input" id="nc_phone_input" placeholder="+7 (705) 999-99-99" onclick="handleClick('nc_phone_field')">
+        </div>
+        <div style="margin-left:128px;font-size:10.5px;color:#e03a1e;font-style:italic;">← Шаг 3: нажми и введи номер телефона клиента</div>
+      </div>
+      <div class="nc-footer">
+        <button class="btn-1c" onclick="handleClick('wrong')">OK</button>
+        <button class="btn-1c" onclick="handleClick('wrong')">Записать</button>
+        <button class="btn-1c" onclick="handleClick('wrong')">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7F: NEW CLIENT CARD — SAVE -->
+  <div class="onec-window" id="s7f">
+    <div class="onec-menubar"><span class="menu-item">Файл</span><span class="menu-item">Правка</span></div>
+    <div class="nc-form">
+      <div class="nc-titlebar"><span>Контрагенты: Создание *</span><span class="branch-badge">🆕 Новый клиент</span></div>
+      <div style="padding:8px 10px 0;">
+        <div class="nc-row">
+          <span class="nc-label">Наименование:</span>
+          <input class="nc-input" value="Абенов Нурлан Серикович" readonly style="background:#f8f8f8;color:#0a6b0a;font-weight:600;">
+        </div>
+      </div>
+      <div class="nc-tabs"><div class="nc-tab active">Общие</div><div class="nc-tab">Покупатель/Поставщик</div><div class="nc-tab">Контакты</div><div class="nc-tab">Прочее</div></div>
+      <div class="nc-body">
+        <div class="nc-section-label">ТИП И ГРУППА</div>
+        <div class="nc-row"><span class="nc-label">Юр. / физ. лицо:</span><div style="font-size:11px;">Физ. лицо</div></div>
+        <div class="nc-checkbox-row" style="margin-left:128px;">
+          <div class="nc-checkbox-item"><input type="checkbox" checked disabled><label>Покупатель</label></div>
+          <div class="nc-checkbox-item"><input type="checkbox" checked disabled><label>Розничный покупатель</label></div>
+        </div>
+        <div class="nc-row">
+          <span class="nc-label">Группа контрагентов:</span>
+          <div class="group-val" style="color:#0a6b0a;font-weight:600;font-size:10.5px;">ПОКУПАТЕЛИ по Заказам покупателей (Физ.лица)</div>
+        </div>
+        <div class="nc-section-label" style="margin-top:8px;">КОНТАКТЫ</div>
+        <div class="nc-row">
+          <span class="nc-label">Телефон:</span>
+          <input class="nc-input" value="+7 (705) 999-99-99" readonly style="background:#f8f8f8;color:#0a6b0a;font-weight:600;">
+        </div>
+      </div>
+      <div class="nc-footer">
+        <button class="btn-1c" onclick="handleClick('wrong')">OK</button>
+        <button class="btn-1c" id="nc_save_btn" onclick="handleClick('nc_save_btn')" style="font-weight:700;color:#0a6b0a;">Записать</button>
+        <button class="btn-1c" id="nc_close_btn" onclick="handleClick('nc_close_btn')" style="font-weight:700;color:#0a6b0a;">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7G: BACK TO CLIENT LIST — SELECT NEW CLIENT -->
+  <div class="onec-window" id="s7g" style="position:relative;">
+    <div class="onec-menubar"><span class="menu-item">Файл</span></div>
+    <div class="order-form">
+      <div class="form-titlebar">Заказ покупателя: Продажа, комиссия. Новый *</div>
+      <div class="form-fields" style="opacity:.4;pointer-events:none;">
+        <div class="ff-row"><span class="ff-label">Контрагент:</span><div class="ff-val"><span style="color:#888;">выбор...</span></div></div>
+      </div>
+    </div>
+    <div class="dialog-overlay">
+      <div class="win-modal" style="width:420px;">
+        <div class="win-modal-title"><span>Контрагенты — Выбрать</span><span>✕</span></div>
+        <div style="padding:8px 10px;background:#f0f0f0;border-bottom:1px solid #ccc;">
+          <div class="search-bar">
+            <label>Искать по:</label>
+            <select style="font-size:11px;border:1px solid #aaa;border-radius:2px;padding:2px 4px;"><option>Телефон</option></select>
+            <input value="7059999999" style="flex:1;font-size:11px;border:1px solid #aaa;border-radius:2px;padding:3px 6px;">
+          </div>
+        </div>
+        <div class="client-list">
+          <div class="client-row" id="new_client_result" onclick="handleClick('new_client_result')" style="background:#e8f8e8;">
+            <div><b>Абенов Нурлан Серикович</b> <span style="font-size:9.5px;color:#0a6b0a;background:#d4edda;padding:1px 4px;border-radius:2px;">новый</span></div>
+            <div class="cr-phone">7059999999</div>
+          </div>
+        </div>
+        <div style="background:#e8f8e8;border-top:1px solid #b2dfdb;padding:5px 10px;font-size:10.5px;color:#1a5c3a;">
+          ✅ Карточка создана! Теперь выбери клиента из списка.
+        </div>
+        <div class="modal-buttons" style="padding:8px 10px;">
+          <button class="btn-1c" onclick="handleClick('wrong')">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8: DIALOG «ИЗМЕНИЛСЯ ДОГОВОР» -->
+  <div class="onec-window" id="s8" style="position:relative;">
+    <div class="onec-menubar"><span class="menu-item">Файл</span></div>
+    <div class="order-form" style="opacity:.3;pointer-events:none;"></div>
+    <div class="dialog-overlay">
+      <div class="dialog-box">
+        <div class="dialog-title">⚠️ 1С:Предприятие</div>
+        <div class="dialog-body">Изменился договор с контрагентом. Пересчитать дату оплаты?</div>
+        <div class="dialog-btns">
+          <button class="btn-1c primary" id="btn_da" onclick="handleClick('btn_da')">Да</button>
+          <button class="btn-1c" onclick="handleClick('wrong')">Нет</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S9: ORDER FORM WITH CLIENT — ADD ITEM -->
+  <div class="onec-window" id="s9">
+    <div class="onec-menubar"><span class="menu-item">Файл</span><span class="menu-item">Правка</span><span class="menu-item">Действия</span></div>
+    <div class="order-form">
+      <div class="form-titlebar">Заказ покупателя: Продажа, комиссия. Новый *</div>
+      <div class="form-fields">
+        <div class="ff-row">
+          <span class="ff-label">Контрагент:</span>
+          <div class="ff-val" style="color:#0a6b0a;font-weight:600;">Есмуратова Саяна</div>
+        </div>
+        <div class="ff-row">
+          <span class="ff-label">Договор:</span>
+          <div class="ff-val">Без договора</div>
+        </div>
+      </div>
+      <div class="form-tabs">
+        <div class="form-tab active">Товары (0 поз.)</div>
+        <div class="form-tab" onclick="handleClick('wrong')">Услуги (0 поз.)</div>
+        <div class="form-tab" onclick="handleClick('wrong')">Дополнительно</div>
+      </div>
+      <div class="items-table">
+        <div class="items-toolbar">
+          <button class="btn-plus" id="btn_plus_items" onclick="handleClick('btn_plus_items')">+</button>
+          <button class="btn-toolbar" onclick="handleClick('wrong')" style="color:red;">✕</button>
+        </div>
+        <div class="items-headers">
+          <div class="ih">№</div><div class="ih">Артикул</div><div class="ih">Наименование</div><div class="ih">Кол-во</div><div class="ih">Цена</div><div class="ih">Сумма</div><div class="ih">Всего</div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <span>Тип цен: РОЗНИЧНАЯ ИСП</span>
+        <div class="total-row">Всего (KZT): <b>0,00</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S10: ENTER ARTICLE -->
+  <div class="onec-window" id="s10">
+    <div class="onec-menubar"><span class="menu-item">Файл</span></div>
+    <div class="order-form">
+      <div class="form-titlebar">Заказ покупателя: Продажа, комиссия. Новый *</div>
+      <div class="form-fields">
+        <div class="ff-row">
+          <span class="ff-label">Контрагент:</span>
+          <div class="ff-val" style="color:#0a6b0a;font-weight:600;">Есмуратова Саяна</div>
+        </div>
+      </div>
+      <div class="form-tabs">
+        <div class="form-tab active">Товары (1 поз.)</div>
+        <div class="form-tab" onclick="handleClick('wrong')">Услуги</div>
+        <div class="form-tab" onclick="handleClick('wrong')">Дополнительно</div>
+      </div>
+      <div class="items-table">
+        <div class="items-toolbar">
+          <button class="btn-plus" onclick="handleClick('wrong')">+</button>
+        </div>
+        <div class="items-headers">
+          <div class="ih">№</div><div class="ih">Артикул</div><div class="ih">Наименование</div><div class="ih">Кол-во</div><div class="ih">Цена</div><div class="ih">Сумма</div><div class="ih">Всего</div>
+        </div>
+        <div class="input-row">
+          <div class="input-cell"><input value="1" readonly></div>
+          <div class="input-cell"><input id="article_input" placeholder="Введи артикул" onclick="handleClick('article_input')"></div>
+          <div class="input-cell"><input placeholder="Наименование появится автоматически" readonly style="color:#888;"></div>
+          <div class="input-cell"><input placeholder="1" readonly></div>
+          <div class="input-cell"><input placeholder="0" readonly></div>
+          <div class="input-cell"><input placeholder="0" readonly></div>
+          <div class="input-cell"><input placeholder="0" readonly></div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <span style="color:#e03a1e;font-size:11px;">💡 Введи артикул товара в поле выше и нажми Enter</span>
+        <div class="total-row">Всего (KZT): <b>0,00</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S11: ITEM ADDED — add service tab -->
+  <div class="onec-window" id="s11">
+    <div class="onec-menubar"><span class="menu-item">Файл</span></div>
+    <div class="order-form">
+      <div class="form-titlebar">Заказ покупателя: Продажа, комиссия. Новый *</div>
+      <div class="form-fields">
+        <div class="ff-row">
+          <span class="ff-label">Контрагент:</span>
+          <div class="ff-val" style="color:#0a6b0a;font-weight:600;">Есмуратова Саяна</div>
+        </div>
+      </div>
+      <div class="form-tabs">
+        <div class="form-tab" onclick="handleClick('wrong')">Товары (1 поз.)</div>
+        <div class="form-tab active" id="tab_service" onclick="handleClick('tab_service')">Услуги (0 поз.)</div>
+        <div class="form-tab" onclick="handleClick('wrong')">Дополнительно</div>
+      </div>
+      <div class="items-table">
+        <div class="items-toolbar">
+          <button class="btn-plus" id="btn_plus_service" onclick="handleClick('btn_plus_service')">+</button>
+        </div>
+        <div class="items-headers">
+          <div class="ih" style="grid-column:span 2">Наименование услуги</div>
+          <div class="ih">Кол-во</div><div class="ih">Цена</div><div class="ih">Сумма</div><div class="ih" style="grid-column:span 2">Всего</div>
+        </div>
+        <div style="padding:20px;text-align:center;color:#aaa;font-size:11px;">
+          (нет позиций — нажми + чтобы добавить)
+        </div>
+      </div>
+      <div class="form-footer">
+        <span>Тип цен: РОЗНИЧНАЯ ИСП</span>
+        <div class="total-row">Всего (KZT): <b>42 000,00</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S12: DOPOLNITELNO TAB -->
+  <div class="onec-window" id="s12">
+    <div class="onec-menubar"><span class="menu-item">Файл</span></div>
+    <div class="order-form">
+      <div class="form-titlebar">Заказ покупателя: Продажа, комиссия. Новый *</div>
+      <div class="form-fields">
+        <div class="ff-row">
+          <span class="ff-label">Контрагент:</span>
+          <div class="ff-val" style="color:#0a6b0a;font-weight:600;">Есмуратова Саяна</div>
+        </div>
+      </div>
+      <div class="form-tabs">
+        <div class="form-tab" onclick="handleClick('wrong')">Товары (1 поз.)</div>
+        <div class="form-tab" onclick="handleClick('wrong')">Услуги (1 поз.)</div>
+        <div class="form-tab active" id="tab_dop" onclick="handleClick('tab_dop')">Дополнительно</div>
+      </div>
+      <div class="dop-grid">
+        <div class="ff-row">
+          <span class="ff-label">Аванс:</span>
+          <div class="ff-val" id="avans_field" style="border:2px solid #f59e0b;cursor:pointer;" onclick="handleClick('avans_field')">
+            <input id="avans_input" placeholder="введи сумму аванса" style="border:none;background:transparent;font-size:11px;width:100%;font-family:inherit;outline:none;" onclick="handleClick('avans_field')">
+          </div>
+        </div>
+        <div class="ff-row">
+          <span class="ff-label">Срок пост.:</span>
+          <div class="ff-val">
+            <input placeholder="24 (дней)" style="border:none;background:transparent;font-size:11px;width:100%;font-family:inherit;outline:none;" onclick="handleClick('wrong')">
+          </div>
+        </div>
+        <div class="ff-row" style="grid-column:span 2">
+          <span class="ff-label" style="width:100px;">Ответственный:</span>
+          <div class="ff-val" id="resp_field" style="cursor:pointer;" onclick="handleClick('resp_field')">
+            <input id="resp_input" placeholder="введи своё имя" style="border:none;background:transparent;font-size:11px;width:100%;font-family:inherit;outline:none;" onclick="handleClick('resp_field')">
+            <span class="ff-dots" onclick="handleClick('resp_field')">...</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <span>Тип цен: РОЗНИЧНАЯ ИСП</span>
+        <div class="total-row">Всего (KZT): <b>45 500,00</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S13: FINAL — ЗАПИСАТЬ -->
+  <div class="onec-window" id="s13">
+    <div class="onec-menubar"><span class="menu-item">Файл</span></div>
+    <div class="order-form">
+      <div class="form-titlebar">Заказ покупателя: Продажа, комиссия. Новый *</div>
+      <div class="form-ops-bar">
+        <button class="btn-toolbar" onclick="handleClick('wrong')">Операция ▾</button>
+        <button class="btn-toolbar" onclick="handleClick('wrong')">Заполнить и провести</button>
+        <div class="toolbar-sep"></div>
+        <button class="btn-toolbar" id="btn_zapisat" onclick="handleClick('btn_zapisat')" style="font-weight:700;color:#0a6b0a;">OK</button>
+        <button class="btn-toolbar" id="btn_zapisat2" onclick="handleClick('btn_zapisat2')" style="font-weight:700;color:#0a6b0a;">Записать</button>
+        <button class="btn-toolbar" onclick="handleClick('wrong')">Закрыть</button>
+      </div>
+      <div class="form-fields">
+        <div class="ff-row"><span class="ff-label">Контрагент:</span><div class="ff-val" style="color:#0a6b0a;font-weight:600;">Есмуратова Саяна</div></div>
+        <div class="ff-row"><span class="ff-label">Аванс:</span><div class="ff-val">45 500,00</div></div>
+        <div class="ff-row"><span class="ff-label">Срок пост.:</span><div class="ff-val">24 дня</div></div>
+        <div class="ff-row"><span class="ff-label">Ответственный:</span><div class="ff-val" style="font-weight:600;">Менеджер (я)</div></div>
+      </div>
+      <div class="form-tabs">
+        <div class="form-tab active">Товары (1 поз.)</div>
+        <div class="form-tab">Услуги (1 поз.)</div>
+        <div class="form-tab">Дополнительно</div>
+      </div>
+      <div class="items-table">
+        <div class="items-headers">
+          <div class="ih">№</div><div class="ih">Артикул</div><div class="ih">Наименование</div><div class="ih">Кол-во</div><div class="ih">Цена</div><div class="ih">Сумма</div><div class="ih">Всего</div>
+        </div>
+        <div class="item-row">
+          <div class="ir">1</div>
+          <div class="ir">LMP-001-36</div>
+          <div class="ir">Трековый светильник Divinare</div>
+          <div class="ir">1,000</div>
+          <div class="ir">42 000</div>
+          <div class="ir">42 000</div>
+          <div class="ir">42 000</div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <span>Тип цен: РОЗНИЧНАЯ ИСП</span>
+        <div class="total-row">Всего (KZT): <b>45 500,00</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPLETION -->
+  <div class="completion-screen" id="sComplete">
+    <div class="comp-icon">✅</div>
+    <div class="comp-title">Заказ оформлен!</div>
+    <div class="comp-sub">Отлично! Ты прошёл все шаги создания заказа для физ.лица в 1С. Теперь иди к кассиру и назови имя клиента — он найдёт заказ в системе.</div>
+    <div class="comp-stats">
+      <div class="comp-stat"><b id="statSteps">19</b>шагов пройдено</div>
+      <div class="comp-stat"><b id="statErrors">0</b>ошибок</div>
+    </div>
+    <button class="btn-restart" onclick="restart()">🔄 Пройти снова</button>
+  </div>
+
+</div>
+<!-- END SCREEN WRAP -->
+
+<script>
+// ─── FULLSCREEN ───────────────────────────────────────────
+function toggleFullscreen() {
+  const el = document.documentElement;
+  const isFs = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+  if (!isFs) {
+    if (el.requestFullscreen)            el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.mozRequestFullScreen)    el.mozRequestFullScreen();
+  } else {
+    if (document.exitFullscreen)            document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if (document.mozCancelFullScreen)  document.mozCancelFullScreen();
+  }
+}
+function updateFsBtn() {
+  const isFs = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+  document.getElementById('fsIcon').textContent  = isFs ? '✕' : '⛶';
+  document.getElementById('fsLabel').textContent = isFs ? 'Выйти' : 'Полный экран';
+}
+['fullscreenchange','webkitfullscreenchange','mozfullscreenchange'].forEach(ev =>
+  document.addEventListener(ev, updateFsBtn)
+);
+// allow parent iframe to trigger fullscreen via postMessage
+window.addEventListener('message', e => {
+  if (e.data === 'requestFullscreen') toggleFullscreen();
+});
+
+// ─── STATE ───────────────────────────────────────────────
+const STEPS = [
+  { screen:'s0',   target:'ic_remote',        label:'Шаг 1 из 19 — Открываем 1С',                tip:'👆 <b>Нажми на иконку «Рабочий стол»</b> — это ярлык для входа в 1С удалённый рабочий стол.' },
+  { screen:'s1',   target:'base_aura',         label:'Шаг 2 из 19 — Выбираем базу',               tip:'🗄️ <b>Выбери базу «aura»</b> — она для физ.лиц (обычных покупателей).' },
+  { screen:'s2',   target:'btn_login',         label:'Шаг 3 из 19 — Вход в систему',              tip:'🔑 Логин уже заполнен: <b>МЕНЕДЖЕР ПО ПРОДАЖАМ АУРА</b>. Пароль — пустой. <b>Нажми «Войти»</b>.' },
+  { screen:'s3',   target:'btn_scan',          label:'Шаг 4 из 19 — Авторизация сканером',        tip:'🔳 <b>Нажми «Считать бейджик»</b> — наведи сканер на штрихкод бейджика и нажми кнопку на сканере.' },
+  { screen:'s4',   target:'link_order',        label:'Шаг 5 из 19 — Открываем список заказов',    tip:'📋 <b>Нажми «Заказ покупателя»</b> в разделе «Заказы покупателей».' },
+  { screen:'s5',   target:'btn_plus_list',     label:'Шаг 6 из 19 — Создаём новый заказ',         tip:'➕ <b>Нажми на зелёный плюсик</b> — создаёт новый заказ.' },
+  { screen:'s6',   target:'btn_contra_dots',   label:'Шаг 7 из 19 — Открываем базу клиентов',     tip:'🔍 <b>Нажми на «...» рядом с полем «Контрагент»</b> — откроется база клиентов.' },
+  { screen:'s7',   target:'btn_create_new',    label:'Шаг 8 из 19 — Клиент не найден → создаём нового', tip:'🔍 Ввели номер — клиента <b>нет в базе</b>. Нажми <b>зелёный плюсик «+»</b> чтобы создать новую карточку.' },
+  { screen:'s7b',  target:'nc_name_field',     label:'Шаг 9 из 19 — Заполняем карточку: Ф.И.О',   tip:'✏️ <b>Нажми на поле «Наименование»</b> и введи Фамилию Имя Отчество клиента.' },
+  { screen:'s7c',  target:'nc_group_btn',      label:'Шаг 10 из 19 — Выбираем группу контрагентов', tip:'📁 <b>Нажми «...» рядом с полем «Группа контрагентов»</b> — нужно выбрать «ПОКУПАТЕЛИ по Заказам (Физ.лица)».' },
+  { screen:'s7d',  target:'nc_group_select',   label:'Шаг 11 из 19 — Выбираем группу Физ.лица',   tip:'📁 <b>Нажми на строку «ПОКУПАТЕЛИ по Заказам покупателей (Физ.лица)»</b> — это правильная группа для обычных покупателей.' },
+  { screen:'s7e',  target:'nc_phone_field',    label:'Шаг 12 из 19 — Вводим телефон клиента',     tip:'📱 <b>Нажми на поле «Телефон»</b> и введи номер клиента.' },
+  { screen:'s7f',  target:['nc_save_btn','nc_close_btn'], anyTarget:true, label:'Шаг 13 из 19 — Сохраняем карточку клиента', tip:'💾 Всё заполнено! <b>Нажми «Записать»</b> и затем <b>«Закрыть»</b> — карточка клиента сохранится.' },
+  { screen:'s7g',  target:'new_client_result', label:'Шаг 14 из 19 — Выбираем созданного клиента', tip:'✅ Карточка создана! <b>Нажми на строку с клиентом</b> — выбери его для заказа.' },
+  { screen:'s8',   target:'btn_da',            label:'Шаг 15 из 19 — Подтверждаем договор',       tip:'⚠️ Система спрашивает про договор. <b>Нажми «Да»</b> — стандартный ответ.' },
+  { screen:'s9',   target:'btn_plus_items',    label:'Шаг 16 из 19 — Добавляем товар',            tip:'➕ Клиент выбран! <b>Нажми зелёный плюсик</b> в таблице товаров — появится строка для артикула.' },
+  { screen:'s10',  target:'article_input',     label:'Шаг 17 из 19 — Вводим артикул',             tip:'📦 <b>Нажми на поле «Артикул»</b> и введи артикул товара. После ввода нажми Enter.' },
+  { screen:'s11',  target:'btn_plus_service',  label:'Шаг 18 из 19 — Добавляем услугу',           tip:'🚚 Если клиент хочет доставку — добавь услугу. <b>Нажми «+»</b> в разделе «Услуги».' },
+  { screen:'s12',  target:['avans_field','resp_field'], anyTarget:true, label:'Шаг 19 из 19 — Аванс и ответственный', tip:'📝 <b>Заполни поле «Аванс»</b> (100% суммы) и поле <b>«Ответственный»</b> — введи своё имя.' },
+  { screen:'s13',  target:['btn_zapisat','btn_zapisat2'], anyTarget:true, label:'Финал — Сохраняем заказ', tip:'💾 Всё готово! <b>Нажми «Записать» или «OK»</b> — заказ сохранится. Иди с клиентом на кассу!' }
+];
+
+let currentStep = 0;
+let errorCount = 0;
+let filledAvans = false;
+let filledResp = false;
+let ncNameFilled = false;
+let ncPhoneFilled = false;
+
+function init() { showStep(0); }
+
+function showStep(idx) {
+  document.querySelectorAll('[id^="s"]').forEach(el => {
+    if(el.id !== 'sComplete') el.classList.remove('active');
+  });
+  document.getElementById('sComplete').classList.remove('active');
+
+  if(idx >= STEPS.length) {
+    document.getElementById('sComplete').classList.add('active');
+    document.getElementById('statErrors').textContent = errorCount;
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('stepLabel').textContent = 'Готово!';
+    setTip('🎉 <b>Поздравляем!</b> Ты успешно создал заказ для физ.лица в 1С!', 'success');
+    return;
+  }
+
+  const step = STEPS[idx];
+  const screenEl = document.getElementById(step.screen);
+  if(screenEl) screenEl.classList.add('active');
+
+  document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+
+  const targets = Array.isArray(step.target) ? step.target : [step.target];
+  targets.forEach(t => {
+    const el = document.getElementById(t);
+    if(el) el.classList.add('highlight');
+  });
+
+  const pct = Math.round((idx / STEPS.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('stepLabel').textContent = step.label;
+  setTip(step.tip, 'normal');
+
+  // reset flags on relevant steps
+  if(idx === 18) { filledAvans = false; filledResp = false; }
+  if(idx === 8)  { ncNameFilled = false; }
+  if(idx === 11) { ncPhoneFilled = false; }
+}
+
+function setTip(html, type) {
+  const box = document.getElementById('tooltipBox');
+  box.className = 'tooltip-box';
+  if(type === 'error')   box.classList.add('tip-error');
+  if(type === 'success') box.classList.add('tip-success');
+  document.getElementById('tipText').innerHTML = html;
+}
+
+function handleClick(id) {
+  const step = STEPS[currentStep];
+  if(!step) return;
+
+  const targets = Array.isArray(step.target) ? step.target : [step.target];
+
+  // Step 18: аванс + ответственный
+  if(currentStep === 18 && step.anyTarget) {
+    if(id === 'avans_field') {
+      document.getElementById('avans_input').focus();
+      filledAvans = true;
+      setTip('✅ Поле «Аванс» активировано. Теперь <b>заполни поле «Ответственный»</b>.', 'success');
+      setTimeout(() => checkDopComplete(), 1500);
+      return;
+    }
+    if(id === 'resp_field') {
+      document.getElementById('resp_input').focus();
+      filledResp = true;
+      setTip('✅ Поле «Ответственный» активировано. Введи своё имя.', 'success');
+      setTimeout(() => checkDopComplete(), 1500);
+      return;
+    }
+    if(id === 'wrong') { showError(); return; }
+    return;
+  }
+
+  // Step 12: nc_save + nc_close (any of them)
+  if(currentStep === 12 && step.anyTarget) {
+    if(targets.includes(id)) {
+      setTip('✅ Карточка сохранена! Закрываем окно...', 'success');
+      setTimeout(() => advance(), 800);
+      return;
+    }
+    showError(); return;
+  }
+
+  // Step 19: записать заказ (any)
+  if(currentStep === 19 && step.anyTarget) {
+    if(targets.includes(id)) {
+      handleCorrect(step, id);
+      return;
+    }
+    showError(); return;
+  }
+
+  if(targets.includes(id)) {
+    handleCorrect(step, id);
+  } else {
+    showError();
+  }
+}
+
+function checkDopComplete() {
+  if(filledAvans && filledResp) {
+    advance();
+  } else if(filledAvans) {
+    setTip('👍 Аванс отмечен. Теперь <b>нажми поле «Ответственный»</b>.', 'normal');
+  } else if(filledResp) {
+    setTip('👍 Ответственный отмечен. Теперь <b>нажми поле «Аванс»</b>.', 'normal');
+  }
+}
+
+function handleCorrect(step, id) {
+  const feedbacks = {
+    'ic_remote':         '✅ Открываем 1С...',
+    'base_aura':         '✅ База «aura» выбрана — для физ.лиц!',
+    'btn_login':         '✅ Входим в систему...',
+    'btn_scan':          '✅ Авторизация прошла — бейджик считан!',
+    'link_order':        '✅ Открываем список заказов.',
+    'btn_plus_list':     '✅ Создаём новый заказ.',
+    'btn_contra_dots':   '✅ Открываем базу клиентов...',
+    'btn_create_new':    '✅ Открываем форму создания нового клиента!',
+    'nc_name_field':     '✅ Поле «Наименование» активно. Введи Ф.И.О и нажми Enter.',
+    'nc_group_btn':      '✅ Открываем список групп контрагентов...',
+    'nc_group_select':   '✅ Группа выбрана: Покупатели (Физ.лица)!',
+    'nc_phone_field':    '✅ Поле телефона активно. Введи номер клиента.',
+    'nc_save_btn':       '✅ Карточка записана и закрыта!',
+    'nc_close_btn':      '✅ Карточка записана и закрыта!',
+    'new_client_result': '✅ Клиент выбран!',
+    'btn_da':            '✅ Подтверждаем. Контрагент установлен.',
+    'btn_plus_items':    '✅ Добавляем строку для товара.',
+    'article_input':     '✅ Поле артикула активно. Введи артикул и нажми Enter.',
+    'btn_plus_service':  '✅ Добавляем услугу.',
+    'btn_zapisat':       '✅ Заказ записан! Идём к кассиру.',
+    'btn_zapisat2':      '✅ Заказ записан! Идём к кассиру.'
+  };
+  setTip(feedbacks[id] || '✅ Правильно!', 'success');
+  setTimeout(() => advance(), 800);
+}
+
+function advance() {
+  currentStep++;
+  showStep(currentStep);
+}
+
+function showError() {
+  errorCount++;
+  setTip('❌ <b>Не туда!</b> Нажми на <b>подсвеченный элемент</b> (жёлтая рамка).', 'error');
+  document.getElementById('screenWrap').classList.add('wrong-flash');
+  setTimeout(() => document.getElementById('screenWrap').classList.remove('wrong-flash'), 400);
+}
+
+function restart() {
+  currentStep = 0; errorCount = 0;
+  filledAvans = false; filledResp = false;
+  ncNameFilled = false; ncPhoneFilled = false;
+  ['article_input','avans_input','resp_input','nc_name_input','nc_phone_input'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  showStep(0);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Article Enter handler — step 16
+  const ai = document.getElementById('article_input');
+  if(ai) ai.addEventListener('keydown', e => {
+    if(e.key === 'Enter' && currentStep === 16) {
+      if(ai.value.trim()) {
+        setTip('✅ Артикул введён: <b>' + ai.value + '</b>. Товар найден!', 'success');
+        setTimeout(() => advance(), 800);
+      } else {
+        setTip('⚠️ Введи артикул товара, затем нажми Enter.', 'error');
+      }
+    }
+  });
+
+  // ФИО Enter handler — step 8
+  const ncn = document.getElementById('nc_name_input');
+  if(ncn) ncn.addEventListener('keydown', e => {
+    if(e.key === 'Enter' && currentStep === 8) {
+      if(ncn.value.trim()) {
+        setTip('✅ Ф.И.О введено: <b>' + ncn.value + '</b>. Переходим дальше.', 'success');
+        setTimeout(() => advance(), 800);
+      } else {
+        setTip('⚠️ Введи Фамилию Имя Отчество клиента.', 'error');
+      }
+    }
+  });
+
+  // Телефон Enter handler — step 11
+  const ncp = document.getElementById('nc_phone_input');
+  if(ncp) ncp.addEventListener('keydown', e => {
+    if(e.key === 'Enter' && currentStep === 11) {
+      if(ncp.value.trim()) {
+        setTip('✅ Телефон введён. Переходим дальше.', 'success');
+        setTimeout(() => advance(), 800);
+      } else {
+        setTip('⚠️ Введи номер телефона клиента.', 'error');
+      }
+    }
+  });
+
+  init();
+});
+</script>
+</body>
+</html>
