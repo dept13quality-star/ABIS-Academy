@@ -672,6 +672,9 @@ html, body { height: 100%; font-family: 'Onest', sans-serif; background: #F7F8FA
       <button class="nav-item admin-only" style="display:none" onclick="showPage('assign')" id="nav-assign">
         <span class="nav-icon">📋</span> Назначить курс
       </button>
+      <button class="nav-item admin-only" style="display:none" onclick="showPage('answers')" id="nav-answers">
+        <span class="nav-icon">📝</span> Ответы стажёров
+      </button>
     </nav>
 
     <main class="page-content">
@@ -791,6 +794,16 @@ html, body { height: 100%; font-family: 'Onest', sans-serif; background: #F7F8FA
           <div class="card-title">Все назначения</div>
           <div id="assignmentsList"><div class="loading"><div class="spinner"></div> Загрузка...</div></div>
         </div>
+      </div>
+
+      <!-- ADMIN: ANSWERS -->
+      <div class="page" id="page-answers">
+        <div class="page-header">
+          <div class="page-title">Ответы стажёров</div>
+          <div class="page-sub">Практические задания и домашние работы</div>
+        </div>
+        <div id="answersFilter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"></div>
+        <div id="answersList"><div class="loading"><div class="spinner"></div> Загрузка...</div></div>
       </div>
 
     </main>
@@ -925,6 +938,7 @@ function showPage(page) {
   if (page === 'users') loadUsers();
   if (page === 'manage-courses') loadManageCourses();
   if (page === 'assign') loadAssign();
+  if (page === 'answers') loadAnswers();
 }
 
 // DASHBOARD
@@ -1131,6 +1145,71 @@ async function removeAssignment(id) {
   await sb.from('enrollments').delete().eq('id', id);
   toast('Назначение удалено', 'ok');
   loadAssign();
+}
+
+// ANSWERS
+let answersData = [];
+let answersFilter = 'all';
+
+async function loadAnswers() {
+  if (currentProfile?.role !== 'admin') return;
+  document.getElementById('answersList').innerHTML = '<div class="loading"><div class="spinner"></div> Загрузка...</div>';
+
+  const { data, error } = await sb.from('practical_answers')
+    .select('*')
+    .order('submitted_at', { ascending: false });
+
+  if (error) {
+    document.getElementById('answersList').innerHTML = '<div class="empty-state"><p style="color:#f87171">Ошибка загрузки. Убедитесь что таблица practical_answers создана в Supabase.</p></div>';
+    return;
+  }
+
+  answersData = data || [];
+  renderAnswersFilter();
+  renderAnswers();
+}
+
+function renderAnswersFilter() {
+  const users = [...new Set(answersData.map(a => a.user_name || 'Без имени'))];
+  const filterEl = document.getElementById('answersFilter');
+  filterEl.innerHTML = [
+    `<button onclick="setAnswersFilter('all')" style="padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;background:${answersFilter==='all'?'var(--purple-light)':'rgba(255,255,255,0.1)'};color:#fff">Все</button>`,
+    ...users.map(u => `<button onclick="setAnswersFilter('${u}')" style="padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;background:${answersFilter===u?'var(--purple-light)':'rgba(255,255,255,0.1)'};color:#fff">${u}</button>`)
+  ].join('');
+}
+
+function setAnswersFilter(val) {
+  answersFilter = val;
+  renderAnswersFilter();
+  renderAnswers();
+}
+
+function renderAnswers() {
+  const container = document.getElementById('answersList');
+  const filtered = answersFilter === 'all' ? answersData : answersData.filter(a => (a.user_name || 'Без имени') === answersFilter);
+
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>Ответов пока нет</p></div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(a => {
+    const date = new Date(a.submitted_at).toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    return `<div class="card" style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+        <div>
+          <div style="font-weight:700;font-size:15px">${a.user_name || 'Без имени'}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Урок ${a.lesson_id} · ${a.lesson_title}</div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);white-space:nowrap">${date}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word">${escapeHtml(a.answer)}</div>
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // TOAST

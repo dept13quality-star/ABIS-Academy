@@ -1647,7 +1647,11 @@ async function init() {
   const { data: prog } = await sb.from('progress').select('*')
     .eq('user_id', session.user.id).eq('course_id', 1).single();
 
-  if (prog?.module_index) {
+  if (prog?.completed_lessons && Array.isArray(prog.completed_lessons)) {
+    prog.completed_lessons.forEach(id => completed.add(id));
+    updateProgress();
+  } else if (prog?.module_index) {
+    // fallback для старых записей
     for (let i = 1; i <= prog.module_index; i++) completed.add(i);
     updateProgress();
   }
@@ -1707,10 +1711,37 @@ async function completeLesson(n) {
     const isCompleted = completed.size >= TOTAL;
     await sb.from('progress').upsert({
       user_id: session.user.id, course_id: 1,
-      module_index: moduleIndex, score, completed: isCompleted,
+      module_index: completed.size,
+      completed_lessons: [...completed],
+      score, completed: isCompleted,
       updated_at: new Date().toISOString(),
       ...(isCompleted ? { completed_at: new Date().toISOString() } : {})
     }, { onConflict: 'user_id,course_id' });
+
+    // Сохраняем текст практических заданий
+    const practicalLessons = {
+      12: 'Проверочное задание к Азбуке — вводная',
+      29: 'ПЗ «Найди товар» — артикулы',
+      30: 'Задание: 30 прилагательных',
+      36: 'Домашнее задание: Замеры комнат'
+    };
+    if (practicalLessons[n]) {
+      const el2 = document.getElementById('lesson-' + n);
+      const ta = el2 ? el2.querySelector('.task-textarea') : null;
+      const answerText = ta ? ta.value.trim() : '';
+      if (answerText) {
+        const { data: profile } = await sb.from('profiles').select('full_name').eq('id', session.user.id).single();
+        await sb.from('practical_answers').upsert({
+          user_id: session.user.id,
+          user_name: profile?.full_name || session.user.email,
+          course_id: 1,
+          lesson_id: n,
+          lesson_title: practicalLessons[n],
+          answer: answerText,
+          submitted_at: new Date().toISOString()
+        }, { onConflict: 'user_id,lesson_id' });
+      }
+    }
   }
 
   if (completed.size >= TOTAL) {
