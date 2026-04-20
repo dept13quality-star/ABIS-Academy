@@ -1925,6 +1925,20 @@ function buildSimpleQuiz(containerId, questions, btnId) {
     };
     const doneBtn = document.getElementById(btnId);
     if (doneBtn) doneBtn.style.display = 'block';
+
+    // Сохраняем балл в Supabase
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return;
+      const lessonId = parseInt(btnId.replace('btn-', ''));
+      sb.from('quiz_scores').upsert({
+        user_id: session.user.id,
+        lesson_id: lessonId,
+        score,
+        max_score: shuffled.length,
+        pct: Math.round(score / shuffled.length * 100),
+        submitted_at: new Date().toISOString()
+      }, { onConflict: 'user_id,lesson_id' });
+    });
   }
 
   render(0);
