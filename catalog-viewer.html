@@ -276,7 +276,7 @@ const loadTxt   = document.getElementById('load-txt');
 // ── Boot: check ?src= param ──
 const params = new URLSearchParams(location.search);
 const srcUrl = params.get('src') || params.get('pdf') ||
-  'https://github.com/dept13quality-star/ABIS-Academy/releases/download/v1/Decorative_New_collection_2025_compressed.pdf';
+  'https://dept13quality-star.github.io/ABIS-Academy/Decorative_New_collection_2025_compressed.pdf';
 openURL(srcUrl);
 
 // ── Load PDF from URL (fetch as ArrayBuffer — обходит CORS/worker баги) ──
