@@ -865,7 +865,7 @@ function showApp() {
   document.getElementById('profileAvatar').textContent = initials;
   document.getElementById('profileName').textContent = name;
   document.getElementById('profileRole').textContent = role;
-  document.getElementById('dashGreeting').textContent = 'Привет, ' + name.split(' ')[0] + '!';
+  document.getElementById('dashGreeting').textContent = 'Привет, ' + name + '!';
 
   if (currentProfile?.role === 'admin') {
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
