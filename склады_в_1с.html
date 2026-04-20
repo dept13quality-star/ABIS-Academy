@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Склады в 1С — SVET.KZ</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep:   #1a4a2e;
+    --green-main:   #2d7a4a;
+    --green-mid:    #3da360;
+    --green-light:  #6dc98a;
+    --green-pale:   #e8f5ee;
+    --green-border: #c3e6d0;
+    --white:        #ffffff;
+    --text-dark:    #1c2b22;
+    --text-mid:     #3d5a47;
+    --text-muted:   #6b8c76;
+    --warn-bg:      #fff4e5;
+    --warn-border:  #f59e0b;
+    --warn-text:    #92400e;
+    --kasp-bg:      #e8f0fe;
+    --kasp-border:  #4285f4;
+    --kasp-text:    #1a3c8f;
+    --supplier-bg:  #f0fdf4;
+    --shadow-sm:    0 1px 3px rgba(26,74,46,.08);
+    --shadow-md:    0 4px 20px rgba(26,74,46,.12);
+    --shadow-lg:    0 8px 40px rgba(26,74,46,.18);
+    --radius:       14px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f0f7f3;
+    color: var(--text-dark);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-main) 60%, var(--green-mid) 100%);
+    padding: 40px 32px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    right: -60px; bottom: -60px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .header-inner { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; }
+  .logo-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .logo-icon {
+    width: 46px; height: 46px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .logo-text {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: #fff;
+    letter-spacing: .5px;
+  }
+  .logo-sub { font-size: 12px; color: rgba(255,255,255,0.6); font-weight: 400; margin-top: 1px; }
+  h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: clamp(22px, 5vw, 34px);
+    color: #fff;
+    line-height: 1.15;
+  }
+  .header-desc {
+    margin-top: 10px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.72);
+    font-weight: 400;
+    max-width: 520px;
+    line-height: 1.6;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    max-width: 900px;
+    margin: 28px auto 0;
+    padding: 0 20px;
+    display: flex; flex-wrap: wrap; gap: 10px;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: .2px;
+  }
+  .badge-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .badge.free    { background: var(--green-pale);   color: var(--green-deep); border: 1px solid var(--green-border); }
+  .badge.client  { background: var(--warn-bg);      color: var(--warn-text);  border: 1px solid #fcd34d; }
+  .badge.kasp    { background: var(--kasp-bg);      color: var(--kasp-text);  border: 1px solid var(--kasp-border); }
+  .badge.supplier{ background: #fdf4ff;             color: #6b21a8;           border: 1px solid #d8b4fe; }
+  .badge.vitrina { background: #fff7ed;             color: #9a3412;           border: 1px solid #fdba74; }
+  .badge.system  { background: #f1f5f9;             color: #334155;           border: 1px solid #cbd5e1; }
+
+  /* ── MAIN ── */
+  main { max-width: 900px; margin: 28px auto 0; padding: 0 20px; }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin: 30px 0 12px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--green-border);
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: box-shadow .2s, transform .15s;
+  }
+  .card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+  .card.warn-card {
+    border-color: var(--warn-border);
+    background: var(--warn-bg);
+  }
+  .card.kasp-card { border-color: var(--kasp-border); background: var(--kasp-bg); }
+  .card.supplier-card { border-color: #d8b4fe; background: #fdf4ff; }
+  .card.vitrina-card { border-color: #fdba74; background: #fff7ed; }
+  .card.system-card { border-color: #94a3b8; background: #f8fafc; }
+
+  .card-inner { display: flex; align-items: flex-start; gap: 0; }
+
+  .card-stripe {
+    width: 5px; flex-shrink: 0; align-self: stretch;
+    border-radius: 0;
+  }
+  .stripe-free     { background: var(--green-main); }
+  .stripe-warn     { background: var(--warn-border); }
+  .stripe-kasp     { background: var(--kasp-border); }
+  .stripe-supplier { background: #a855f7; }
+  .stripe-vitrina  { background: #f97316; }
+  .stripe-system   { background: #64748b; }
+
+  .card-body { padding: 16px 18px; flex: 1; }
+  .card-name {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-dark);
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+  .card.warn-card  .card-name { color: var(--warn-text); }
+  .card.kasp-card  .card-name { color: var(--kasp-text); }
+  .card.supplier-card .card-name { color: #6b21a8; }
+  .card.vitrina-card .card-name { color: #9a3412; }
+  .card.system-card .card-name { color: #1e293b; }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.6;
+  }
+  .card.warn-card .card-desc { color: #78350f; }
+
+  .alert-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(245,158,11,.15);
+    border: 1px solid rgba(245,158,11,.4);
+    color: var(--warn-text);
+    font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+    margin-top: 8px;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+  }
+  .card.kasp-card .alert-pill {
+    background: rgba(66,133,244,.12);
+    border-color: rgba(66,133,244,.35);
+    color: var(--kasp-text);
+  }
+
+  /* ── FINE BOX ── */
+  .fine-box {
+    background: #fff1f2;
+    border: 1px solid #fca5a5;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 28px 0 0;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .fine-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .fine-text { font-size: 13px; color: #7f1d1d; line-height: 1.65; }
+  .fine-text strong { font-weight: 700; color: #991b1b; }
+
+  /* ── FOOTER ── */
+  footer {
+    max-width: 900px;
+    margin: 36px auto 0;
+    padding: 0 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+  footer::before {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--green-border);
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 28px 20px 24px; }
+    .legend { padding: 0 16px; }
+    main { padding: 0 16px; }
+    footer { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-row">
+      <div class="logo-icon">💡</div>
+      <div>
+        <div class="logo-text">SVET.KZ</div>
+        <div class="logo-sub">Система управления складами</div>
+      </div>
+    </div>
+    <h1>Склады в 1С</h1>
+    <p class="header-desc">Справочник по назначению складов. Изучи внимательно — от правильного выбора склада зависит учёт и отчётность.</p>
+  </div>
+</header>
+
+<div class="legend">
+  <span class="badge free">   <span class="badge-dot" style="background:var(--green-main)"></span> Свободная продажа</span>
+  <span class="badge client"> <span class="badge-dot" style="background:#f59e0b"></span> Под клиентов — не продавать!</span>
+  <span class="badge vitrina"><span class="badge-dot" style="background:#f97316"></span> Витрина</span>
+  <span class="badge kasp">   <span class="badge-dot" style="background:#4285f4"></span> Каспи</span>
+  <span class="badge supplier"><span class="badge-dot" style="background:#a855f7"></span> Склад поставщика</span>
+  <span class="badge system"> <span class="badge-dot" style="background:#64748b"></span> Системный склад</span>
+</div>
+
+<main>
+
+  <!-- СВОБОДНЫЕ СКЛАДЫ -->
+  <div class="section-label">🟢 Свободные склады — можно продавать</div>
+
+  <div class="card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-free"></div>
+      <div class="card-body">
+        <div class="card-name">Контейнер №22 — Склад TEHNO &amp; Склад ВИТРИНА</div>
+        <div class="card-desc">Свободные склады. Здесь хранится наш складской запас — оттуда можно продавать.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ПОД КЛИЕНТОВ -->
+  <div class="section-label">🔒 Склады под клиентов — продавать нельзя</div>
+
+  <div class="card warn-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-warn"></div>
+      <div class="card-body">
+        <div class="card-name">Контейнер №24 — под клиентов</div>
+        <div class="card-desc">Заказанные товары, которые ждут своих клиентов (салоны Майтони Классик и Техно).</div>
+        <div class="alert-pill">⛔ Продавать нельзя</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card warn-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-warn"></div>
+      <div class="card-body">
+        <div class="card-name">Контейнер №2 — под клиентов</div>
+        <div class="card-desc">Заказанные товары, которые ждут своих клиентов (салон Модерн).</div>
+        <div class="alert-pill">⛔ Продавать нельзя</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card warn-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-warn"></div>
+      <div class="card-body">
+        <div class="card-name">Контейнер №21 — Склад Проектный отдел</div>
+        <div class="card-desc">Заказанные товары, которые ждут своих клиентов (категория №3 — проектный отдел).</div>
+        <div class="alert-pill">⛔ Продавать нельзя</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ВИТРИНЫ -->
+  <div class="section-label">🪟 Витрины салонов</div>
+
+  <div class="card vitrina-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-vitrina"></div>
+      <div class="card-body">
+        <div class="card-name">Maytoni Склад №801 — витрина салона Классик</div>
+        <div class="card-desc">Витрина. Продавать нельзя, кроме скидочных позиций или с разрешения администратора.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card vitrina-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-vitrina"></div>
+      <div class="card-body">
+        <div class="card-name">Maxi №1/120 Склад — витрина салона Модерн</div>
+        <div class="card-desc">Витрина. Продавать нельзя, кроме скидочных позиций или с разрешения администратора.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card vitrina-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-vitrina"></div>
+      <div class="card-body">
+        <div class="card-name">MAXI Витрина лампочки Склад</div>
+        <div class="card-desc">Лампочки салона Модерн.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card vitrina-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-vitrina"></div>
+      <div class="card-body">
+        <div class="card-name">Техническое освещение — витрина салона Техно</div>
+        <div class="card-desc">Витрина. Продавать нельзя, кроме скидочных позиций или с разрешения администратора.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card vitrina-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-vitrina"></div>
+      <div class="card-body">
+        <div class="card-name">Техническое освещение витрина — лампочки Техно</div>
+        <div class="card-desc">Лампочки салона Техно.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- КАСПИ -->
+  <div class="section-label">🔵 Каспи</div>
+
+  <div class="card kasp-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-kasp"></div>
+      <div class="card-body">
+        <div class="card-name">Контейнер №10 — Склад Витрина (36)</div>
+        <div class="card-desc">Каспи-склад. Используется для товаров, реализуемых через Kaspi.</div>
+        <div class="alert-pill">Kaspi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- СКЛАДЫ ПОСТАВЩИКОВ -->
+  <div class="section-label">🟣 Склады поставщиков</div>
+
+  <div class="card supplier-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-supplier"></div>
+      <div class="card-body">
+        <div class="card-name">ДОВОЛЬНЫЙ КЛИЕНТ</div>
+        <div class="card-desc">Склады поставщиков: бренды <strong>Майтони</strong> и <strong>Фрея</strong> в Алматы. Срок доставки — до 5 дней.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card supplier-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-supplier"></div>
+      <div class="card-body">
+        <div class="card-name">EGLO Kazakhstan</div>
+        <div class="card-desc">Остатки товаров EGLO в Алматы. Срок доставки — 1–3 дня.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card supplier-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-supplier"></div>
+      <div class="card-body">
+        <div class="card-name">Довольный клиент: Arte</div>
+        <div class="card-desc">Бренды <strong>Arte &amp; Divinare</strong> — остатки в Алматы. Срок доставки — до 5 дней.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card supplier-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-supplier"></div>
+      <div class="card-body">
+        <div class="card-name">Import Москва</div>
+        <div class="card-desc">Склады поставщиков в Москве. Срок доставки — 2–3 недели.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card supplier-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-supplier"></div>
+      <div class="card-body">
+        <div class="card-name">Утеген батыра</div>
+        <div class="card-desc">Склад оптового поставщика. Срок доставки — 1–3 дня.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- СИСТЕМНЫЕ -->
+  <div class="section-label">⚙️ Системные склады</div>
+
+  <div class="card system-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-system"></div>
+      <div class="card-body">
+        <div class="card-name">РЕАЛИЗАЦИЯ склад</div>
+        <div class="card-desc">
+          На этот склад делается <strong>перемещение</strong> после того, как клиент забрал свой товар.<br>
+          <span style="color:#475569; font-size:12px; margin-top:4px; display:block;">Необходимо обязательно выполнить перемещение при выдаче — иначе в конце месяца возникнут недостачи.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card system-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-system"></div>
+      <div class="card-body">
+        <div class="card-name">Транзит с 5 склада — Захида</div>
+        <div class="card-desc">Склад для рекламационных товаров.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card system-card">
+    <div class="card-inner">
+      <div class="card-stripe stripe-system"></div>
+      <div class="card-body">
+        <div class="card-name">svet.kz online</div>
+        <div class="card-desc">Остатки интернет-магазина. Продавать с этого склада нельзя.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ШТРАФ -->
+  <div class="fine-box">
+    <div class="fine-icon">⚠️</div>
+    <div class="fine-text">
+      <strong>Важно: штраф за забытое перемещение.</strong> Если клиент забрал товар, но менеджер не сделал перемещение на склад «РЕАЛИЗАЦИЯ» — в конце месяца возникает недостача. За это предусмотрен штраф. Не забывай фиксировать каждую выдачу!
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  ABIS GROUP / SVET.KZ — Внутренний документ ОКК
+</footer>
+
+</body>
+</html>
