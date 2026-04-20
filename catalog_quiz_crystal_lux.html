@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тест по каталогу — Crystal Lux</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green:       #5baf6d;
+    --green-light: #e8f5eb;
+    --green-mid:   #a8d9b0;
+    --green-dark:  #3d8c50;
+    --white:       #ffffff;
+    --gray:        #f4f7f4;
+    --text:        #1e2e22;
+    --text-soft:   #6b8c72;
+    --radius:      14px;
+    --shadow:      0 4px 24px rgba(91,175,109,0.13);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--gray);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 48px;
+  }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+  .logo-circle {
+    width: 44px; height: 44px; background: var(--green); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: white; box-shadow: 0 2px 8px rgba(91,175,109,0.35);
+  }
+  header h1 { font-size: 1.25rem; font-weight: 800; color: var(--green-dark); }
+  header p  { font-size: 0.78rem; color: var(--text-soft); font-weight: 600; }
+
+  .progress-wrap { width: 100%; max-width: 620px; margin-bottom: 20px; }
+  .progress-labels { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: var(--text-soft); margin-bottom: 6px; }
+  .progress-bar-bg { height: 8px; background: var(--green-mid); border-radius: 99px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--green); border-radius: 99px; transition: width 0.4s ease; }
+
+  .card { background: var(--white); border-radius: 20px; box-shadow: var(--shadow); padding: 28px; width: 100%; max-width: 620px; }
+
+  .img-wrap {
+    background: var(--green-light); border-radius: var(--radius); overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 300px; margin-bottom: 24px; position: relative;
+  }
+  .img-wrap img { max-width: 100%; max-height: 380px; object-fit: contain; display: block; transition: opacity 0.3s; }
+  .img-loading {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: var(--green); font-size: 0.9rem; font-weight: 700;
+  }
+  .spinner {
+    width: 32px; height: 32px; border: 3px solid var(--green-mid); border-top-color: var(--green);
+    border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .question-text { text-align: center; font-size: 1rem; font-weight: 700; color: var(--text-soft); margin-bottom: 18px; }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .opt-btn {
+    padding: 16px 10px; border: 2.5px solid var(--green-mid); background: var(--white);
+    border-radius: var(--radius); font-family: 'Nunito', sans-serif;
+    font-size: 1rem; font-weight: 800; color: var(--text); cursor: pointer;
+    transition: all 0.18s ease; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .opt-btn .page-label { font-size: 0.7rem; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px; }
+  .opt-btn:hover:not(:disabled) { border-color: var(--green); background: var(--green-light); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(91,175,109,0.2); }
+  .opt-btn.correct { border-color: var(--green); background: var(--green); color: white; }
+  .opt-btn.correct .page-label { color: rgba(255,255,255,0.75); }
+  .opt-btn.wrong { border-color: #e57373; background: #fdecea; color: #c62828; }
+  .opt-btn.wrong .page-label { color: #e57373; }
+  .opt-btn:disabled { cursor: default; }
+
+  .feedback { margin-top: 20px; padding: 14px 18px; border-radius: var(--radius); font-weight: 700; font-size: 0.95rem; display: none; align-items: center; gap: 10px; }
+  .feedback.show { display: flex; }
+  .feedback.ok  { background: var(--green-light); color: var(--green-dark); }
+  .feedback.err { background: #fdecea; color: #c62828; }
+  .feedback-icon { font-size: 1.3rem; flex-shrink: 0; }
+
+  .next-btn {
+    margin-top: 20px; width: 100%; padding: 15px; background: var(--green);
+    color: white; border: none; border-radius: var(--radius);
+    font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800;
+    cursor: pointer; transition: filter 0.2s, transform 0.1s; display: none;
+  }
+  .next-btn:hover { filter: brightness(0.9); transform: translateY(-1px); }
+  .next-btn.show { display: block; }
+
+  #result-screen { display: none; flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 620px; }
+  .result-card { background: var(--white); border-radius: 20px; box-shadow: var(--shadow); padding: 40px 28px; width: 100%; text-align: center; }
+  .result-emoji { font-size: 3.5rem; margin-bottom: 16px; }
+  .result-card h2 { font-size: 1.6rem; font-weight: 800; color: var(--green-dark); margin-bottom: 8px; }
+  .result-card p { font-size: 1rem; color: var(--text-soft); font-weight: 600; margin-bottom: 28px; }
+  .score-big { font-size: 3.5rem; font-weight: 800; color: var(--green); line-height: 1; margin-bottom: 4px; }
+  .score-label { font-size: 0.85rem; color: var(--text-soft); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 24px; }
+  .restart-btn { width: 100%; padding: 15px; background: var(--green); color: white; border: none; border-radius: var(--radius); font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800; cursor: pointer; }
+  .restart-btn:hover { background: var(--green-dark); }
+
+  #loader-screen { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px 0; color: var(--text-soft); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-circle">&#128161;</div>
+  <div>
+    <h1>SVET.KZ &mdash; Тест по каталогу</h1>
+    <p>Найди товар на правильной странице</p>
+  </div>
+</header>
+
+<div id="loader-screen">
+  <div class="spinner"></div>
+  Загрузка вопросов...
+</div>
+
+<div id="quiz-wrap" style="display:none; width:100%; max-width:620px;">
+  <div class="progress-wrap">
+    <div class="progress-labels">
+      <span id="q-counter">Вопрос 1 из ?</span>
+      <span id="score-live">&#10003; 0</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="img-wrap">
+      <div class="img-loading" id="img-loading">
+        <div style="text-align:center">
+          <div class="spinner"></div>
+          <div>Загрузка...</div>
+        </div>
+      </div>
+      <img id="quiz-img" src="" alt="" style="opacity:0" onload="imgLoaded()" onerror="imgError()">
+    </div>
+
+    <div class="question-text">На какой странице каталога находится этот товар?</div>
+
+    <div class="options" id="options"></div>
+
+    <div class="feedback" id="feedback">
+      <span class="feedback-icon" id="fb-icon"></span>
+      <span id="fb-text"></span>
+    </div>
+
+    <button class="next-btn" id="next-btn">-</button>
+  </div>
+</div>
+
+<div id="result-screen"></div>
+
+<script>
+var BASE_URL = "./";
+
+var IMAGE_FILES = [
+  "1-52.jpg",
+  "2-344.jpg",
+  "3-74.jpg"
+];
+
+var MAX_PAGE = 666;
+var OPTIONS_COUNT = 4;
+
+var questions = [];
+var current = 0;
+var score = 0;
+var answered = false;
+
+function parseQuestions() {
+  questions = IMAGE_FILES.map(function(filename) {
+    var parts = filename.replace(/\.\w+$/, '').split('-');
+    var correctPage = parseInt(parts[parts.length - 1]);
+    return { filename: filename, correctPage: correctPage };
+  });
+  questions = questions.sort(function() { return Math.random() - 0.5; });
+}
+
+function generateOptions(correct) {
+  var opts = [correct];
+  var diffs = [-80, -50, -30, 30, 50, 80, 100, -100];
+  var nearby = diffs.map(function(d) { return correct + d; })
+               .filter(function(n) { return n > 0 && n <= MAX_PAGE; })
+               .sort(function() { return Math.random() - 0.5; });
+  for (var i = 0; i < nearby.length && opts.length < OPTIONS_COUNT; i++) {
+    if (opts.indexOf(nearby[i]) === -1) opts.push(nearby[i]);
+  }
+  var attempts = 0;
+  while (opts.length < OPTIONS_COUNT && attempts < 200) {
+    var r = Math.floor(Math.random() * MAX_PAGE) + 1;
+    if (opts.indexOf(r) === -1) opts.push(r);
+    attempts++;
+  }
+  return opts.sort(function() { return Math.random() - 0.5; });
+}
+
+function renderQuestion() {
+  var q = questions[current];
+  answered = false;
+
+  document.getElementById('q-counter').textContent = 'Вопрос ' + (current + 1) + ' из ' + questions.length;
+  document.getElementById('score-live').textContent = String.fromCharCode(10003) + ' ' + score;
+  document.getElementById('prog-fill').style.width = ((current / questions.length) * 100) + '%';
+
+  var img = document.getElementById('quiz-img');
+  img.style.opacity = 0;
+  document.getElementById('img-loading').style.display = 'flex';
+  img.src = BASE_URL + q.filename;
+
+  var opts = generateOptions(q.correctPage);
+  var container = document.getElementById('options');
+  container.innerHTML = '';
+  opts.forEach(function(page) {
+    var btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = '<span class="page-label">стр.</span>' + page;
+    btn.onclick = (function(b, p, c) {
+      return function() { selectAnswer(b, p, c); };
+    })(btn, page, q.correctPage);
+    container.appendChild(btn);
+  });
+
+  document.getElementById('feedback').className = 'feedback';
+  var nb = document.getElementById('next-btn');
+  nb.className = 'next-btn';
+  nb.style.background = '';
+}
+
+function imgLoaded() {
+  document.getElementById('img-loading').style.display = 'none';
+  document.getElementById('quiz-img').style.opacity = 1;
+}
+
+function imgError() {
+  document.getElementById('img-loading').innerHTML = '<div style="text-align:center;color:#e57373">Изображение не найдено</div>';
+}
+
+function selectAnswer(btn, chosen, correct) {
+  if (answered) return;
+  answered = true;
+
+  document.querySelectorAll('.opt-btn').forEach(function(b) { b.disabled = true; });
+
+  var fb = document.getElementById('feedback');
+  var fbIcon = document.getElementById('fb-icon');
+  var fbText = document.getElementById('fb-text');
+  var nextBtn = document.getElementById('next-btn');
+  nextBtn.className = 'next-btn show';
+
+  if (chosen === correct) {
+    btn.classList.add('correct');
+    fb.className = 'feedback ok show';
+    fbIcon.textContent = String.fromCodePoint(9989);
+    fbText.textContent = 'Верно!';
+    score++;
+    nextBtn.style.background = '';
+    nextBtn.textContent = current + 1 < questions.length ? 'Следующий вопрос' : 'Посмотреть результат';
+    nextBtn.onclick = nextQuestion;
+  } else {
+    btn.classList.add('wrong');
+    fb.className = 'feedback err show';
+    fbIcon.textContent = String.fromCodePoint(10060);
+    fbText.textContent = 'Неверно. Вернись к каталогу и найди правильную страницу.';
+    nextBtn.style.background = '#e57373';
+    nextBtn.textContent = 'Начать заново';
+    nextBtn.onclick = restart;
+  }
+}
+
+function nextQuestion() {
+  current++;
+  if (current < questions.length) {
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  document.getElementById('quiz-wrap').style.display = 'none';
+  var rs = document.getElementById('result-screen');
+  rs.style.display = 'flex';
+  rs.innerHTML = '<div class="result-card">' +
+    '<div class="result-emoji">' + String.fromCodePoint(127942) + '</div>' +
+    '<h2>Отлично! Все правильно!</h2>' +
+    '<p>Ты знаешь каталог Crystal Lux</p>' +
+    '<div class="score-big">' + questions.length + '/' + questions.length + '</div>' +
+    '<div class="score-label">100% правильных ответов</div>' +
+    '<button class="restart-btn" onclick="restart()">Пройти ещё раз</button>' +
+    '</div>';
+}
+
+function restart() {
+  current = 0; score = 0; answered = false;
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('result-screen').innerHTML = '';
+  parseQuestions();
+  document.getElementById('quiz-wrap').style.display = 'block';
+  renderQuestion();
+}
+
+window.onload = function() {
+  parseQuestions();
+  document.getElementById('loader-screen').style.display = 'none';
+  document.getElementById('quiz-wrap').style.display = 'block';
+  renderQuestion();
+};
+</script>
+</body>
+</html>
