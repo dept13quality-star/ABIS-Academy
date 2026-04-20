@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тест по каталогу — SVET.KZ</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ─── CONFIG COLORS ─── */
+  :root {
+    --green:       #5baf6d;
+    --green-light: #e8f5eb;
+    --green-mid:   #a8d9b0;
+    --green-dark:  #3d8c50;
+    --white:       #ffffff;
+    --gray:        #f4f7f4;
+    --text:        #1e2e22;
+    --text-soft:   #6b8c72;
+    --radius:      14px;
+    --shadow:      0 4px 24px rgba(91,175,109,0.13);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--gray);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 48px;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .logo-circle {
+    width: 44px; height: 44px;
+    background: var(--green);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: white;
+    box-shadow: 0 2px 8px rgba(91,175,109,0.35);
+  }
+  header h1 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--green-dark);
+    letter-spacing: -0.3px;
+  }
+  header p {
+    font-size: 0.78rem;
+    color: var(--text-soft);
+    font-weight: 600;
+  }
+
+  /* ─── PROGRESS ─── */
+  .progress-wrap {
+    width: 100%;
+    max-width: 620px;
+    margin-bottom: 20px;
+  }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-soft);
+    margin-bottom: 6px;
+  }
+  .progress-bar-bg {
+    height: 8px;
+    background: var(--green-mid);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 28px;
+    width: 100%;
+    max-width: 620px;
+  }
+
+  /* ─── IMAGE AREA ─── */
+  .img-wrap {
+    background: var(--green-light);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .img-wrap img {
+    max-width: 100%;
+    max-height: 380px;
+    object-fit: contain;
+    display: block;
+    transition: opacity 0.3s;
+  }
+  .img-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--green);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--green-mid);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-bottom: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── QUESTION TEXT ─── */
+  .question-text {
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-soft);
+    margin-bottom: 18px;
+    letter-spacing: 0.1px;
+  }
+
+  /* ─── OPTIONS ─── */
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .opt-btn {
+    padding: 16px 10px;
+    border: 2.5px solid var(--green-mid);
+    background: var(--white);
+    border-radius: var(--radius);
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .opt-btn .page-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .opt-btn:hover:not(:disabled) {
+    border-color: var(--green);
+    background: var(--green-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(91,175,109,0.2);
+  }
+  .opt-btn.correct {
+    border-color: var(--green);
+    background: var(--green);
+    color: white;
+  }
+  .opt-btn.correct .page-label { color: rgba(255,255,255,0.75); }
+  .opt-btn.wrong {
+    border-color: #e57373;
+    background: #fdecea;
+    color: #c62828;
+  }
+  .opt-btn.wrong .page-label { color: #e57373; }
+  .opt-btn:disabled { cursor: default; }
+
+  /* ─── FEEDBACK ─── */
+  .feedback {
+    margin-top: 20px;
+    padding: 14px 18px;
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+  .feedback.show { display: flex; }
+  .feedback.ok  { background: var(--green-light); color: var(--green-dark); }
+  .feedback.err { background: #fdecea; color: #c62828; }
+  .feedback-icon { font-size: 1.3rem; flex-shrink: 0; }
+
+  /* ─── NEXT BUTTON ─── */
+  .next-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 15px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    display: none;
+  }
+  .next-btn:hover { background: var(--green-dark); transform: translateY(-1px); }
+  .next-btn.show { display: block; }
+
+  /* ─── RESULT SCREEN ─── */
+  #result-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 620px;
+  }
+  .result-card {
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 40px 28px;
+    width: 100%;
+    text-align: center;
+  }
+  .result-emoji { font-size: 3.5rem; margin-bottom: 16px; }
+  .result-card h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--green-dark);
+    margin-bottom: 8px;
+  }
+  .result-card p {
+    font-size: 1rem;
+    color: var(--text-soft);
+    font-weight: 600;
+    margin-bottom: 28px;
+  }
+  .score-big {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--green);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .score-label {
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 24px;
+  }
+  .mistakes-list {
+    text-align: left;
+    background: var(--gray);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .mistakes-list h3 {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .mistake-item {
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--green-mid);
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+  }
+  .mistake-item:last-child { border: none; }
+  .mistake-item .wrong-answer { color: #e57373; }
+  .mistake-item .right-answer { color: var(--green-dark); }
+  .restart-btn {
+    width: 100%;
+    padding: 15px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .restart-btn:hover { background: var(--green-dark); }
+
+  /* ─── LOADER SCREEN ─── */
+  #loader-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 60px 0;
+    color: var(--text-soft);
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-circle">💡</div>
+  <div>
+    <h1>SVET.KZ — Тест по каталогу</h1>
+    <p>Найди товар на правильной странице</p>
+  </div>
+</header>
+
+<!-- LOADER -->
+<div id="loader-screen">
+  <div class="spinner"></div>
+  Загрузка вопросов...
+</div>
+
+<!-- QUIZ -->
+<div id="quiz-wrap" style="display:none; width:100%; max-width:620px;">
+  <div class="progress-wrap">
+    <div class="progress-labels">
+      <span id="q-counter">Вопрос 1 из ?</span>
+      <span id="score-live">✓ 0</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="img-wrap" id="img-wrap">
+      <div class="img-loading" id="img-loading">
+        <div style="text-align:center">
+          <div class="spinner"></div>
+          <div>Загрузка...</div>
+        </div>
+      </div>
+      <img id="quiz-img" src="" alt="" style="opacity:0" onload="imgLoaded()" onerror="imgError()">
+    </div>
+
+    <div class="question-text">На какой странице каталога находится этот товар?</div>
+
+    <div class="options" id="options"></div>
+
+    <div class="feedback" id="feedback">
+      <span class="feedback-icon" id="fb-icon"></span>
+      <span id="fb-text"></span>
+    </div>
+
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">Следующий вопрос →</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="result-screen"></div>
+
+<script>
+// ════════════════════════════════════════════════════
+//  ⚙️  КОНФИГ — ИЗМЕНИ ТОЛЬКО ЭТО
+// ════════════════════════════════════════════════════
+const BASE_URL = "https://raw.githubusercontent.com/dept13quality-star/ABIS-Academy/main/";
+
+// Файлы: формат {порядковый}-{страница}.jpeg
+// Пример: 1-84.jpeg → правильный ответ = страница 84
+const IMAGE_FILES = [
+  "1-84.jpeg",
+  "2-185.jpeg",
+  "3-216.jpeg",
+  // добавляй сюда новые файлы
+];
+
+const MAX_PAGE = 666;     // максимальный номер страницы в каталоге
+const OPTIONS_COUNT = 4;  // количество вариантов ответа
+// ════════════════════════════════════════════════════
+
+let questions = [];
+let current = 0;
+let score = 0;
+let answered = false;
+let mistakes = [];
+
+function parseQuestions() {
+  questions = IMAGE_FILES.map(filename => {
+    const parts = filename.replace(/\.\w+$/, '').split('-');
+    const correctPage = parseInt(parts[parts.length - 1]);
+    return { filename, correctPage };
+  });
+  // перемешать
+  questions = questions.sort(() => Math.random() - 0.5);
+}
+
+function generateOptions(correct) {
+  const opts = new Set([correct]);
+  // добавить варианты близко к правильному
+  const nearby = [-80, -50, -30, 30, 50, 80, 100, -100].map(d => correct + d)
+                 .filter(n => n > 0 && n <= MAX_PAGE);
+  for (const n of nearby.sort(() => Math.random() - 0.5)) {
+    if (opts.size >= OPTIONS_COUNT) break;
+    opts.add(n);
+  }
+  // добирать рандомом если мало
+  let attempts = 0;
+  while (opts.size < OPTIONS_COUNT && attempts < 200) {
+    const r = Math.floor(Math.random() * MAX_PAGE) + 1;
+    opts.add(r);
+    attempts++;
+  }
+  return [...opts].sort(() => Math.random() - 0.5);
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  answered = false;
+
+  // прогресс
+  document.getElementById('q-counter').textContent = `Вопрос ${current + 1} из ${questions.length}`;
+  document.getElementById('score-live').textContent = `✓ ${score}`;
+  document.getElementById('prog-fill').style.width = `${(current / questions.length) * 100}%`;
+
+  // картинка
+  const img = document.getElementById('quiz-img');
+  const loading = document.getElementById('img-loading');
+  img.style.opacity = 0;
+  loading.style.display = 'flex';
+  img.src = BASE_URL + q.filename;
+
+  // варианты
+  const opts = generateOptions(q.correctPage);
+  const container = document.getElementById('options');
+  container.innerHTML = '';
+  opts.forEach(page => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = `<span class="page-label">стр.</span>${page}`;
+    btn.onclick = () => selectAnswer(btn, page, q.correctPage);
+    container.appendChild(btn);
+  });
+
+  // сбросить фидбэк
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  document.getElementById('next-btn').className = 'next-btn';
+}
+
+function imgLoaded() {
+  const img = document.getElementById('quiz-img');
+  document.getElementById('img-loading').style.display = 'none';
+  img.style.opacity = 1;
+}
+
+function imgError() {
+  document.getElementById('img-loading').innerHTML =
+    '<div style="text-align:center; color:#e57373">⚠️<br>Изображение не найдено</div>';
+}
+
+function selectAnswer(btn, chosen, correct) {
+  if (answered) return;
+  answered = true;
+
+  const allBtns = document.querySelectorAll('.opt-btn');
+  allBtns.forEach(b => b.disabled = true);
+
+  const fb = document.getElementById('feedback');
+  const fbIcon = document.getElementById('fb-icon');
+  const fbText = document.getElementById('fb-text');
+
+  if (chosen === correct) {
+    btn.classList.add('correct');
+    fb.className = 'feedback ok show';
+    fbIcon.textContent = '✅';
+    fbText.textContent = `Верно! Страница ${correct}.`;
+    score++;
+  } else {
+    btn.classList.add('wrong');
+    // подсветить правильный
+    allBtns.forEach(b => {
+      if (b.textContent.includes(correct)) b.classList.add('correct');
+    });
+    fb.className = 'feedback err show';
+    fbIcon.textContent = '❌';
+    fbText.textContent = `Неверно. Правильный ответ: страница ${correct}.`;
+    mistakes.push({ filename: questions[current].filename, chosen, correct });
+  }
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.className = 'next-btn show';
+  nextBtn.textContent = current + 1 < questions.length ? 'Следующий вопрос →' : 'Посмотреть результат →';
+}
+
+function nextQuestion() {
+  current++;
+  if (current < questions.length) {
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  document.getElementById('quiz-wrap').style.display = 'none';
+  const rs = document.getElementById('result-screen');
+  rs.style.display = 'flex';
+
+  const pct = Math.round((score / questions.length) * 100);
+  let emoji = pct >= 80 ? '🏆' : pct >= 60 ? '👍' : '📚';
+  let msg = pct >= 80 ? 'Отличный результат!' : pct >= 60 ? 'Неплохо, но есть куда расти' : 'Нужно ещё поработать с каталогом';
+
+  let mistakesHTML = '';
+  if (mistakes.length > 0) {
+    const items = mistakes.map(m => `
+      <div class="mistake-item">
+        <span>${m.filename.replace(/\.\w+$/, '')}</span>
+        <span><span class="wrong-answer">стр.${m.chosen}</span> → <span class="right-answer">стр.${m.correct}</span></span>
+      </div>
+    `).join('');
+    mistakesHTML = `<div class="mistakes-list" style="display:block">
+      <h3>Ошибки (${mistakes.length})</h3>
+      ${items}
+    </div>`;
+  }
+
+  rs.innerHTML = `
+    <div class="result-card">
+      <div class="result-emoji">${emoji}</div>
+      <h2>${msg}</h2>
+      <p>Тест по каталогу SVET.KZ завершён</p>
+      <div class="score-big">${score}/${questions.length}</div>
+      <div class="score-label">${pct}% правильных ответов</div>
+      ${mistakesHTML}
+      <button class="restart-btn" onclick="restart()">Пройти ещё раз</button>
+    </div>
+  `;
+}
+
+function restart() {
+  current = 0; score = 0; answered = false; mistakes = [];
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('result-screen').innerHTML = '';
+  parseQuestions();
+  document.getElementById('quiz-wrap').style.display = 'block';
+  renderQuestion();
+}
+
+// INIT
+window.onload = () => {
+  parseQuestions();
+  document.getElementById('loader-screen').style.display = 'none';
+  document.getElementById('quiz-wrap').style.display = 'block';
+  renderQuestion();
+};
+</script>
+</body>
+</html>
