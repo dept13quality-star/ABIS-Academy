@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>День 5 — Стажёрский срок SVET.KZ</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #1E8A3C;
+  --green-light: #2DB54F;
+  --green-dark: #166A2E;
+  --green-pale: #E8F5EC;
+  --purple: #4A2D8F;
+  --purple-light: #7B5EA7;
+  --text: #1A1A2E;
+  --muted: #6B7280;
+  --border: rgba(0,0,0,0.08);
+  --correct: #1E8A3C;
+  --wrong: #E24B4A;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(--text); min-height: 100vh; }
+
+.course-header {
+  background: linear-gradient(135deg, #166A2E 0%, #1E8A3C 50%, #2DB54F 100%);
+  padding: 24px 24px 20px; position: sticky; top: 0; z-index: 100;
+  border-bottom: 3px solid var(--green-dark);
+  box-shadow: 0 2px 20px rgba(30,138,60,0.3);
+}
+.header-top { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.back-btn {
+  background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 10px; padding: 8px 14px; font-family: 'Onest', sans-serif;
+  font-size: 13px; color: #fff; cursor: pointer; text-decoration: none; transition: all 0.2s;
+}
+.back-btn:hover { background: rgba(255,255,255,0.3); }
+.course-day-badge { font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.8); margin-bottom: 4px; }
+.course-title { font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 700; color: #fff; line-height: 1.3; }
+.progress-info { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.progress-text { font-size: 12px; color: rgba(255,255,255,0.8); }
+.progress-count { font-size: 12px; font-weight: 600; color: #fff; }
+.progress-bar-outer { background: rgba(255,255,255,0.2); border-radius: 100px; height: 5px; overflow: hidden; }
+.progress-bar-inner { height: 100%; background: #fff; border-radius: 100px; transition: width 0.5s ease; }
+
+.content { max-width: 720px; margin: 0 auto; padding: 24px 16px 80px; }
+
+.section-header { display: flex; align-items: center; gap: 12px; padding: 20px 0 12px; }
+.section-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), var(--green-light));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Unbounded', sans-serif; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.section-title { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; color: var(--green-dark); }
+
+.lesson-item {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 16px; margin-bottom: 10px; overflow: hidden;
+  transition: all 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.lesson-item.completed { border-color: rgba(30,138,60,0.3); }
+.lesson-header { display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; }
+.lesson-status {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; border: 2px solid var(--border); background: #F5F5F5; transition: all 0.3s;
+}
+.lesson-item.completed .lesson-status { background: rgba(30,138,60,0.1); border-color: var(--correct); font-size: 14px; }
+.lesson-info { flex: 1; }
+.lesson-num { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+.lesson-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.lesson-type-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 100px; margin-top: 4px; display: inline-block; }
+.badge-video { background: var(--green-pale); color: var(--green-dark); }
+.badge-test { background: rgba(74,45,143,0.1); color: var(--purple); }
+.badge-task { background: #FFF0F0; color: #C0392B; }
+.badge-read { background: #F0F4FF; color: #3B5BDB; }
+.badge-info { background: #FFF8E7; color: #8B6000; }
+.badge-practice { background: rgba(74,45,143,0.08); color: var(--purple); }
+.badge-final { background: linear-gradient(135deg, #4A2D8F, #1E8A3C); color: #fff; }
+.lesson-chevron { font-size: 12px; color: var(--muted); transition: transform 0.3s; }
+.lesson-item.open .lesson-chevron { transform: rotate(180deg); }
+.lesson-body { display: none; border-top: 1px solid var(--border); }
+.lesson-item.open .lesson-body { display: block; }
+
+.video-wrap { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
+.video-wrap iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:0; }
+
+.timer-wrap { padding: 14px 18px 16px; }
+.timer-btn {
+  width: 100%; padding: 13px 24px; background: #F5F5F5;
+  border: 1px solid var(--border); border-radius: 12px;
+  font-family: 'Onest', sans-serif; font-size: 14px; font-weight: 600;
+  color: var(--muted); cursor: default; transition: all 0.3s; text-align: center;
+}
+.timer-btn.ready {
+  background: linear-gradient(135deg, var(--purple), #6B3FA0);
+  border-color: transparent; color: #fff; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(74,45,143,0.3);
+}
+.timer-btn.ready:hover { opacity: 0.88; transform: translateY(-1px); }
+.timer-btn.done { background: linear-gradient(135deg, var(--green-dark), var(--green)); border-color: transparent; color: #fff; }
+
+.complete-btn {
+  background: linear-gradient(135deg, var(--purple), #6B3FA0);
+  border: none; border-radius: 12px; padding: 13px 24px;
+  font-family: 'Onest', sans-serif; font-size: 14px; font-weight: 600;
+  color: #fff; cursor: pointer; transition: all 0.2s; width: 100%;
+}
+.complete-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.complete-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+.complete-btn.done { background: linear-gradient(135deg, var(--green-dark), var(--green)); }
+
+.task-block { padding: 20px 18px; }
+.task-desc {
+  background: #F5F5F5; border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px; margin-bottom: 16px;
+}
+.task-desc h4 { font-size: 14px; font-weight: 600; color: var(--green-dark); margin-bottom: 8px; }
+.task-desc p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+.task-desc ul, .task-desc ol { padding-left: 18px; margin-top: 8px; }
+.task-desc li { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 4px; }
+.task-desc strong { color: var(--text); }
+
+.task-textarea {
+  width: 100%; background: #fff; border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 16px; font-family: 'Onest', sans-serif; font-size: 14px;
+  color: var(--text); outline: none; min-height: 100px; resize: vertical;
+  transition: border-color 0.2s; margin-bottom: 12px;
+}
+.task-textarea:focus { border-color: var(--green-light); }
+.task-textarea::placeholder { color: var(--muted); opacity: 0.6; }
+
+.link-card {
+  background: #F5F5F5; border: 1px solid rgba(30,138,60,0.2);
+  border-radius: 14px; padding: 16px 20px;
+  display: flex; align-items: center; gap: 14px;
+  text-decoration: none; color: var(--text); transition: all 0.2s; margin-bottom: 12px;
+}
+.link-card:hover { border-color: var(--green); transform: translateY(-1px); }
+.link-icon { font-size: 28px; flex-shrink: 0; }
+.link-info h4 { font-size: 14px; font-weight: 600; color: var(--green-dark); margin-bottom: 3px; }
+.link-info p { font-size: 12px; color: var(--muted); }
+
+/* СКИДКИ ИНФОБЛОК */
+.discount-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+}
+@media (max-width: 500px) { .discount-grid { grid-template-columns: 1fr; } }
+.discount-card {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px; text-align: center;
+}
+.discount-amount { font-family: 'Unbounded', sans-serif; font-size: 24px; font-weight: 900; color: var(--purple); margin-bottom: 4px; }
+.discount-condition { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.discount-warning {
+  background: rgba(226,75,74,0.06); border: 1px solid rgba(226,75,74,0.2);
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 14px;
+}
+.discount-warning h4 { font-size: 13px; font-weight: 700; color: #C0392B; margin-bottom: 6px; }
+.discount-warning p { font-size: 13px; color: #C0392B; line-height: 1.6; }
+.discount-partner {
+  background: var(--green-pale); border: 1px solid rgba(30,138,60,0.2);
+  border-radius: 12px; padding: 14px 16px;
+}
+.discount-partner h4 { font-size: 13px; font-weight: 700; color: var(--green-dark); margin-bottom: 6px; }
+.discount-partner p { font-size: 13px; color: var(--green-dark); line-height: 1.6; }
+
+/* ТЕРМИНЫ */
+.terms-block { padding: 20px 18px; display: flex; flex-direction: column; gap: 12px; }
+.term-card {
+  border-radius: 14px; padding: 16px 20px;
+  border-left: 4px solid;
+}
+.term-card.bad { background: rgba(226,75,74,0.05); border-color: var(--wrong); }
+.term-card.good { background: var(--green-pale); border-color: var(--green); }
+.term-card.existing { background: rgba(74,45,143,0.05); border-color: var(--purple); }
+.term-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.term-card.bad .term-title { color: #C0392B; }
+.term-card.good .term-title { color: var(--green-dark); }
+.term-card.existing .term-title { color: var(--purple); }
+.term-desc { font-size: 13px; line-height: 1.7; color: var(--muted); }
+
+/* ДОСТАВКА */
+.delivery-block { padding: 20px 18px; }
+.delivery-img { width: 100%; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 16px; display: block; }
+.delivery-zones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+@media (max-width: 500px) { .delivery-zones { grid-template-columns: 1fr; } }
+.zone-card { border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+.zone-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+.zone-info { font-size: 13px; }
+.zone-info strong { display: block; font-weight: 600; color: var(--text); }
+.zone-info span { color: var(--muted); font-size: 12px; }
+.delivery-extra {
+  background: #F5F5F5; border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px; font-size: 13px; color: var(--muted); line-height: 1.7;
+}
+.delivery-extra strong { color: var(--text); }
+
+/* TEST */
+.test-block { padding: 20px 18px; }
+.test-question { margin-bottom: 20px; }
+.question-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--green); margin-bottom: 8px; }
+.question-text { font-size: 15px; font-weight: 500; color: var(--text); line-height: 1.5; margin-bottom: 12px; }
+.options { display: flex; flex-direction: column; gap: 8px; }
+.option-btn {
+  background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px;
+  font-family: 'Onest', sans-serif; font-size: 14px; color: var(--text);
+  text-align: left; cursor: pointer; transition: all 0.2s; width: 100%;
+}
+.option-btn:hover:not(:disabled) { border-color: var(--green-light); background: var(--green-pale); }
+.option-btn.correct { border-color: var(--correct); background: rgba(30,138,60,0.08); color: var(--green-dark); }
+.option-btn.wrong { border-color: var(--wrong); background: rgba(226,75,74,0.06); color: #C0392B; }
+.option-btn:disabled { cursor: default; }
+.feedback-msg { margin-top: 8px; font-size: 13px; padding: 10px 14px; border-radius: 10px; display: none; }
+.feedback-msg.show { display: block; }
+.feedback-msg.ok { background: rgba(30,138,60,0.08); color: var(--green-dark); }
+.feedback-msg.fail { background: rgba(226,75,74,0.06); color: #C0392B; }
+.test-score { background: #F5F5F5; border: 1px solid var(--border); border-radius: 14px; padding: 20px; text-align: center; display: none; margin-top: 16px; }
+.test-score.show { display: block; }
+.score-emoji { font-size: 36px; margin-bottom: 8px; }
+.score-val { font-family: 'Unbounded', sans-serif; font-size: 28px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+.score-label { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+
+/* ФИНАЛЬНОЕ СООБЩЕНИЕ */
+.final-block {
+  padding: 32px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.final-emoji { font-size: 56px; margin-bottom: 16px; display: block; }
+.final-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 20px; font-weight: 900;
+  background: linear-gradient(135deg, var(--purple), var(--green));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 16px; line-height: 1.3;
+}
+.final-text {
+  font-size: 15px; color: var(--muted); line-height: 1.8;
+  max-width: 480px; margin: 0 auto 24px;
+}
+.final-btn {
+  background: linear-gradient(135deg, var(--purple), var(--green));
+  border: none; border-radius: 14px; padding: 16px 40px;
+  font-family: 'Unbounded', sans-serif; font-size: 14px; font-weight: 700;
+  color: #fff; cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 6px 20px rgba(74,45,143,0.3);
+}
+.final-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+
+/* КОНФЕТТИ */
+.confetti-container {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 9999; display: none;
+}
+.confetti-piece {
+  position: absolute; width: 10px; height: 10px;
+  border-radius: 2px;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 18px;
+  font-size: 14px; color: var(--text); z-index: 9999;
+  transform: translateY(80px); opacity: 0;
+  transition: all 0.3s; max-width: 300px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok { border-color: var(--correct); color: var(--correct); }
+</style>
+</head>
+<body>
+
+<div class="confetti-container" id="confetti-container"></div>
+
+<div class="course-header">
+  <div class="header-top">
+    <a href="index.html" class="back-btn">← Назад</a>
+    <div>
+      <div class="course-day-badge">✦ Стажёрский срок · SVET.KZ</div>
+      <div class="course-title">День 5: Скидки, доставка и работа с платформой</div>
+    </div>
+  </div>
+  <div>
+    <div class="progress-info">
+      <span class="progress-text">Прогресс дня</span>
+      <span class="progress-count" id="progressCount">0 / 19</span>
+    </div>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- SECTION 1: СКИДКИ И 1С -->
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <div class="section-title">Скидки, 1С и доставка</div>
+  </div>
+
+  <!-- 1. Приветствие -->
+  <div class="lesson-item" id="lesson-1">
+    <div class="lesson-header" onclick="toggleLesson(1)">
+      <div class="lesson-status">👋</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 1</div>
+        <div class="lesson-name">Приветственное сообщение — День 5</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap">
+        <iframe src="https://www.youtube.com/embed/szYOFC6ov-U" allowfullscreen></iframe>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-1" data-seconds="21" data-lesson="1">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Регламент скидки -->
+  <div class="lesson-item" id="lesson-2">
+    <div class="lesson-header" onclick="toggleLesson(2)">
+      <div class="lesson-status">💰</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 2</div>
+        <div class="lesson-name">Регламент по скидкам</div>
+        <span class="lesson-type-badge badge-info">📋 Регламент</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="task-block">
+        <div class="discount-grid">
+          <div class="discount-card">
+            <div class="discount-amount">3%</div>
+            <div class="discount-condition">если сумма покупки<br>больше <strong>50 000 ₸</strong></div>
+          </div>
+          <div class="discount-card">
+            <div class="discount-amount">5%</div>
+            <div class="discount-condition">если сумма покупки<br>больше <strong>200 000 ₸</strong></div>
+          </div>
+          <div class="discount-card" style="grid-column: span 2">
+            <div class="discount-amount">10%</div>
+            <div class="discount-condition">если сумма покупки<br>больше <strong>1 000 000 ₸</strong></div>
+          </div>
+        </div>
+
+        <div class="discount-warning">
+          <h4>🚫 Важно — исключения!</h4>
+          <p>На <strong>розетки, выключатели (электроустановки) и лампочки</strong> скидок НЕТ!</p>
+        </div>
+
+        <div class="discount-partner">
+          <h4>🤝 Партнёрская скидка — Центр красок №1</h4>
+          <p>Если клиент купил у наших партнёров <strong>Центр красок №1</strong> — ему автоматически присваивается скидка <strong>10%</strong> вне зависимости от суммы покупки. Действует и в обратную сторону.</p>
+        </div>
+
+        <div style="margin-top:16px">
+          <button class="complete-btn" onclick="completeLesson(2)">✓ Ознакомлен</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Регламент 1С -->
+  <div class="lesson-item" id="lesson-3">
+    <div class="lesson-header" onclick="toggleLesson(3)">
+      <div class="lesson-status">💻</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 3</div>
+        <div class="lesson-name">Регламент по работе с 1С</div>
+        <span class="lesson-type-badge badge-read">📄 Документ</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="task-block">
+        <div class="discount-warning" style="margin-bottom:16px">
+          <h4>⚠️ Важно перед изучением!</h4>
+          <p>• Физических лиц оформляем в базе <strong>AURA</strong><br>
+          • Юридических лиц оформляем в базе <strong>INVEST</strong><br>
+          • Если скидка для физ. лица превышает <strong>24%</strong> — также забиваем в базе <strong>INVEST</strong></p>
+        </div>
+        <a class="link-card" href="https://drive.google.com/file/d/1ANJq4NwvGy1_p1rjwHTicTyng5cDoB4N/view?usp=sharing" target="_blank">
+          <div class="link-icon">📋</div>
+          <div class="link-info">
+            <h4>Регламент по работе с 1С</h4>
+            <p>Нажмите чтобы открыть полный регламент</p>
+          </div>
+        </a>
+        <button class="complete-btn" onclick="completeLesson(3)">✓ Изучено</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Симулятор 1С -->
+  <div class="lesson-item" id="lesson-4">
+    <div class="lesson-header" onclick="toggleLesson(4)">
+      <div class="lesson-status">🖥️</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 4</div>
+        <div class="lesson-name">Тренажёр: оформи заказ физ. лица в базе Aura</div>
+        <span class="lesson-type-badge badge-practice">🎯 Тренажёр</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <iframe src="https://dept13quality-star.github.io/ABIS-Academy/1c_simulator_fiz.html" style="width:100%;height:600px;border:none"></iframe>
+      <div style="padding:12px 16px 16px">
+        <button class="complete-btn" onclick="completeLesson(4)">✓ Задание выполнено</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Доставка -->
+  <div class="lesson-item" id="lesson-5">
+    <div class="lesson-header" onclick="toggleLesson(5)">
+      <div class="lesson-status">🚚</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 5</div>
+        <div class="lesson-name">Информация по доставке по Алматы</div>
+        <span class="lesson-type-badge badge-info">🗺️ Карта зон</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="delivery-block">
+        <img src="https://dept13quality-star.github.io/ABIS-Academy/%D0%B4%D0%BE%D1%81%D1%82%D0%B0%D0%B2%D0%BA%D0%B0%20%D0%BA%D0%B0%D1%80%D1%82%D0%B0.jpg"
+             alt="Карта доставки Алматы"
+             class="delivery-img"
+             onerror="this.style.display='none'">
+
+        <div class="delivery-zones">
+          <div class="zone-card" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2)">
+            <div class="zone-dot" style="background:#22C55E"></div>
+            <div class="zone-info">
+              <strong>Зелёная зона — Доставка №1</strong>
+              <span>3 500 ₸</span>
+            </div>
+          </div>
+          <div class="zone-card" style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2)">
+            <div class="zone-dot" style="background:#EF4444"></div>
+            <div class="zone-info">
+              <strong>Красная зона — Доставка №2</strong>
+              <span>5 000 ₸</span>
+            </div>
+          </div>
+          <div class="zone-card" style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2)">
+            <div class="zone-dot" style="background:#3B82F6"></div>
+            <div class="zone-info">
+              <strong>Синяя зона — Доставка №3</strong>
+              <span>7 500 ₸</span>
+            </div>
+          </div>
+          <div class="zone-card" style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.2)">
+            <div class="zone-dot" style="background:#8B5CF6"></div>
+            <div class="zone-info">
+              <strong>Фиолетовая зона — Доставка №4</strong>
+              <span>10 000 ₸</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="delivery-extra">
+          <strong>📦 Важно знать:</strong><br>
+          • Стоимость доставки фиксированная — вне зависимости от объёма<br>
+          • Доставка только до подъезда<br>
+          • До двери — за отдельную плату: <strong>500 ₸ за 1 лестничный пролёт (этаж)</strong> или <strong>500 ₸ лифт</strong>
+        </div>
+
+        <div style="margin-top:16px">
+          <button class="complete-btn" onclick="completeLesson(5)">✓ Ознакомлен</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Доставочный лист Б24 -->
+  <div class="lesson-item" id="lesson-6">
+    <div class="lesson-header" onclick="toggleLesson(6)">
+      <div class="lesson-status">📝</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 6</div>
+        <div class="lesson-name">Как заполнить доставочный лист в Б24</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap">
+        <iframe src="https://www.youtube.com/embed/04yiUeaOWhs" allowfullscreen></iframe>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-6" data-seconds="252" data-lesson="6">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Тренировка воронки -->
+  <div class="lesson-item" id="lesson-7">
+    <div class="lesson-header" onclick="toggleLesson(7)">
+      <div class="lesson-status">🎯</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 7</div>
+        <div class="lesson-name">Тренировка: финальные два этапа воронки с куратором</div>
+        <span class="lesson-type-badge badge-practice">🎭 Практика</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="task-block">
+        <div class="task-desc">
+          <h4>🎯 Задание</h4>
+          <p>Вспомни воронку продаж по шпаргалке, затем подойди к куратору для тренировки <strong>финальных двух этапов</strong>.</p>
+        </div>
+        <iframe src="https://dept13quality-star.github.io/ABIS-Academy/svet_kz_cheatsheet_v3.html" style="width:100%;height:500px;border:none;border-radius:12px;margin-bottom:16px"></iframe>
+        <button class="complete-btn" onclick="completeLesson(7)">✓ Тренировка пройдена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: ПЛАТФОРМА -->
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">Работа с платформой offline.svet.kz</div>
+  </div>
+
+  <!-- 8. Термины -->
+  <div class="lesson-item" id="lesson-8">
+    <div class="lesson-header" onclick="toggleLesson(8)">
+      <div class="lesson-status">📚</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 8</div>
+        <div class="lesson-name">Термины: лид, качественный и некачественный</div>
+        <span class="lesson-type-badge badge-info">📖 Теория</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="terms-block">
+        <div class="term-card bad">
+          <div class="term-title">❌ Некачественный лид</div>
+          <div class="term-desc">Посетитель, который пришёл, но ушёл, <strong>не оставив имя и номер телефона</strong>. Анкету на него всё равно заполняем — это помогает понять, кто к нам приходит и почему уходит без контакта.</div>
+        </div>
+        <div class="term-card good">
+          <div class="term-title">✅ Качественный лид</div>
+          <div class="term-desc">Посетитель, который заинтересован товаром и <strong>оставил имя и номер телефона</strong>. С ним работаем дальше.</div>
+        </div>
+        <div class="term-card existing">
+          <div class="term-title">🔄 Существующий клиент</div>
+          <div class="term-desc">Если человек говорит, что уже покупал у нас — <strong>проверяем его по номеру телефона в базе</strong> и открываем его существующую карточку. Новую карточку не создаём — дублировать контакты запрещено.</div>
+        </div>
+        <button class="complete-btn" onclick="completeLesson(8)">✓ Изучено</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. Как зайти на платформу -->
+  <div class="lesson-item" id="lesson-9">
+    <div class="lesson-header" onclick="toggleLesson(9)">
+      <div class="lesson-status">🔑</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 9</div>
+        <div class="lesson-name">Как зайти на платформу</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap">
+        <iframe src="https://www.youtube.com/embed/k2Z_eBPRA-c" allowfullscreen></iframe>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-9" data-seconds="27" data-lesson="9">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. Некачественный лид -->
+  <div class="lesson-item" id="lesson-10">
+    <div class="lesson-header" onclick="toggleLesson(10)">
+      <div class="lesson-status">📋</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 10</div>
+        <div class="lesson-name">Как зарегистрировать некачественного лида</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap">
+        <iframe src="https://www.youtube.com/embed/7pRf107yeag" allowfullscreen></iframe>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-10" data-seconds="126" data-lesson="10">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. Качественный лид -->
+  <div class="lesson-item" id="lesson-11">
+    <div class="lesson-header" onclick="toggleLesson(11)">
+      <div class="lesson-status">✅</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 11</div>
+        <div class="lesson-name">Как забить качественного лида</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap">
+        <iframe src="https://www.youtube.com/embed/eDt4eCoNEu4" allowfullscreen></iframe>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-11" data-seconds="294" data-lesson="11">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12. Существующий клиент -->
+  <div class="lesson-item" id="lesson-12">
+    <div class="lesson-header" onclick="toggleLesson(12)">
+      <div class="lesson-status">🔍</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 12</div>
+        <div class="lesson-name">Как найти существующего клиента</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap">
+        <iframe src="https://www.youtube.com/embed/oe5Vs8HdE3g" allowfullscreen></iframe>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-12" data-seconds="126" data-lesson="12">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 13. Коммерческое предложение -->
+  <div class="lesson-item" id="lesson-13">
+    <div class="lesson-header" onclick="toggleLesson(13)">
+      <div class="lesson-status">💼</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 13</div>
+        <div class="lesson-name">Как создать коммерческое предложение</div>
+        <span class="lesson-type-badge badge-video">▶ Видео</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="video-wrap">
+        <iframe src="https://www.youtube.com/embed/HUfhoeVlvXo" allowfullscreen></iframe>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-btn" id="timer-btn-13" data-seconds="394" data-lesson="13">
+          ⏳ Кнопка станет активной когда досмотрите видео
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14. Задание с куратором -->
+  <div class="lesson-item" id="lesson-14">
+    <div class="lesson-header" onclick="toggleLesson(14)">
+      <div class="lesson-status">👨‍💼</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 14</div>
+        <div class="lesson-name">Практика: забейте качественного лида с куратором</div>
+        <span class="lesson-type-badge badge-practice">🎭 Практика</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="task-block">
+        <div class="task-desc">
+          <h4>🎯 Задание</h4>
+          <p>Подойдите к куратору и попросите помочь авторизоваться на платформе <strong>offline.svet.kz</strong>.</p>
+          <p style="margin-top:8px">Пусть куратор наблюдает как вы забиваете <strong>качественного лида</strong> — используйте свои личные данные.</p>
+        </div>
+        <button class="complete-btn" onclick="completeLesson(14)">✓ Задание выполнено</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: ИНСТРУКЦИИ -->
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <div class="section-title">Должностные инструкции</div>
+  </div>
+
+  <!-- 15. Должностная инструкция -->
+  <div class="lesson-item" id="lesson-15">
+    <div class="lesson-header" onclick="toggleLesson(15)">
+      <div class="lesson-status">📄</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 15</div>
+        <div class="lesson-name">Должностная инструкция менеджера по продажам</div>
+        <span class="lesson-type-badge badge-read">📄 Документ</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="task-block">
+        <a class="link-card" href="https://docs.google.com/document/d/1y4mJcs5VoUmuFHJv_lVndKyQhzmoYocIojeUNyC2QP4/edit?usp=sharing" target="_blank">
+          <div class="link-icon">📄</div>
+          <div class="link-info">
+            <h4>Должностная инструкция менеджера по продажам</h4>
+            <p>Нажмите чтобы открыть документ</p>
+          </div>
+        </a>
+        <button class="complete-btn" onclick="completeLesson(15)">✓ Изучено</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 16. Тест должностная инструкция -->
+  <div class="lesson-item" id="lesson-16">
+    <div class="lesson-header" onclick="toggleLesson(16)">
+      <div class="lesson-status">✅</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 16</div>
+        <div class="lesson-name">Тест: Должностная инструкция</div>
+        <span class="lesson-type-badge badge-test">✓ Тест</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="test-block">
+        <div class="test-question" id="tq-16-1">
+          <div class="question-label">Вопрос 1 из 4</div>
+          <div class="question-text">В какое время начинается утренняя планёрка?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('16-1','wrong',this)">9:30</button>
+            <button class="option-btn" onclick="answerQ('16-1','correct',this)">9:40</button>
+            <button class="option-btn" onclick="answerQ('16-1','wrong',this)">10:00</button>
+            <button class="option-btn" onclick="answerQ('16-1','wrong',this)">10:30</button>
+          </div>
+          <div class="feedback-msg" id="fb-16-1"></div>
+        </div>
+        <div class="test-question" id="tq-16-2" style="display:none">
+          <div class="question-label">Вопрос 2 из 4</div>
+          <div class="question-text">Какой день недели — еженедельное собрание?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('16-2','wrong',this)">Понедельник</button>
+            <button class="option-btn" onclick="answerQ('16-2','wrong',this)">Среда</button>
+            <button class="option-btn" onclick="answerQ('16-2','correct',this)">Четверг</button>
+            <button class="option-btn" onclick="answerQ('16-2','wrong',this)">Пятница</button>
+          </div>
+          <div class="feedback-msg" id="fb-16-2"></div>
+        </div>
+        <div class="test-question" id="tq-16-3" style="display:none">
+          <div class="question-label">Вопрос 3 из 4</div>
+          <div class="question-text">Информация о клиентах — это:</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('16-3','wrong',this)">Открытые данные</button>
+            <button class="option-btn" onclick="answerQ('16-3','correct',this)">Коммерческая тайна компании</button>
+            <button class="option-btn" onclick="answerQ('16-3','wrong',this)">Внутренняя переписка</button>
+            <button class="option-btn" onclick="answerQ('16-3','wrong',this)">Статистика отдела</button>
+          </div>
+          <div class="feedback-msg" id="fb-16-3"></div>
+        </div>
+        <div class="test-question" id="tq-16-4" style="display:none">
+          <div class="question-label">Вопрос 4 из 4</div>
+          <div class="question-text">Что НЕ входит в ежедневные статистики менеджера?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('16-4','wrong',this)">Сумма оплаченных счетов</button>
+            <button class="option-btn" onclick="answerQ('16-4','wrong',this)">Количество полученных отзывов</button>
+            <button class="option-btn" onclick="answerQ('16-4','correct',this)">Валовый доход за месяц</button>
+            <button class="option-btn" onclick="answerQ('16-4','wrong',this)">Количество лидов в магазине</button>
+          </div>
+          <div class="feedback-msg" id="fb-16-4"></div>
+        </div>
+        <div class="test-score" id="score-16">
+          <div class="score-emoji" id="se-16"></div>
+          <div class="score-val" id="sv-16"></div>
+          <div class="score-label" id="sl-16"></div>
+          <button class="complete-btn done" onclick="completeLesson(16)" style="margin-top:12px">Продолжить →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 17. Памятка -->
+  <div class="lesson-item" id="lesson-17">
+    <div class="lesson-header" onclick="toggleLesson(17)">
+      <div class="lesson-status">📌</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 17</div>
+        <div class="lesson-name">Памятка менеджера по продажам</div>
+        <span class="lesson-type-badge badge-read">📄 Документ</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="task-block">
+        <a class="link-card" href="https://drive.google.com/file/d/1jycx8tNlvGC2UqD8iwE8F6HM4GxPchIQ/view?usp=sharing" target="_blank">
+          <div class="link-icon">📌</div>
+          <div class="link-info">
+            <h4>Памятка менеджера по продажам</h4>
+            <p>Нажмите чтобы открыть документ</p>
+          </div>
+        </a>
+        <button class="complete-btn" onclick="completeLesson(17)">✓ Изучено</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 18. Тест памятка -->
+  <div class="lesson-item" id="lesson-18">
+    <div class="lesson-header" onclick="toggleLesson(18)">
+      <div class="lesson-status">✅</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 18</div>
+        <div class="lesson-name">Тест: Памятка менеджера</div>
+        <span class="lesson-type-badge badge-test">✓ Тест</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="test-block">
+        <div class="test-question" id="tq-18-1">
+          <div class="question-label">Вопрос 1 из 4</div>
+          <div class="question-text">До какого времени нельзя покидать салон?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('18-1','wrong',this)">19:00</button>
+            <button class="option-btn" onclick="answerQ('18-1','wrong',this)">19:30</button>
+            <button class="option-btn" onclick="answerQ('18-1','correct',this)">19:50</button>
+            <button class="option-btn" onclick="answerQ('18-1','wrong',this)">20:00</button>
+          </div>
+          <div class="feedback-msg" id="fb-18-1"></div>
+        </div>
+        <div class="test-question" id="tq-18-2" style="display:none">
+          <div class="question-label">Вопрос 2 из 4</div>
+          <div class="question-text">Что нужно сделать, если клиент пришёл, а его менеджер на выходном?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('18-2','wrong',this)">Попросить прийти завтра</button>
+            <button class="option-btn" onclick="answerQ('18-2','wrong',this)">Дать номер телефона коллеги</button>
+            <button class="option-btn" onclick="answerQ('18-2','correct',this)">Лично решить вопрос клиента прямо сейчас</button>
+            <button class="option-btn" onclick="answerQ('18-2','wrong',this)">Объяснить, что это не ваша подборка</button>
+          </div>
+          <div class="feedback-msg" id="fb-18-2"></div>
+        </div>
+        <div class="test-question" id="tq-18-3" style="display:none">
+          <div class="question-label">Вопрос 3 из 4</div>
+          <div class="question-text">Как долго максимально клиент может ждать ответа в рабочее время?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('18-3','wrong',this)">30 минут</button>
+            <button class="option-btn" onclick="answerQ('18-3','wrong',this)">1 час</button>
+            <button class="option-btn" onclick="answerQ('18-3','correct',this)">2 часа</button>
+            <button class="option-btn" onclick="answerQ('18-3','wrong',this)">До конца дня</button>
+          </div>
+          <div class="feedback-msg" id="fb-18-3"></div>
+        </div>
+        <div class="test-question" id="tq-18-4" style="display:none">
+          <div class="question-label">Вопрос 4 из 4</div>
+          <div class="question-text">Что категорически запрещено при клиенте?</div>
+          <div class="options">
+            <button class="option-btn" onclick="answerQ('18-4','wrong',this)">Предлагать воду или кофе</button>
+            <button class="option-btn" onclick="answerQ('18-4','correct',this)">Есть, пить или жевать</button>
+            <button class="option-btn" onclick="answerQ('18-4','wrong',this)">Задавать уточняющие вопросы</button>
+            <button class="option-btn" onclick="answerQ('18-4','wrong',this)">Делать комплименты выбору клиента</button>
+          </div>
+          <div class="feedback-msg" id="fb-18-4"></div>
+        </div>
+        <div class="test-score" id="score-18">
+          <div class="score-emoji" id="se-18"></div>
+          <div class="score-val" id="sv-18"></div>
+          <div class="score-label" id="sl-18"></div>
+          <button class="complete-btn done" onclick="completeLesson(18)" style="margin-top:12px">Продолжить →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 19. ФИНАЛЬНОЕ СООБЩЕНИЕ -->
+  <div class="lesson-item" id="lesson-19">
+    <div class="lesson-header" onclick="toggleLesson(19)">
+      <div class="lesson-status">🏆</div>
+      <div class="lesson-info">
+        <div class="lesson-num">Урок 19</div>
+        <div class="lesson-name">Поздравление — ты прошёл обучение!</div>
+        <span class="lesson-type-badge badge-final">🎉 Финал</span>
+      </div>
+      <div class="lesson-chevron">▼</div>
+    </div>
+    <div class="lesson-body">
+      <div class="final-block">
+        <span class="final-emoji">🔥</span>
+        <div class="final-title">Обучение пройдено!</div>
+        <div class="final-text">
+          Дорогой стажёр! Ты справился! Но впереди самое интересное: испытательный срок, где знания превращаются в навыки.<br><br>
+          Обучение продолжится, вопросы приветствуются, результаты — обязательны 😄<br><br>
+          <strong>Добро пожаловать в команду. Удачи! 🚀</strong>
+        </div>
+        <button class="final-btn" onclick="launchConfetti(); completeLesson(19)">
+          🎆 Завершить обучение!
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://dbgvztgsstwooxygnmxs.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiZ3Z6dGdzc3R3b294eWdubXhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMTA5MDMsImV4cCI6MjA5MDc4NjkwM30.252xuEfsitrAi0iV5p8XV-vHgyHSs4k6JhLLZdUeL2Q';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const TOTAL = 19;
+let completed = new Set();
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+}
+
+function toggleLesson(n) {
+  const el = document.getElementById('lesson-' + n);
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.lesson-item.open').forEach(e => e.classList.remove('open'));
+  if (!isOpen) {
+    el.classList.add('open');
+    setTimeout(() => startTimer(n), 500);
+  }
+}
+
+async function completeLesson(n) {
+  completed.add(String(n));
+  const el = document.getElementById('lesson-' + n);
+  if (el) {
+    el.classList.add('completed');
+    el.classList.remove('open');
+    const status = el.querySelector('.lesson-status');
+    if (status) status.textContent = '✓';
+  }
+  updateProgress();
+  toast('Урок завершён! 🎉');
+}
+
+function updateProgress() {
+  const count = completed.size;
+  const pct = Math.round(count / TOTAL * 100);
+  document.getElementById('progressCount').textContent = count + ' / ' + TOTAL;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+const activeTimers = {};
+function startTimer(lessonNum) {
+  const btn = document.getElementById('timer-btn-' + lessonNum);
+  if (!btn || btn.classList.contains('ready') || btn.classList.contains('done')) return;
+  const totalSeconds = parseInt(btn.dataset.seconds);
+  let remaining = totalSeconds;
+  function fmt(s) { return s >= 60 ? Math.ceil(s/60) + ' мин' : s + ' сек'; }
+  btn.textContent = '⏳ Досмотрите видео — осталось ' + fmt(remaining);
+  activeTimers[lessonNum] = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(activeTimers[lessonNum]);
+      btn.textContent = '✓ Просмотрено — нажмите чтобы продолжить';
+      btn.classList.add('ready');
+      btn.onclick = () => {
+        completeLesson(lessonNum);
+        btn.classList.remove('ready');
+        btn.classList.add('done');
+        btn.textContent = '✓ Выполнено';
+        btn.onclick = null;
+      };
+    } else {
+      btn.textContent = '⏳ Досмотрите видео — осталось ' + fmt(remaining);
+    }
+  }, 1000);
+}
+
+// TEST ENGINE
+const testState = {};
+function answerQ(qid, result, btn) {
+  if (testState[qid]) return;
+  testState[qid] = result;
+  const parts = qid.split('-');
+  const lessonNum = parts[0];
+  const qNum = parseInt(parts[1]);
+
+  const allBtns = btn.closest('.options').querySelectorAll('.option-btn');
+  allBtns.forEach(b => b.disabled = true);
+  btn.classList.add(result);
+  if (result === 'wrong') {
+    allBtns.forEach(b => {
+      if (b.getAttribute('onclick').includes("'correct'")) b.classList.add('correct');
+    });
+  }
+
+  const fb = document.getElementById('fb-' + qid);
+  if (fb) {
+    fb.className = 'feedback-msg show ' + (result === 'correct' ? 'ok' : 'fail');
+    fb.textContent = result === 'correct' ? '✓ Верно!' : '✗ Неверно. Правильный ответ выделен зелёным.';
+  }
+
+  const currentQ = document.getElementById('tq-' + qid);
+  const nextQid = lessonNum + '-' + (qNum + 1);
+  const nextQ = document.getElementById('tq-' + nextQid);
+
+  setTimeout(() => {
+    if (nextQ) {
+      currentQ.style.display = 'none';
+      nextQ.style.display = 'block';
+    } else {
+      currentQ.style.display = 'none';
+      showTestScore(lessonNum);
+    }
+  }, 1200);
+}
+
+function showTestScore(lessonNum) {
+  const scoreEl = document.getElementById('score-' + lessonNum);
+  if (!scoreEl) return;
+  let correct = 0, total = 0;
+  Object.entries(testState).forEach(([qid, result]) => {
+    if (qid.startsWith(lessonNum + '-')) {
+      total++;
+      if (result === 'correct') correct++;
+    }
+  });
+  const pct = Math.round(correct / total * 100);
+  document.getElementById('se-' + lessonNum).textContent = pct === 100 ? '🌟' : pct >= 75 ? '🎉' : '💪';
+  document.getElementById('sv-' + lessonNum).textContent = correct + ' / ' + total;
+  document.getElementById('sl-' + lessonNum).textContent = pct === 100 ? 'Идеально!' : pct >= 75 ? 'Хороший результат!' : 'Повтори материал';
+  scoreEl.classList.add('show');
+}
+
+// КОНФЕТТИ
+function launchConfetti() {
+  const container = document.getElementById('confetti-container');
+  container.style.display = 'block';
+  const colors = ['#4A2D8F','#1E8A3C','#F0C96A','#E24B4A','#3B82F6','#F97316','#EC4899'];
+
+  for (let i = 0; i < 120; i++) {
+    setTimeout(() => {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.cssText = `
+        left: ${Math.random() * 100}%;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        width: ${6 + Math.random() * 8}px;
+        height: ${6 + Math.random() * 8}px;
+        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+        animation-duration: ${2 + Math.random() * 3}s;
+        animation-delay: ${Math.random() * 0.5}s;
+      `;
+      container.appendChild(piece);
+      setTimeout(() => piece.remove(), 4000);
+    }, i * 20);
+  }
+
+  setTimeout(() => { container.style.display = 'none'; }, 6000);
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast show ok';
+  setTimeout(() => el.className = 'toast', 2500);
+}
+
+init();
+</script>
+</body>
+</html>
