@@ -323,7 +323,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
         <textarea class="task-textarea" id="ta-5" style="min-height:150px" 
           placeholder="Напишите вашу презентацию по четырём критериям...&#10;&#10;Светильник: [название и артикул]&#10;Высота потолков: ...&#10;Диаметр/размер: ...&#10;Освещение: ...&#10;Стиль: ..."
           oninput="document.getElementById('btn-5').disabled=this.value.trim().length<30"></textarea>
-        <button class="complete-btn" id="btn-5" onclick="completeLesson(5)" disabled>Отправить куратору</button>
+        <button class="complete-btn" id="btn-5" onclick="submitAndCompleteLesson(5, 'Задание: подбор освещения для клиента Freya', 'ta-5')" disabled>Отправить куратору</button>
       </div>
     </div>
   </div>
@@ -490,7 +490,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
         <textarea class="task-textarea" id="ta-12" style="min-height:180px"
           placeholder="Артикул 1: MOD070CL-L15B3K1&#10;Название: ...&#10;Цена: ...&#10;Склад: ... (кол-во: ...)&#10;&#10;Артикул 2: 8251/2&#10;Название: ...&#10;Цена: ...&#10;Склад: ... (кол-во: ...)&#10;&#10;Артикул 3: 4843-1P&#10;Название: ...&#10;Цена: ...&#10;Склад: ... (кол-во: ...)"
           oninput="document.getElementById('btn-12').disabled=this.value.trim().length<20"></textarea>
-        <button class="complete-btn" id="btn-12" onclick="completeLesson(12)" disabled>Отправить куратору</button>
+        <button class="complete-btn" id="btn-12" onclick="submitAndCompleteLesson(12, 'Практическое задание: найдите артикулы в 1С', 'ta-12')" disabled>Отправить куратору</button>
       </div>
     </div>
   </div>
@@ -680,6 +680,33 @@ function startTimer(lessonNum) {
       btn.textContent = '⏳ Досмотрите видео — осталось ' + fmt(remaining);
     }
   }, 1000);
+}
+
+// SUPABASE: сохранение практических заданий
+async function submitPractical(lessonId, lessonTitle, answer) {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const { data: profile } = await sb.from('profiles').select('full_name').eq('id', session.user.id).single();
+    const userName = profile?.full_name || session.user.email;
+    const { error } = await sb.from('practical_answers').insert({
+      user_id: session.user.id,
+      user_name: userName,
+      lesson_id: lessonId,
+      lesson_title: lessonTitle,
+      answer: answer,
+      submitted_at: new Date().toISOString()
+    });
+    if (error) console.error('Ошибка сохранения ответа:', error.message);
+  } catch (e) {
+    console.error('submitPractical error:', e);
+  }
+}
+
+async function submitAndCompleteLesson(lessonId, lessonTitle, taId) {
+  const answer = document.getElementById(taId)?.value || '';
+  await submitPractical(lessonId, lessonTitle, answer);
+  completeLesson(lessonId);
 }
 
 function toast(msg) {
