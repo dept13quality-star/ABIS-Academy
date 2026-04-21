@@ -322,7 +322,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
 
         <textarea class="task-textarea" id="ta-5" style="min-height:150px" 
           placeholder="Напишите вашу презентацию по четырём критериям...&#10;&#10;Светильник: [название и артикул]&#10;Высота потолков: ...&#10;Диаметр/размер: ...&#10;Освещение: ...&#10;Стиль: ..."
-          oninput="document.getElementById('btn-5').disabled=this.value.trim().length<30"></textarea>
+          oninput="document.getElementById('btn-5').disabled=this.value.trim().length<30; saveTA('ta-5')"></textarea>
         <button class="complete-btn" id="btn-5" onclick="submitAndCompleteLesson(5, 'Задание: подбор освещения для клиента Freya', 'ta-5')" disabled>Отправить куратору</button>
       </div>
     </div>
@@ -489,7 +489,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
         </div>
         <textarea class="task-textarea" id="ta-12" style="min-height:180px"
           placeholder="Артикул 1: MOD070CL-L15B3K1&#10;Название: ...&#10;Цена: ...&#10;Склад: ... (кол-во: ...)&#10;&#10;Артикул 2: 8251/2&#10;Название: ...&#10;Цена: ...&#10;Склад: ... (кол-во: ...)&#10;&#10;Артикул 3: 4843-1P&#10;Название: ...&#10;Цена: ...&#10;Склад: ... (кол-во: ...)"
-          oninput="document.getElementById('btn-12').disabled=this.value.trim().length<20"></textarea>
+          oninput="document.getElementById('btn-12').disabled=this.value.trim().length<20; saveTA('ta-12')"></textarea>
         <button class="complete-btn" id="btn-12" onclick="submitAndCompleteLesson(12, 'Практическое задание: найдите артикулы в 1С', 'ta-12')" disabled>Отправить куратору</button>
       </div>
     </div>
@@ -573,18 +573,27 @@ const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const TOTAL = 15;
 let completed = new Set();
+let cachedUserId = null;
+let cachedUserName = null;
 
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = 'index.html'; return; }
 
-  const { data: prog } = await sb.from('progress').select('*')
-    .eq('user_id', session.user.id).eq('course_id', 4).maybeSingle();
+  cachedUserId = session.user.id;
 
-  if (prog?.completed_lessons && Array.isArray(prog.completed_lessons)) {
-    prog.completed_lessons.forEach(id => completed.add(String(id)));
+  const [progResult, profileResult] = await Promise.all([
+    sb.from('progress').select('*').eq('user_id', session.user.id).eq('course_id', 4).maybeSingle(),
+    sb.from('profiles').select('full_name').eq('id', session.user.id).single()
+  ]);
+
+  cachedUserName = profileResult.data?.full_name || session.user.email;
+
+  if (progResult.data?.completed_lessons && Array.isArray(progResult.data.completed_lessons)) {
+    progResult.data.completed_lessons.forEach(id => completed.add(String(id)));
     updateProgress();
   }
+  restoreTAs(['ta-5', 'ta-12']);
 }
 
 
@@ -682,30 +691,41 @@ function startTimer(lessonNum) {
   }, 1000);
 }
 
-// SUPABASE: сохранение практических заданий
-async function submitPractical(lessonId, lessonTitle, answer) {
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) return;
-    const { data: profile } = await sb.from('profiles').select('full_name').eq('id', session.user.id).single();
-    const userName = profile?.full_name || session.user.email;
-    const { error } = await sb.from('practical_answers').insert({
-      user_id: session.user.id,
-      user_name: userName,
-      lesson_id: lessonId,
-      lesson_title: lessonTitle,
-      answer: answer,
-      submitted_at: new Date().toISOString()
-    });
-    if (error) console.error('Ошибка сохранения ответа:', error.message);
-  } catch (e) {
-    console.error('submitPractical error:', e);
-  }
+// LOCALSTORAGE: сохранение черновиков
+function saveTA(id) {
+  const el = document.getElementById(id);
+  if (el) localStorage.setItem('day4_' + id, el.value);
+}
+function restoreTAs(ids) {
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    const saved = localStorage.getItem('day4_' + id);
+    if (el && saved) {
+      el.value = saved;
+      el.dispatchEvent(new Event('input'));
+    }
+  });
 }
 
-async function submitAndCompleteLesson(lessonId, lessonTitle, taId) {
+// SUPABASE: сохранение практических заданий (fire-and-forget)
+function submitPractical(lessonId, lessonTitle, answer) {
+  if (!cachedUserId) return;
+  sb.from('practical_answers').insert({
+    user_id: cachedUserId,
+    user_name: cachedUserName,
+    lesson_id: lessonId,
+    lesson_title: lessonTitle,
+    answer: answer,
+    submitted_at: new Date().toISOString()
+  }).then(({ error }) => {
+    if (error) console.error('Ошибка сохранения ответа:', error.message);
+  });
+}
+
+function submitAndCompleteLesson(lessonId, lessonTitle, taId) {
   const answer = document.getElementById(taId)?.value || '';
-  await submitPractical(lessonId, lessonTitle, answer);
+  submitPractical(lessonId, lessonTitle, answer);
+  localStorage.removeItem('day4_' + taId);
   completeLesson(lessonId);
 }
 
