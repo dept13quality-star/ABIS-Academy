@@ -1110,6 +1110,77 @@
     </div>
   </div>
 
+  <!-- S6B: BRANCH CHOICE — client exists or new? -->
+  <div class="onec-window" id="s6b" style="position:relative;">
+    <div class="onec-menubar"><span class="menu-item">Файл</span></div>
+    <div class="order-form" style="opacity:.3;pointer-events:none;">
+      <div class="form-titlebar">Заказ покупателя: Продажа, комиссия. Новый *</div>
+    </div>
+    <div class="dialog-overlay">
+      <div class="win-modal" style="width:420px;">
+        <div class="win-modal-title">🔍 База клиентов открыта — выбери ситуацию</div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+          <div style="font-size:12px;color:#444;text-align:center;margin-bottom:4px;">
+            Это учебная развилка — в реальной работе ты просто ищешь клиента. Выбери свой сценарий:
+          </div>
+          <button id="branch_existing" onclick="chooseBranch('existing')"
+            style="padding:14px 18px;background:linear-gradient(135deg,#d4edda,#a8d5b5);border:2px solid #28a745;border-radius:8px;cursor:pointer;font-family:inherit;text-align:left;">
+            <div style="font-size:13px;font-weight:700;color:#155724;">✅ Клиент уже есть в базе</div>
+            <div style="font-size:11px;color:#1e7e34;margin-top:3px;">Найти по телефону или Ф.И.О и выбрать</div>
+          </button>
+          <button id="branch_new" onclick="chooseBranch('new')"
+            style="padding:14px 18px;background:linear-gradient(135deg,#fff3cd,#ffe08a);border:2px solid #f59e0b;border-radius:8px;cursor:pointer;font-family:inherit;text-align:left;">
+            <div style="font-size:13px;font-weight:700;color:#7b4f00;">🆕 Клиента нет в базе — новый клиент</div>
+            <div style="font-size:11px;color:#92400e;margin-top:3px;">Создать новую карточку клиента</div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7_FOUND: EXISTING CLIENT SEARCH -->
+  <div class="onec-window" id="s7_found" style="position:relative;">
+    <div class="onec-menubar"><span class="menu-item">Файл</span></div>
+    <div class="order-form">
+      <div class="form-titlebar">Заказ покупателя: Продажа, комиссия. Новый *</div>
+      <div class="form-fields" style="opacity:.4;pointer-events:none;">
+        <div class="ff-row"><span class="ff-label">Контрагент:</span><div class="ff-val"><span style="color:#888;">выбор...</span></div></div>
+      </div>
+    </div>
+    <div class="dialog-overlay">
+      <div class="win-modal" style="width:420px;">
+        <div class="win-modal-title"><span>Контрагенты — Выбрать</span><span>✕</span></div>
+        <div style="padding:8px 10px;background:#f0f0f0;border-bottom:1px solid #ccc;">
+          <div class="search-bar">
+            <label>Искать по:</label>
+            <select style="font-size:11px;border:1px solid #aaa;border-radius:2px;padding:2px 4px;">
+              <option selected>Телефон</option>
+              <option>Полному наименованию</option>
+            </select>
+            <input value="7007002718" style="flex:1;font-size:11px;border:1px solid #aaa;border-radius:2px;padding:3px 6px;">
+          </div>
+        </div>
+        <div style="padding:4px 8px;background:#f8f8f8;border-bottom:1px solid #eee;font-size:10.5px;color:#555;">
+          Найдено: 1 клиент
+        </div>
+        <div class="client-list">
+          <div class="client-row" onclick="handleClick('wrong')"><div>Алиева Сабина</div><div class="cr-phone">7001234567</div></div>
+          <div class="client-row" id="existing_client" onclick="handleClick('existing_client')" style="background:#e8f8e8;border-left:3px solid #28a745;">
+            <div><b>Есмуратова Саяна</b></div>
+            <div class="cr-phone">7007002718</div>
+          </div>
+          <div class="client-row" onclick="handleClick('wrong')"><div>Иванова Мария</div><div class="cr-phone">7009988776</div></div>
+        </div>
+        <div style="background:#e8f8e8;border-top:1px solid #b2dfdb;padding:5px 10px;font-size:10.5px;color:#155724;">
+          💡 Клиент найден! Нажми на строку, чтобы выбрать его.
+        </div>
+        <div class="modal-buttons" style="padding:8px 10px;">
+          <button class="btn-1c" onclick="handleClick('wrong')">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- S7: CLIENT SEARCH — NOT FOUND → CREATE NEW -->
   <div class="onec-window" id="s7" style="position:relative;">
     <div class="onec-menubar"><span class="menu-item">Файл</span></div>
@@ -1143,6 +1214,54 @@
           <button class="btn-1c" onclick="handleClick('wrong')">Выбрать</button>
           <button class="btn-1c" onclick="handleClick('wrong')">Отмена</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7B_CB: NEW CLIENT CARD — CHECK BOXES (Покупатель + Розничный покупатель) -->
+  <div class="onec-window" id="s7b_cb">
+    <div class="onec-menubar"><span class="menu-item">Файл</span><span class="menu-item">Правка</span></div>
+    <div class="nc-form">
+      <div class="nc-titlebar"><span>Контрагенты: Создание *</span><span class="branch-badge">🆕 Новый клиент</span></div>
+      <div style="padding:8px 10px 0;">
+        <div class="nc-row">
+          <span class="nc-label">Наименование:</span>
+          <input class="nc-input" id="nc_name_display" value="" readonly style="background:#f8f8f8;color:#0a6b0a;font-weight:600;">
+        </div>
+      </div>
+      <div class="nc-tabs"><div class="nc-tab active">Общие</div><div class="nc-tab">Покупатель/Поставщик</div><div class="nc-tab">Контакты</div><div class="nc-tab">Прочее</div></div>
+      <div class="nc-body">
+        <div class="nc-section-label">ТИП И ГРУППА</div>
+        <div class="nc-row">
+          <span class="nc-label">Юр. / физ. лицо:</span>
+          <div style="font-size:11px;">Физ. лицо</div>
+        </div>
+        <div class="nc-checkbox-row" style="margin-left:128px;gap:20px;">
+          <div class="nc-checkbox-item" id="cb_pokupatel_wrap" onclick="handleClick('cb_pokupatel')" style="cursor:pointer;padding:4px 8px;border-radius:4px;border:1.5px solid #f59e0b;background:#fffbeb;">
+            <input type="checkbox" id="cb_pokupatel" style="pointer-events:none;">
+            <label style="cursor:pointer;font-weight:600;color:#7b4f00;">Покупатель</label>
+          </div>
+          <div class="nc-checkbox-item" id="cb_rozn_wrap" onclick="handleClick('cb_rozn')" style="cursor:pointer;padding:4px 8px;border-radius:4px;border:1.5px dashed #ccc;background:#f8f8f8;opacity:.5;">
+            <input type="checkbox" id="cb_rozn" style="pointer-events:none;">
+            <label style="cursor:pointer;">Розничный покупатель</label>
+          </div>
+          <div class="nc-checkbox-item" style="opacity:.4;"><input type="checkbox" disabled><label>Поставщик</label></div>
+          <div class="nc-checkbox-item" style="opacity:.4;"><input type="checkbox" disabled><label>Гос. учреждение</label></div>
+        </div>
+        <div id="cb_hint" style="margin-left:128px;font-size:10.5px;color:#e03a1e;font-style:italic;margin-top:4px;">← Сначала поставь галочку «Покупатель»</div>
+        <div class="nc-row" style="margin-top:8px;">
+          <span class="nc-label">Группа контрагентов:</span>
+          <div class="group-val" style="color:#aaa;font-style:italic;">не выбрана</div>
+        </div>
+        <div class="nc-row">
+          <span class="nc-label">Телефон:</span>
+          <input class="nc-input" placeholder="+7 (___) ___-__-__">
+        </div>
+      </div>
+      <div class="nc-footer">
+        <button class="btn-1c" onclick="handleClick('wrong')">OK</button>
+        <button class="btn-1c" onclick="handleClick('wrong')">Записать</button>
+        <button class="btn-1c" onclick="handleClick('wrong')">Закрыть</button>
       </div>
     </div>
   </div>
@@ -1648,46 +1767,86 @@ window.addEventListener('message', e => {
   if (e.data === 'requestFullscreen') toggleFullscreen();
 });
 
-// ─── STATE ───────────────────────────────────────────────
-const STEPS = [
-  { screen:'s0',   target:'ic_remote',        label:'Шаг 1 из 19 — Открываем 1С',                tip:'👆 <b>Нажми на иконку «Рабочий стол»</b> — это ярлык для входа в 1С удалённый рабочий стол.' },
-  { screen:'s1',   target:'base_aura',         label:'Шаг 2 из 19 — Выбираем базу',               tip:'🗄️ <b>Выбери базу «aura»</b> — она для физ.лиц (обычных покупателей).' },
-  { screen:'s2',   target:'btn_login',         label:'Шаг 3 из 19 — Вход в систему',              tip:'🔑 Логин уже заполнен: <b>МЕНЕДЖЕР ПО ПРОДАЖАМ АУРА</b>. Пароль — пустой. <b>Нажми «Войти»</b>.' },
-  { screen:'s3',   target:'btn_scan',          label:'Шаг 4 из 19 — Авторизация сканером',        tip:'🔳 <b>Нажми «Считать бейджик»</b> — наведи сканер на штрихкод бейджика и нажми кнопку на сканере.' },
-  { screen:'s4',   target:'link_order',        label:'Шаг 5 из 19 — Открываем список заказов',    tip:'📋 <b>Нажми «Заказ покупателя»</b> в разделе «Заказы покупателей».' },
-  { screen:'s5',   target:'btn_plus_list',     label:'Шаг 6 из 19 — Создаём новый заказ',         tip:'➕ <b>Нажми на зелёный плюсик</b> — создаёт новый заказ.' },
-  { screen:'s6',   target:'btn_contra_dots',   label:'Шаг 7 из 19 — Открываем базу клиентов',     tip:'🔍 <b>Нажми на «...» рядом с полем «Контрагент»</b> — откроется база клиентов.' },
-  { screen:'s7',   target:'btn_create_new',    label:'Шаг 8 из 19 — Клиент не найден → создаём нового', tip:'🔍 Ввели номер — клиента <b>нет в базе</b>. Нажми <b>зелёный плюсик «+»</b> чтобы создать новую карточку.' },
-  { screen:'s7b',  target:'nc_name_field',     label:'Шаг 9 из 19 — Заполняем карточку: Ф.И.О',   tip:'✏️ <b>Нажми на поле «Наименование»</b> и введи Фамилию Имя Отчество клиента.' },
-  { screen:'s7c',  target:'nc_group_btn',      label:'Шаг 10 из 19 — Выбираем группу контрагентов', tip:'📁 <b>Нажми «...» рядом с полем «Группа контрагентов»</b> — нужно выбрать «ПОКУПАТЕЛИ по Заказам (Физ.лица)».' },
-  { screen:'s7d',  target:'nc_group_select',   label:'Шаг 11 из 19 — Выбираем группу Физ.лица',   tip:'📁 <b>Нажми на строку «ПОКУПАТЕЛИ по Заказам покупателей (Физ.лица)»</b> — это правильная группа для обычных покупателей.' },
-  { screen:'s7e',  target:'nc_phone_field',    label:'Шаг 12 из 19 — Вводим телефон клиента',     tip:'📱 <b>Нажми на поле «Телефон»</b> и введи номер клиента.' },
-  { screen:'s7f',  target:['nc_save_btn','nc_close_btn'], anyTarget:true, label:'Шаг 13 из 19 — Сохраняем карточку клиента', tip:'💾 Всё заполнено! <b>Нажми «Записать»</b> и затем <b>«Закрыть»</b> — карточка клиента сохранится.' },
-  { screen:'s7g',  target:'new_client_result', label:'Шаг 14 из 19 — Выбираем созданного клиента', tip:'✅ Карточка создана! <b>Нажми на строку с клиентом</b> — выбери его для заказа.' },
-  { screen:'s8',   target:'btn_da',            label:'Шаг 15 из 19 — Подтверждаем договор',       tip:'⚠️ Система спрашивает про договор. <b>Нажми «Да»</b> — стандартный ответ.' },
-  { screen:'s9',   target:'btn_plus_items',    label:'Шаг 16 из 19 — Добавляем товар',            tip:'➕ Клиент выбран! <b>Нажми зелёный плюсик</b> в таблице товаров — появится строка для артикула.' },
-  { screen:'s10',  target:'article_input',     label:'Шаг 17 из 19 — Вводим артикул',             tip:'📦 <b>Нажми на поле «Артикул»</b> и введи артикул товара. После ввода нажми Enter.' },
-  { screen:'s11',  target:'btn_plus_service',  label:'Шаг 18 из 19 — Добавляем услугу',           tip:'🚚 Если клиент хочет доставку — добавь услугу. <b>Нажми «+»</b> в разделе «Услуги».' },
-  { screen:'s12',  target:['avans_field','resp_field'], anyTarget:true, label:'Шаг 19 из 19 — Аванс и ответственный', tip:'📝 <b>Заполни поле «Аванс»</b> (100% суммы) и поле <b>«Ответственный»</b> — введи своё имя.' },
-  { screen:'s13',  target:['btn_zapisat','btn_zapisat2'], anyTarget:true, label:'Финал — Сохраняем заказ', tip:'💾 Всё готово! <b>Нажми «Записать» или «OK»</b> — заказ сохранится. Иди с клиентом на кассу!' }
+// ─── STEPS DEFINITION ─────────────────────────────────────
+const TOTAL_LABEL = { existing: 'из 15', new: 'из 23' };
+
+// Common intro steps (same for both branches)
+const STEPS_INTRO = [
+  { screen:'s0',  target:'ic_remote',      label:'Шаг 1 — Открываем 1С',              tip:'👆 <b>Нажми на иконку «Рабочий стол»</b> — это ярлык для входа в 1С удалённый рабочий стол.' },
+  { screen:'s1',  target:'base_aura',      label:'Шаг 2 — Выбираем базу',             tip:'🗄️ <b>Выбери базу «aura»</b> — для физ.лиц (обычных покупателей).' },
+  { screen:'s2',  target:'btn_login',      label:'Шаг 3 — Вход в систему',            tip:'🔑 Логин: <b>МЕНЕДЖЕР ПО ПРОДАЖАМ АУРА</b>, пароль пустой. <b>Нажми «Войти»</b>.' },
+  { screen:'s3',  target:'btn_scan',       label:'Шаг 4 — Авторизация сканером',      tip:'🔳 <b>Нажми «Считать бейджик»</b> — наведи сканер на штрихкод бейджика.' },
+  { screen:'s4',  target:'link_order',     label:'Шаг 5 — Открываем список заказов',  tip:'📋 <b>Нажми «Заказ покупателя»</b> в разделе «Заказы покупателей».' },
+  { screen:'s5',  target:'btn_plus_list',  label:'Шаг 6 — Создаём новый заказ',       tip:'➕ <b>Нажми зелёный плюсик</b> — создаёт новый заказ.' },
+  { screen:'s6',  target:'btn_contra_dots',label:'Шаг 7 — Открываем базу клиентов',   tip:'🔍 <b>Нажми «...» рядом с полем «Контрагент»</b> — откроется поиск клиентов.' },
+  { screen:'s6b', target:null, isBranch:true, label:'Шаг 8 — Выбери ситуацию',        tip:'🔀 <b>Выбери свою ситуацию</b> — клиент уже есть в базе или нужно создать нового?' },
 ];
 
+// Branch A: клиент УЖЕ ЕСТЬ в базе
+const STEPS_EXISTING = [
+  { screen:'s7_found', target:'existing_client', label:'Шаг 9 из 15 — Находим клиента в базе',  tip:'🔍 Ввели номер телефона — клиент найден! <b>Нажми на строку с клиентом</b> чтобы выбрать его.' },
+  { screen:'s8',       target:'btn_da',           label:'Шаг 10 из 15 — Подтверждаем договор',  tip:'⚠️ <b>Нажми «Да»</b> — стандартный ответ при выборе контрагента.' },
+  { screen:'s9',       target:'btn_plus_items',   label:'Шаг 11 из 15 — Добавляем товар',       tip:'➕ <b>Нажми зелёный плюсик</b> в таблице товаров — появится строка для артикула.' },
+  { screen:'s10',      target:'article_input',    label:'Шаг 12 из 15 — Вводим артикул',        tip:'📦 <b>Нажми на поле «Артикул»</b> и введи артикул товара. Нажми Enter.' },
+  { screen:'s11',      target:'btn_plus_service', label:'Шаг 13 из 15 — Добавляем услугу',      tip:'🚚 <b>Нажми «+»</b> во вкладке «Услуги» для добавления доставки/примерки.' },
+  { screen:'s12',      target:['avans_field','resp_field'], anyTarget:true, label:'Шаг 14 из 15 — Аванс и ответственный', tip:'📝 <b>Заполни «Аванс»</b> (100% суммы) и <b>«Ответственный»</b> — своё имя.' },
+  { screen:'s13',      target:['btn_zapisat','btn_zapisat2'], anyTarget:true, label:'Шаг 15 из 15 — Сохраняем заказ', tip:'💾 <b>Нажми «Записать» или «OK»</b> — заказ сохранён. Иди к кассиру!' },
+];
+
+// Branch B: новый клиент
+const STEPS_NEW = [
+  { screen:'s7',       target:'btn_create_new',   label:'Шаг 9 из 23 — Клиент не найден',       tip:'🔍 Клиента <b>нет в базе</b>. Нажми <b>зелёный плюсик «+»</b> — создать новую карточку.' },
+  { screen:'s7b_cb',   target:'cb_pokupatel',     label:'Шаг 10 из 23 — Галочка «Покупатель»',  tip:'☑️ Обязательно! <b>Поставь галочку «Покупатель»</b> — кликни по этому пункту.' },
+  { screen:'s7b_cb',   target:'cb_rozn',          label:'Шаг 11 из 23 — Галочка «Розничный покупатель»', tip:'☑️ Обязательно! Теперь <b>поставь галочку «Розничный покупатель»</b>.' },
+  { screen:'s7b',      target:'nc_name_field',    label:'Шаг 12 из 23 — Вводим Ф.И.О клиента',  tip:'✏️ <b>Нажми на поле «Наименование»</b> и введи Фамилию Имя Отчество клиента.' },
+  { screen:'s7c',      target:'nc_group_btn',     label:'Шаг 13 из 23 — Выбираем группу',       tip:'📁 <b>Нажми «...»</b> рядом с полем «Группа контрагентов».' },
+  { screen:'s7d',      target:'nc_group_select',  label:'Шаг 14 из 23 — Выбираем Физ.лица',     tip:'📁 <b>Нажми «ПОКУПАТЕЛИ по Заказам покупателей (Физ.лица)»</b>.' },
+  { screen:'s7e',      target:'nc_phone_field',   label:'Шаг 15 из 23 — Вводим телефон',        tip:'📱 <b>Нажми на поле «Телефон»</b> и введи номер клиента.' },
+  { screen:'s7f',      target:['nc_save_btn','nc_close_btn'], anyTarget:true, label:'Шаг 16 из 23 — Сохраняем карточку', tip:'💾 <b>Нажми «Записать»</b> и <b>«Закрыть»</b> — карточка клиента сохранится.' },
+  { screen:'s7g',      target:'new_client_result',label:'Шаг 17 из 23 — Выбираем клиента',      tip:'✅ Карточка создана! <b>Нажми на строку с клиентом</b> для выбора.' },
+  { screen:'s8',       target:'btn_da',           label:'Шаг 18 из 23 — Подтверждаем договор',  tip:'⚠️ <b>Нажми «Да»</b>.' },
+  { screen:'s9',       target:'btn_plus_items',   label:'Шаг 19 из 23 — Добавляем товар',       tip:'➕ <b>Нажми зелёный плюсик</b> в таблице товаров.' },
+  { screen:'s10',      target:'article_input',    label:'Шаг 20 из 23 — Вводим артикул',        tip:'📦 <b>Нажми на поле «Артикул»</b> и введи артикул. Нажми Enter.' },
+  { screen:'s11',      target:'btn_plus_service', label:'Шаг 21 из 23 — Добавляем услугу',      tip:'🚚 <b>Нажми «+»</b> во вкладке «Услуги».' },
+  { screen:'s12',      target:['avans_field','resp_field'], anyTarget:true, label:'Шаг 22 из 23 — Аванс и ответственный', tip:'📝 <b>Заполни «Аванс»</b> и <b>«Ответственный»</b>.' },
+  { screen:'s13',      target:['btn_zapisat','btn_zapisat2'], anyTarget:true, label:'Шаг 23 из 23 — Сохраняем заказ', tip:'💾 <b>Нажми «Записать» или «OK»</b>. Иди к кассиру!' },
+];
+
+// Active steps (set after branch choice)
+let activeSteps = [...STEPS_INTRO];
 let currentStep = 0;
+let clientBranch = null; // 'existing' | 'new'
 let errorCount = 0;
 let filledAvans = false;
 let filledResp = false;
-let ncNameFilled = false;
-let ncPhoneFilled = false;
+let cbPokupatel = false;
+let cbRozn = false;
 
+// ─── BRANCH CHOICE ────────────────────────────────────────
+function chooseBranch(branch) {
+  clientBranch = branch;
+  if (branch === 'existing') {
+    activeSteps = [...STEPS_INTRO, ...STEPS_EXISTING];
+  } else {
+    activeSteps = [...STEPS_INTRO, ...STEPS_NEW];
+  }
+  currentStep = STEPS_INTRO.length; // move past intro
+  cbPokupatel = false;
+  cbRozn = false;
+  showStep(currentStep);
+}
+
+// ─── CORE ─────────────────────────────────────────────────
 function init() { showStep(0); }
 
 function showStep(idx) {
+  // Hide all screens
   document.querySelectorAll('[id^="s"]').forEach(el => {
     if(el.id !== 'sComplete') el.classList.remove('active');
   });
   document.getElementById('sComplete').classList.remove('active');
 
-  if(idx >= STEPS.length) {
+  if(idx >= activeSteps.length) {
     document.getElementById('sComplete').classList.add('active');
     document.getElementById('statErrors').textContent = errorCount;
     document.getElementById('progressFill').style.width = '100%';
@@ -1696,27 +1855,51 @@ function showStep(idx) {
     return;
   }
 
-  const step = STEPS[idx];
+  const step = activeSteps[idx];
   const screenEl = document.getElementById(step.screen);
   if(screenEl) screenEl.classList.add('active');
 
   document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
 
-  const targets = Array.isArray(step.target) ? step.target : [step.target];
-  targets.forEach(t => {
-    const el = document.getElementById(t);
-    if(el) el.classList.add('highlight');
-  });
+  if(!step.isBranch && step.target) {
+    const targets = Array.isArray(step.target) ? step.target : [step.target];
+    targets.forEach(t => {
+      const el = document.getElementById(t);
+      if(el) el.classList.add('highlight');
+    });
+  }
 
-  const pct = Math.round((idx / STEPS.length) * 100);
+  const pct = Math.round((idx / activeSteps.length) * 100);
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('stepLabel').textContent = step.label;
   setTip(step.tip, 'normal');
 
-  // reset flags on relevant steps
-  if(idx === 18) { filledAvans = false; filledResp = false; }
-  if(idx === 8)  { ncNameFilled = false; }
-  if(idx === 11) { ncPhoneFilled = false; }
+  // Reset flags
+  const stepScreen = step.screen;
+  if(step.anyTarget && (step.target || []).includes('avans_field')) {
+    filledAvans = false; filledResp = false;
+  }
+  if(stepScreen === 's7b_cb' && step.target === 'cb_pokupatel') {
+    // reset checkbox state on first cb step
+    cbPokupatel = false; cbRozn = false;
+    const cb1 = document.getElementById('cb_pokupatel');
+    const cb2 = document.getElementById('cb_rozn');
+    if(cb1) cb1.checked = false;
+    if(cb2) cb2.checked = false;
+    // reset visual state
+    const w2 = document.getElementById('cb_rozn_wrap');
+    if(w2) { w2.style.opacity='.5'; w2.style.border='1.5px dashed #ccc'; w2.style.background='#f8f8f8'; }
+    const w1 = document.getElementById('cb_pokupatel_wrap');
+    if(w1) { w1.style.border='1.5px solid #f59e0b'; w1.style.background='#fffbeb'; }
+    const hint = document.getElementById('cb_hint');
+    if(hint) hint.textContent = '← Сначала поставь галочку «Покупатель»';
+  }
+  // Sync name display in s7b_cb
+  if(stepScreen === 's7b_cb') {
+    const nd = document.getElementById('nc_name_display');
+    const ni = document.getElementById('nc_name_input');
+    if(nd && ni) nd.value = ni.value || '';
+  }
 }
 
 function setTip(html, type) {
@@ -1728,52 +1911,89 @@ function setTip(html, type) {
 }
 
 function handleClick(id) {
-  const step = STEPS[currentStep];
+  const step = activeSteps[currentStep];
   if(!step) return;
 
-  const targets = Array.isArray(step.target) ? step.target : [step.target];
+  // Branch choice — handled by chooseBranch(), not here
+  if(step.isBranch) return;
 
-  // Step 18: аванс + ответственный
-  if(currentStep === 18 && step.anyTarget) {
+  const targets = Array.isArray(step.target) ? step.target : (step.target ? [step.target] : []);
+
+  // ── Checkbox step: Покупатель ──
+  if(step.target === 'cb_pokupatel') {
+    if(id === 'cb_pokupatel') {
+      document.getElementById('cb_pokupatel').checked = true;
+      cbPokupatel = true;
+      // activate rozn checkbox visually
+      const w1 = document.getElementById('cb_pokupatel_wrap');
+      if(w1) { w1.style.border='1.5px solid #28a745'; w1.style.background='#d4edda'; }
+      const w2 = document.getElementById('cb_rozn_wrap');
+      if(w2) { w2.style.opacity='1'; w2.style.border='1.5px solid #f59e0b'; w2.style.background='#fffbeb'; }
+      const hint = document.getElementById('cb_hint');
+      if(hint) hint.textContent = '← Теперь поставь галочку «Розничный покупатель»';
+      setTip('✅ «Покупатель» отмечен! Теперь <b>поставь галочку «Розничный покупатель»</b>.', 'success');
+      setTimeout(() => advance(), 900);
+      return;
+    }
+    showError(); return;
+  }
+
+  // ── Checkbox step: Розничный покупатель ──
+  if(step.target === 'cb_rozn') {
+    if(id === 'cb_rozn') {
+      document.getElementById('cb_rozn').checked = true;
+      cbRozn = true;
+      const w2 = document.getElementById('cb_rozn_wrap');
+      if(w2) { w2.style.border='1.5px solid #28a745'; w2.style.background='#d4edda'; }
+      const hint = document.getElementById('cb_hint');
+      if(hint) { hint.textContent = '✅ Обе галочки проставлены!'; hint.style.color='#28a745'; }
+      setTip('✅ «Розничный покупатель» отмечен! Оба поля заполнены.', 'success');
+      setTimeout(() => advance(), 900);
+      return;
+    }
+    // If they click pokupatel again on rozn step — ignore nicely
+    if(id === 'cb_pokupatel') {
+      setTip('☑️ «Покупатель» уже отмечен. Теперь <b>поставь галочку «Розничный покупатель»</b>.', 'normal');
+      return;
+    }
+    showError(); return;
+  }
+
+  // ── Аванс + ответственный ──
+  if(step.anyTarget && targets.includes('avans_field')) {
     if(id === 'avans_field') {
       document.getElementById('avans_input').focus();
       filledAvans = true;
       setTip('✅ Поле «Аванс» активировано. Теперь <b>заполни поле «Ответственный»</b>.', 'success');
-      setTimeout(() => checkDopComplete(), 1500);
-      return;
+      setTimeout(() => checkDopComplete(), 1500); return;
     }
     if(id === 'resp_field') {
       document.getElementById('resp_input').focus();
       filledResp = true;
       setTip('✅ Поле «Ответственный» активировано. Введи своё имя.', 'success');
-      setTimeout(() => checkDopComplete(), 1500);
-      return;
+      setTimeout(() => checkDopComplete(), 1500); return;
     }
     if(id === 'wrong') { showError(); return; }
     return;
   }
 
-  // Step 12: nc_save + nc_close (any of them)
-  if(currentStep === 12 && step.anyTarget) {
+  // ── nc_save + nc_close (any) ──
+  if(step.anyTarget && targets.includes('nc_save_btn')) {
     if(targets.includes(id)) {
-      setTip('✅ Карточка сохранена! Закрываем окно...', 'success');
-      setTimeout(() => advance(), 800);
-      return;
+      setTip('✅ Карточка сохранена!', 'success');
+      setTimeout(() => advance(), 800); return;
     }
     showError(); return;
   }
 
-  // Step 19: записать заказ (any)
-  if(currentStep === 19 && step.anyTarget) {
-    if(targets.includes(id)) {
-      handleCorrect(step, id);
-      return;
-    }
+  // ── Записать заказ (any) ──
+  if(step.anyTarget && targets.includes('btn_zapisat')) {
+    if(targets.includes(id)) { handleCorrect(id); return; }
     showError(); return;
   }
 
   if(targets.includes(id)) {
-    handleCorrect(step, id);
+    handleCorrect(id);
   } else {
     showError();
   }
@@ -1783,30 +2003,29 @@ function checkDopComplete() {
   if(filledAvans && filledResp) {
     advance();
   } else if(filledAvans) {
-    setTip('👍 Аванс отмечен. Теперь <b>нажми поле «Ответственный»</b>.', 'normal');
+    setTip('👍 Аванс отмечен. <b>Нажми поле «Ответственный»</b>.', 'normal');
   } else if(filledResp) {
-    setTip('👍 Ответственный отмечен. Теперь <b>нажми поле «Аванс»</b>.', 'normal');
+    setTip('👍 Ответственный отмечен. <b>Нажми поле «Аванс»</b>.', 'normal');
   }
 }
 
-function handleCorrect(step, id) {
+function handleCorrect(id) {
   const feedbacks = {
     'ic_remote':         '✅ Открываем 1С...',
-    'base_aura':         '✅ База «aura» выбрана — для физ.лиц!',
+    'base_aura':         '✅ База «aura» выбрана!',
     'btn_login':         '✅ Входим в систему...',
-    'btn_scan':          '✅ Авторизация прошла — бейджик считан!',
+    'btn_scan':          '✅ Авторизация прошла!',
     'link_order':        '✅ Открываем список заказов.',
     'btn_plus_list':     '✅ Создаём новый заказ.',
     'btn_contra_dots':   '✅ Открываем базу клиентов...',
-    'btn_create_new':    '✅ Открываем форму создания нового клиента!',
+    'existing_client':   '✅ Клиент найден и выбран!',
+    'btn_create_new':    '✅ Открываем форму нового клиента.',
     'nc_name_field':     '✅ Поле «Наименование» активно. Введи Ф.И.О и нажми Enter.',
-    'nc_group_btn':      '✅ Открываем список групп контрагентов...',
+    'nc_group_btn':      '✅ Открываем список групп...',
     'nc_group_select':   '✅ Группа выбрана: Покупатели (Физ.лица)!',
-    'nc_phone_field':    '✅ Поле телефона активно. Введи номер клиента.',
-    'nc_save_btn':       '✅ Карточка записана и закрыта!',
-    'nc_close_btn':      '✅ Карточка записана и закрыта!',
+    'nc_phone_field':    '✅ Поле телефона активно. Введи номер и нажми Enter.',
     'new_client_result': '✅ Клиент выбран!',
-    'btn_da':            '✅ Подтверждаем. Контрагент установлен.',
+    'btn_da':            '✅ Подтверждаем.',
     'btn_plus_items':    '✅ Добавляем строку для товара.',
     'article_input':     '✅ Поле артикула активно. Введи артикул и нажми Enter.',
     'btn_plus_service':  '✅ Добавляем услугу.',
@@ -1830,10 +2049,11 @@ function showError() {
 }
 
 function restart() {
-  currentStep = 0; errorCount = 0;
+  currentStep = 0; errorCount = 0; clientBranch = null;
   filledAvans = false; filledResp = false;
-  ncNameFilled = false; ncPhoneFilled = false;
-  ['article_input','avans_input','resp_input','nc_name_input','nc_phone_input'].forEach(id => {
+  cbPokupatel = false; cbRozn = false;
+  activeSteps = [...STEPS_INTRO];
+  ['article_input','avans_input','resp_input','nc_name_input','nc_phone_input','nc_name_display'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.value = '';
   });
@@ -1841,10 +2061,10 @@ function restart() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Article Enter handler — step 16
+  // Article Enter — find step index with article_input target
   const ai = document.getElementById('article_input');
   if(ai) ai.addEventListener('keydown', e => {
-    if(e.key === 'Enter' && currentStep === 16) {
+    if(e.key === 'Enter' && activeSteps[currentStep]?.target === 'article_input') {
       if(ai.value.trim()) {
         setTip('✅ Артикул введён: <b>' + ai.value + '</b>. Товар найден!', 'success');
         setTimeout(() => advance(), 800);
@@ -1854,12 +2074,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ФИО Enter handler — step 8
+  // ФИО Enter
   const ncn = document.getElementById('nc_name_input');
   if(ncn) ncn.addEventListener('keydown', e => {
-    if(e.key === 'Enter' && currentStep === 8) {
+    if(e.key === 'Enter' && activeSteps[currentStep]?.target === 'nc_name_field') {
       if(ncn.value.trim()) {
-        setTip('✅ Ф.И.О введено: <b>' + ncn.value + '</b>. Переходим дальше.', 'success');
+        // sync name to s7b_cb display
+        const nd = document.getElementById('nc_name_display');
+        if(nd) nd.value = ncn.value;
+        setTip('✅ Ф.И.О введено: <b>' + ncn.value + '</b>.', 'success');
         setTimeout(() => advance(), 800);
       } else {
         setTip('⚠️ Введи Фамилию Имя Отчество клиента.', 'error');
@@ -1867,12 +2090,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Телефон Enter handler — step 11
+  // Телефон Enter
   const ncp = document.getElementById('nc_phone_input');
   if(ncp) ncp.addEventListener('keydown', e => {
-    if(e.key === 'Enter' && currentStep === 11) {
+    if(e.key === 'Enter' && activeSteps[currentStep]?.target === 'nc_phone_field') {
       if(ncp.value.trim()) {
-        setTip('✅ Телефон введён. Переходим дальше.', 'success');
+        setTip('✅ Телефон введён.', 'success');
         setTimeout(() => advance(), 800);
       } else {
         setTip('⚠️ Введи номер телефона клиента.', 'error');
