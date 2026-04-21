@@ -830,7 +830,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           </ul>
           <p style="margin-top:8px">Оформи результат проверки письменно по каждой комнате.</p>
         </div>
-        <textarea class="task-textarea" id="ta-17" style="min-height:160px" placeholder="Комната 1:&#10;Люстра: [артикул]&#10;Высота: подходит / не подходит&#10;Диаметр: подходит / не подходит&#10;Лампочек: достаточно / недостаточно&#10;&#10;Комната 2:&#10;...&#10;&#10;Комната 3:&#10;..." oninput="document.getElementById('btn-17').disabled=this.value.trim().length<10"></textarea>
+        <textarea class="task-textarea" id="ta-17" style="min-height:160px" placeholder="Комната 1:&#10;Люстра: [артикул]&#10;Высота: подходит / не подходит&#10;Диаметр: подходит / не подходит&#10;Лампочек: достаточно / недостаточно&#10;&#10;Комната 2:&#10;...&#10;&#10;Комната 3:&#10;..." oninput="document.getElementById('btn-17').disabled=this.value.trim().length<10; saveTA('ta-17')"></textarea>
         <button class="complete-btn" id="btn-17" onclick="submitAndCompleteLesson(17, 'Практическое задание: Проверка подбора люстр', 'ta-17')" disabled>Отправить куратору</button>
       </div>
     </div>
@@ -897,19 +897,28 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const TOTAL = 19;
 let completed = new Set();
 const BASE = 'https://dept13quality-star.github.io/ABIS-Academy/';
+let cachedUserId = null;
+let cachedUserName = null;
 
 // INIT
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = 'index.html'; return; }
 
-  const { data: prog } = await sb.from('progress').select('*')
-    .eq('user_id', session.user.id).eq('course_id', 2).maybeSingle();
+  cachedUserId = session.user.id;
 
-  if (prog?.completed_lessons && Array.isArray(prog.completed_lessons)) {
-    prog.completed_lessons.forEach(id => completed.add(String(id)));
+  const [progResult, profileResult] = await Promise.all([
+    sb.from('progress').select('*').eq('user_id', session.user.id).eq('course_id', 2).maybeSingle(),
+    sb.from('profiles').select('full_name').eq('id', session.user.id).single()
+  ]);
+
+  cachedUserName = profileResult.data?.full_name || session.user.email;
+
+  if (progResult.data?.completed_lessons && Array.isArray(progResult.data.completed_lessons)) {
+    progResult.data.completed_lessons.forEach(id => completed.add(String(id)));
     updateProgress();
   }
+  restoreTAs(['ta-15-1', 'ta-15-2', 'ta-15-3', 'ta-17']);
   buildStyleQuiz();
   buildDragTask();
 }
@@ -1227,43 +1236,56 @@ function check15() {
   const btn = document.getElementById('btn-15');
   if (t1 && t2 && t3 && btn) {
     btn.disabled = !(t1.value.trim().length > 3 && t2.value.trim().length > 3 && t3.value.trim().length > 3);
+    saveTA('ta-15-1'); saveTA('ta-15-2'); saveTA('ta-15-3');
   }
 }
 
-// SUPABASE: сохранение практических заданий
-async function submitPractical(lessonId, lessonTitle, answer) {
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) return;
-    const { data: profile } = await sb.from('profiles').select('full_name').eq('id', session.user.id).single();
-    const userName = profile?.full_name || session.user.email;
-    const { error } = await sb.from('practical_answers').insert({
-      user_id: session.user.id,
-      user_name: userName,
-      lesson_id: lessonId,
-      lesson_title: lessonTitle,
-      answer: answer,
-      submitted_at: new Date().toISOString()
-    });
+// LOCALSTORAGE: сохранение черновиков
+function saveTA(id) {
+  const el = document.getElementById(id);
+  if (el) localStorage.setItem('day2_' + id, el.value);
+}
+function restoreTAs(ids) {
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    const saved = localStorage.getItem('day2_' + id);
+    if (el && saved) {
+      el.value = saved;
+      el.dispatchEvent(new Event('input'));
+    }
+  });
+}
+
+// SUPABASE: сохранение практических заданий (fire-and-forget)
+function submitPractical(lessonId, lessonTitle, answer) {
+  if (!cachedUserId) return;
+  sb.from('practical_answers').insert({
+    user_id: cachedUserId,
+    user_name: cachedUserName,
+    lesson_id: lessonId,
+    lesson_title: lessonTitle,
+    answer: answer,
+    submitted_at: new Date().toISOString()
+  }).then(({ error }) => {
     if (error) console.error('Ошибка сохранения ответа:', error.message);
-  } catch (e) {
-    console.error('submitPractical error:', e);
-  }
+  });
 }
 
-async function submitAndCompleteLesson(lessonId, lessonTitle, taId) {
+function submitAndCompleteLesson(lessonId, lessonTitle, taId) {
   const answer = document.getElementById(taId)?.value || '';
-  await submitPractical(lessonId, lessonTitle, answer);
+  submitPractical(lessonId, lessonTitle, answer);
+  localStorage.removeItem('day2_' + taId);
   completeLesson(lessonId);
 }
 
-async function submitAndComplete15() {
+function submitAndComplete15() {
   const answer = [
     '🛋️ Комната 1:\n' + (document.getElementById('ta-15-1')?.value || ''),
     '🛏️ Комната 2:\n' + (document.getElementById('ta-15-2')?.value || ''),
     '🍳 Комната 3:\n' + (document.getElementById('ta-15-3')?.value || '')
   ].join('\n\n');
-  await submitPractical(15, 'Задание по подбору освещения', answer);
+  submitPractical(15, 'Задание по подбору освещения', answer);
+  ['ta-15-1','ta-15-2','ta-15-3'].forEach(id => localStorage.removeItem('day2_' + id));
   completeLesson(15);
 }
 

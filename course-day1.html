@@ -946,7 +946,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
             <li>Какие услуги предоставляет SVET.KZ помимо продажи товаров?</li>
           </ol>
         </div>
-        <textarea class="task-textarea" placeholder="Напишите ваши ответы здесь..."></textarea>
+        <textarea class="task-textarea" id="ta-12" placeholder="Напишите ваши ответы здесь..." oninput="saveTA('ta-12')"></textarea>
         <button class="complete-btn" onclick="completeLesson(12)">Отправить ответ</button>
       </div>
     </div>
@@ -1325,7 +1325,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
             <li>Бра на две лампочки</li>
           </ul>
         </div>
-        <textarea class="task-textarea" placeholder="Вписывайте артикулы в формате:&#10;Подвесная люстра: 12345&#10;Потолочная люстра: 67890&#10;..."></textarea>
+        <textarea class="task-textarea" id="ta-29" placeholder="Вписывайте артикулы в формате:&#10;Подвесная люстра: 12345&#10;Потолочная люстра: 67890&#10;..." oninput="saveTA('ta-29')"></textarea>
         <button class="complete-btn" onclick="completeLesson(29)">Отправить ответы</button>
       </div>
     </div>
@@ -1358,7 +1358,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
             <div id="adj-bar" style="height:100%;background:linear-gradient(90deg,var(--purple-light),var(--gold));border-radius:100px;width:0%;transition:width 0.3s"></div>
           </div>
         </div>
-        <textarea class="task-textarea" id="adj-input" placeholder="Начните вводить прилагательные через запятую или с новой строки...&#10;Например: изящная, роскошная, современная..." oninput="countAdj()" style="min-height:160px"></textarea>
+        <textarea class="task-textarea" id="adj-input" placeholder="Начните вводить прилагательные через запятую или с новой строки...&#10;Например: изящная, роскошная, современная..." oninput="countAdj(); saveTA('adj-input')" style="min-height:160px"></textarea>
         <div id="adj-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
         <button class="complete-btn" id="adj-submit-btn" onclick="completeLesson(30)" disabled>Отправить задание (нужно 30 прилагательных)</button>
       </div>
@@ -1609,7 +1609,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           <p style="margin-top:8px;color:var(--gold-light)">📌 Пример: Комната 1: Площадь 20м², высота 2.7м, освещение: 1 люстра, 2 бра</p>
           <p style="margin-top:8px">⚠️ На втором дне эти данные нам понадобятся!</p>
         </div>
-        <textarea class="task-textarea" style="min-height:160px" placeholder="Комната 1:&#10;Площадь: ___ м²&#10;Высота потолка: ___ м&#10;Освещение: ___&#10;&#10;Комната 2:&#10;Площадь: ___ м²&#10;Высота потолка: ___ м&#10;Освещение: ___&#10;&#10;Комната 3:&#10;Площадь: ___ м²&#10;Высота потолка: ___ м&#10;Освещение: ___"></textarea>
+        <textarea class="task-textarea" id="ta-36" style="min-height:160px" oninput="saveTA('ta-36')" placeholder="Комната 1:&#10;Площадь: ___ м²&#10;Высота потолка: ___ м&#10;Освещение: ___&#10;&#10;Комната 2:&#10;Площадь: ___ м²&#10;Высота потолка: ___ м&#10;Освещение: ___&#10;&#10;Комната 3:&#10;Площадь: ___ м²&#10;Высота потолка: ___ м&#10;Освещение: ___"></textarea>
         <button class="complete-btn" onclick="completeLesson(36)">Отправить домашнее задание</button>
       </div>
     </div>
@@ -1638,23 +1638,48 @@ const TOTAL = 36;
 let completed = new Set();
 let testScores = {};
 let testCurrent = {};
+let cachedUserId = null;
+let cachedUserName = null;
+
+// LOCALSTORAGE: сохранение черновиков
+function saveTA(id) {
+  const el = document.getElementById(id);
+  if (el) localStorage.setItem('day1_' + id, el.value);
+}
+function restoreTAs(ids) {
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    const saved = localStorage.getItem('day1_' + id);
+    if (el && saved) {
+      el.value = saved;
+      el.dispatchEvent(new Event('input'));
+    }
+  });
+}
 
 // INIT
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = 'index.html'; return; }
 
-  const { data: prog } = await sb.from('progress').select('*')
-    .eq('user_id', session.user.id).eq('course_id', 1).maybeSingle();
+  cachedUserId = session.user.id;
+
+  const [progResult, profileResult] = await Promise.all([
+    sb.from('progress').select('*').eq('user_id', session.user.id).eq('course_id', 1).maybeSingle(),
+    sb.from('profiles').select('full_name').eq('id', session.user.id).single()
+  ]);
+
+  cachedUserName = profileResult.data?.full_name || session.user.email;
+  const prog = progResult.data;
 
   if (prog?.completed_lessons && Array.isArray(prog.completed_lessons)) {
     prog.completed_lessons.forEach(id => completed.add(id));
     updateProgress();
   } else if (prog?.module_index) {
-    // fallback для старых записей
     for (let i = 1; i <= prog.module_index; i++) completed.add(i);
     updateProgress();
   }
+  restoreTAs(['ta-12', 'ta-29', 'adj-input', 'ta-36']);
 }
 
 // TOGGLE
@@ -1704,13 +1729,11 @@ async function completeLesson(n) {
   updateProgress();
   toast('Урок завершён! 🎉');
 
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    const moduleIndex = completed.size;
+  if (cachedUserId) {
     const score = Math.round((completed.size / TOTAL) * 100);
     const isCompleted = completed.size >= TOTAL;
     await sb.from('progress').upsert({
-      user_id: session.user.id, course_id: 1,
+      user_id: cachedUserId, course_id: 1,
       module_index: completed.size,
       completed_lessons: [...completed],
       score, completed: isCompleted,
@@ -1718,28 +1741,30 @@ async function completeLesson(n) {
       ...(isCompleted ? { completed_at: new Date().toISOString() } : {})
     }, { onConflict: 'user_id,course_id' });
 
-    // Сохраняем текст практических заданий
+    // Сохраняем текст практических заданий (fire-and-forget)
     const practicalLessons = {
-      12: 'Проверочное задание к Азбуке — вводная',
-      29: 'ПЗ «Найди товар» — артикулы',
-      30: 'Задание: 30 прилагательных',
-      36: 'Домашнее задание: Замеры комнат'
+      12: ['Проверочное задание к Азбуке — вводная', 'ta-12'],
+      29: ['ПЗ «Найди товар» — артикулы', 'ta-29'],
+      30: ['Задание: 30 прилагательных', 'adj-input'],
+      36: ['Домашнее задание: Замеры комнат', 'ta-36']
     };
-    if (practicalLessons[n]) {
-      const el2 = document.getElementById('lesson-' + n);
-      const ta = el2 ? el2.querySelector('.task-textarea') : null;
+    if (practicalLessons[n] && cachedUserId) {
+      const [lessonTitle, taId] = practicalLessons[n];
+      const ta = document.getElementById(taId);
       const answerText = ta ? ta.value.trim() : '';
       if (answerText) {
-        const { data: profile } = await sb.from('profiles').select('full_name').eq('id', session.user.id).single();
-        await sb.from('practical_answers').upsert({
-          user_id: session.user.id,
-          user_name: profile?.full_name || session.user.email,
+        sb.from('practical_answers').upsert({
+          user_id: cachedUserId,
+          user_name: cachedUserName,
           course_id: 1,
           lesson_id: n,
-          lesson_title: practicalLessons[n],
+          lesson_title: lessonTitle,
           answer: answerText,
           submitted_at: new Date().toISOString()
-        }, { onConflict: 'user_id,lesson_id' });
+        }, { onConflict: 'user_id,lesson_id' }).then(({ error }) => {
+          if (error) console.error('Ошибка сохранения ответа:', error.message);
+        });
+        localStorage.removeItem('day1_' + taId);
       }
     }
   }
