@@ -585,6 +585,7 @@ async function init() {
     prog.completed_lessons.forEach(id => completed.add(String(id)));
     updateProgress();
   }
+}
 
 
 function toggleLesson(n) {
@@ -627,9 +628,7 @@ async function completeLesson(n) {
     }, { onConflict: 'user_id,course_id' });
   }
 }
-  updateProgress();
-  toast('Урок завершён! 🎉');
-}
+
 
 function updateProgress() {
   const count = completed.size;

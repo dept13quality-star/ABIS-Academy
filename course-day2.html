@@ -914,6 +914,7 @@ async function init() {
   buildDragTask();
 }
 
+
 // TOGGLE
 function toggleLesson(n) {
   const el = document.getElementById('lesson-' + n);
@@ -956,6 +957,7 @@ async function completeLesson(n) {
     }, { onConflict: 'user_id,course_id' });
   }
 }
+
 
 // PROGRESS
 function updateProgress() {
