@@ -1753,18 +1753,25 @@ async function completeLesson(n) {
 // PROGRESS
 function updateProgress() {
   const count = completed.size;
-  const pct = Math.round((count / TOTAL) * 100);
+  const pct = Math.round(count / TOTAL * 100);
   document.getElementById('progressCount').textContent = count + ' / ' + TOTAL;
   document.getElementById('progressBar').style.width = pct + '%';
 
   completed.forEach(n => {
     const el = document.getElementById('lesson-' + n);
-    if (el) {
-      el.classList.add('completed');
-      const status = el.querySelector('.lesson-status');
-      if (status) status.textContent = '✓';
-      const btn = el.querySelector('.complete-btn');
-      if (btn) { btn.textContent = '✓ Выполнено'; btn.classList.add('done'); btn.disabled = true; }
+    if (!el) return;
+    el.classList.add('completed');
+    const status = el.querySelector('.lesson-status');
+    if (status) status.textContent = '✓';
+    const btn = el.querySelector('.complete-btn');
+    if (btn) { btn.textContent = '✓ Выполнено'; btn.classList.add('done'); btn.disabled = true; }
+    const timerBtn = el.querySelector('.timer-btn');
+    if (timerBtn) {
+      clearInterval(activeTimers[n]);
+      timerBtn.textContent = '✓ Выполнено';
+      timerBtn.classList.remove('ready');
+      timerBtn.classList.add('done');
+      timerBtn.onclick = null;
     }
   });
 }

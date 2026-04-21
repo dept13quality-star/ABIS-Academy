@@ -902,6 +902,14 @@ const BASE = 'https://dept13quality-star.github.io/ABIS-Academy/';
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = 'index.html'; return; }
+
+  const { data: prog } = await sb.from('progress').select('*')
+    .eq('user_id', session.user.id).eq('course_id', 2).single();
+
+  if (prog?.completed_lessons && Array.isArray(prog.completed_lessons)) {
+    prog.completed_lessons.forEach(id => completed.add(String(id)));
+    updateProgress();
+  }
   buildStyleQuiz();
   buildDragTask();
 }
@@ -926,9 +934,27 @@ async function completeLesson(n) {
     el.classList.remove('open');
     const status = el.querySelector('.lesson-status');
     if (status) status.textContent = '✓';
+    const btn = el.querySelector('.complete-btn');
+    if (btn) { btn.textContent = '✓ Выполнено'; btn.classList.add('done'); btn.disabled = true; }
   }
   updateProgress();
   toast('Урок завершён! 🎉');
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    const score = Math.round((completed.size / TOTAL) * 100);
+    const isCompleted = completed.size >= TOTAL;
+    await sb.from('progress').upsert({
+      user_id: session.user.id,
+      course_id: 2,
+      module_index: completed.size,
+      completed_lessons: [...completed],
+      score,
+      completed: isCompleted,
+      updated_at: new Date().toISOString(),
+      ...(isCompleted ? { completed_at: new Date().toISOString() } : {})
+    }, { onConflict: 'user_id,course_id' });
+  }
 }
 
 // PROGRESS
@@ -937,6 +963,24 @@ function updateProgress() {
   const pct = Math.round(count / TOTAL * 100);
   document.getElementById('progressCount').textContent = count + ' / ' + TOTAL;
   document.getElementById('progressBar').style.width = pct + '%';
+
+  completed.forEach(n => {
+    const el = document.getElementById('lesson-' + n);
+    if (!el) return;
+    el.classList.add('completed');
+    const status = el.querySelector('.lesson-status');
+    if (status) status.textContent = '✓';
+    const btn = el.querySelector('.complete-btn');
+    if (btn) { btn.textContent = '✓ Выполнено'; btn.classList.add('done'); btn.disabled = true; }
+    const timerBtn = el.querySelector('.timer-btn');
+    if (timerBtn) {
+      clearInterval(activeTimers[n]);
+      timerBtn.textContent = '✓ Выполнено';
+      timerBtn.classList.remove('ready');
+      timerBtn.classList.add('done');
+      timerBtn.onclick = null;
+    }
+  });
 }
 
 // TIMERS
