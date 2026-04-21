@@ -778,7 +778,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
             <textarea class="task-textarea" id="ta-15-3" style="min-height:80px" placeholder="Артикул 1:&#10;Артикул 2:&#10;Артикул 3:" oninput="check15()"></textarea>
           </div>
         </div>
-        <button class="complete-btn" id="btn-15" onclick="completeLesson(15)" disabled>Отправить куратору</button>
+        <button class="complete-btn" id="btn-15" onclick="submitAndComplete15()" disabled>Отправить куратору</button>
       </div>
     </div>
   </div>
@@ -831,7 +831,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           <p style="margin-top:8px">Оформи результат проверки письменно по каждой комнате.</p>
         </div>
         <textarea class="task-textarea" id="ta-17" style="min-height:160px" placeholder="Комната 1:&#10;Люстра: [артикул]&#10;Высота: подходит / не подходит&#10;Диаметр: подходит / не подходит&#10;Лампочек: достаточно / недостаточно&#10;&#10;Комната 2:&#10;...&#10;&#10;Комната 3:&#10;..." oninput="document.getElementById('btn-17').disabled=this.value.trim().length<10"></textarea>
-        <button class="complete-btn" id="btn-17" onclick="completeLesson(17)" disabled>Отправить куратору</button>
+        <button class="complete-btn" id="btn-17" onclick="submitAndCompleteLesson(17, 'Практическое задание: Проверка подбора люстр', 'ta-17')" disabled>Отправить куратору</button>
       </div>
     </div>
   </div>
@@ -1228,6 +1228,43 @@ function check15() {
   if (t1 && t2 && t3 && btn) {
     btn.disabled = !(t1.value.trim().length > 3 && t2.value.trim().length > 3 && t3.value.trim().length > 3);
   }
+}
+
+// SUPABASE: сохранение практических заданий
+async function submitPractical(lessonId, lessonTitle, answer) {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const { data: profile } = await sb.from('profiles').select('full_name').eq('id', session.user.id).single();
+    const userName = profile?.full_name || session.user.email;
+    const { error } = await sb.from('practical_answers').insert({
+      user_id: session.user.id,
+      user_name: userName,
+      lesson_id: lessonId,
+      lesson_title: lessonTitle,
+      answer: answer,
+      submitted_at: new Date().toISOString()
+    });
+    if (error) console.error('Ошибка сохранения ответа:', error.message);
+  } catch (e) {
+    console.error('submitPractical error:', e);
+  }
+}
+
+async function submitAndCompleteLesson(lessonId, lessonTitle, taId) {
+  const answer = document.getElementById(taId)?.value || '';
+  await submitPractical(lessonId, lessonTitle, answer);
+  completeLesson(lessonId);
+}
+
+async function submitAndComplete15() {
+  const answer = [
+    '🛋️ Комната 1:\n' + (document.getElementById('ta-15-1')?.value || ''),
+    '🛏️ Комната 2:\n' + (document.getElementById('ta-15-2')?.value || ''),
+    '🍳 Комната 3:\n' + (document.getElementById('ta-15-3')?.value || '')
+  ].join('\n\n');
+  await submitPractical(15, 'Задание по подбору освещения', answer);
+  completeLesson(15);
 }
 
 function toast(msg) {

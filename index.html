@@ -1193,8 +1193,8 @@ function renderAnswersFilter(data, nameKey = 'user_name') {
   const users = [...new Set(data.map(a => a[nameKey] || 'Без имени'))];
   const filterEl = document.getElementById('answersFilter');
   filterEl.innerHTML = [
-    `<button onclick="setAnswersFilter('all')" style="padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;background:${answersFilter==='all'?'var(--purple-light)':'rgba(255,255,255,0.1)'};color:#fff">Все</button>`,
-    ...users.map(u => `<button onclick="setAnswersFilter('${u}')" style="padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;background:${answersFilter===u?'var(--purple-light)':'rgba(255,255,255,0.1)'};color:#fff">${u}</button>`)
+    `<button onclick="setAnswersFilter('all')" style="padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;font-family:Onest,sans-serif;background:${answersFilter==='all'?'var(--purple-light)':'var(--surface3)'};color:${answersFilter==='all'?'#fff':'var(--text)'}">Все</button>`,
+    ...users.map(u => `<button onclick="setAnswersFilter('${u}')" style="padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;font-family:Onest,sans-serif;background:${answersFilter===u?'var(--purple-light)':'var(--surface3)'};color:${answersFilter===u?'#fff':'var(--text)'}">${u}</button>`)
   ].join('');
 }
 
