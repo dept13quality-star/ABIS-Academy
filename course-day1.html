@@ -1645,7 +1645,7 @@ async function init() {
   if (!session) { window.location.href = 'index.html'; return; }
 
   const { data: prog } = await sb.from('progress').select('*')
-    .eq('user_id', session.user.id).eq('course_id', 1).single();
+    .eq('user_id', session.user.id).eq('course_id', 1).maybeSingle();
 
   if (prog?.completed_lessons && Array.isArray(prog.completed_lessons)) {
     prog.completed_lessons.forEach(id => completed.add(id));
