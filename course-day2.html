@@ -649,7 +649,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           <div class="score-emoji" id="style-emoji"></div>
           <div class="score-val" id="style-val"></div>
           <div class="score-label" id="style-label"></div>
-          <button class="complete-btn done" onclick="completeLesson(11)" style="margin-top:12px">Продолжить →</button>
+          <button class="complete-btn done" id="quiz-btn-11" onclick="completeLesson(11)" style="margin-top:12px" disabled>Продолжить →</button>
         </div>
       </div>
     </div>
@@ -684,7 +684,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           <div class="score-emoji" id="drag-emoji"></div>
           <div class="score-val" id="drag-val"></div>
           <div class="score-label" id="drag-label"></div>
-          <button class="complete-btn done" onclick="completeLesson(12)" style="margin-top:12px">Продолжить →</button>
+          <button class="complete-btn done" id="quiz-btn-12" onclick="completeLesson(12)" style="margin-top:12px" disabled>Продолжить →</button>
         </div>
       </div>
     </div>
@@ -733,7 +733,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
     <div class="lesson-body">
       <iframe src="https://dept13quality-star.github.io/ABIS-Academy/test-utp%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
       <div style="padding:12px 16px 16px">
-        <button class="complete-btn" onclick="completeLesson(14)">✓ Тест пройден</button>
+        <button class="complete-btn" id="quiz-btn-14" onclick="completeLesson(14)" disabled>✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -879,7 +879,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
     <div class="lesson-body">
       <iframe src="https://dept13quality-star.github.io/ABIS-Academy/test-tipy-klientov%20(1).html" style="width:100%;height:600px;border:none;border-radius:0 0 16px 16px"></iframe>
       <div style="padding:12px 16px 16px">
-        <button class="complete-btn" onclick="completeLesson(19)">✓ Тест пройден</button>
+        <button class="complete-btn" id="quiz-btn-19" onclick="completeLesson(19)" disabled>✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -921,6 +921,7 @@ async function init() {
   restoreTAs(['ta-15-1', 'ta-15-2', 'ta-15-3', 'ta-17']);
   buildStyleQuiz();
   buildDragTask();
+  await restoreQuizButtonStates(session.user.id);
 }
 
 
@@ -1067,6 +1068,36 @@ function checkStyles() {
   document.getElementById('style-emoji').textContent = pct === 100 ? '🌟' : pct >= 70 ? '🎉' : '💪';
   document.getElementById('style-val').textContent = correct + ' / ' + styleItems.length;
   document.getElementById('style-label').textContent = pct === 100 ? 'Идеально!' : pct >= 70 ? 'Отличный результат!' : 'Повтори материал по стилям';
+
+  const doneBtn11 = document.getElementById('quiz-btn-11');
+  if (doneBtn11) {
+    if (pct >= 70) {
+      doneBtn11.disabled = false;
+    } else {
+      doneBtn11.disabled = true;
+      let msg = scoreEl.querySelector('.retry-msg');
+      if (!msg) { msg = document.createElement('div'); msg.className = 'retry-msg'; msg.style.cssText = 'margin-top:10px;font-size:13px;color:#E24B4A;font-weight:500'; scoreEl.appendChild(msg); }
+      msg.textContent = `Результат ${pct}% — нужно минимум 70%.`;
+      let retryBtn = scoreEl.querySelector('.retry-test-btn');
+      if (!retryBtn) {
+        retryBtn = document.createElement('button');
+        retryBtn.className = 'retry-test-btn';
+        retryBtn.style.cssText = 'margin-top:10px;background:transparent;border:1.5px solid #E24B4A;border-radius:10px;padding:9px 20px;font-family:Onest,sans-serif;font-size:13px;font-weight:600;color:#E24B4A;cursor:pointer;display:block';
+        retryBtn.textContent = '↺ Пройти заново';
+        retryBtn.onclick = () => {
+          scoreEl.classList.remove('show');
+          document.querySelectorAll('.style-select').forEach(s => { s.value = ''; s.classList.remove('correct','wrong'); });
+        };
+        scoreEl.appendChild(retryBtn);
+      }
+    }
+  }
+
+  // Сохраняем попытку
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (!session) return;
+    sb.from('quiz_scores').insert({ user_id: session.user.id, user_name: cachedUserName, lesson_id: 211, score: correct, max_score: styleItems.length, pct, submitted_at: new Date().toISOString() });
+  });
 }
 
 // DRAG & DROP
@@ -1201,6 +1232,33 @@ function checkDrag() {
   document.getElementById('drag-emoji').textContent = pct === 100 ? '🏆' : pct >= 70 ? '🎉' : '💪';
   document.getElementById('drag-val').textContent = correct + ' / ' + dragPairs.length;
   document.getElementById('drag-label').textContent = pct === 100 ? 'Все люстры на своих местах!' : pct >= 70 ? 'Отлично! Есть пара ошибок.' : 'Повтори стили и попробуй снова.';
+
+  const doneBtn12 = document.getElementById('quiz-btn-12');
+  if (doneBtn12) {
+    if (pct >= 70) {
+      doneBtn12.disabled = false;
+    } else {
+      doneBtn12.disabled = true;
+      let msg = scoreEl.querySelector('.retry-msg');
+      if (!msg) { msg = document.createElement('div'); msg.className = 'retry-msg'; msg.style.cssText = 'margin-top:10px;font-size:13px;color:#E24B4A;font-weight:500'; scoreEl.appendChild(msg); }
+      msg.textContent = `Результат ${pct}% — нужно минимум 70%.`;
+      let retryBtn = scoreEl.querySelector('.retry-test-btn');
+      if (!retryBtn) {
+        retryBtn = document.createElement('button');
+        retryBtn.className = 'retry-test-btn';
+        retryBtn.style.cssText = 'margin-top:10px;background:transparent;border:1.5px solid #E24B4A;border-radius:10px;padding:9px 20px;font-family:Onest,sans-serif;font-size:13px;font-weight:600;color:#E24B4A;cursor:pointer;display:block';
+        retryBtn.textContent = '↺ Пройти заново';
+        retryBtn.onclick = () => { resetDrag(); };
+        scoreEl.appendChild(retryBtn);
+      }
+    }
+  }
+
+  // Сохраняем попытку
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (!session) return;
+    sb.from('quiz_scores').insert({ user_id: session.user.id, user_name: cachedUserName, lesson_id: 212, score: correct, max_score: dragPairs.length, pct, submitted_at: new Date().toISOString() });
+  });
 }
 
 function resetDrag() {
@@ -1294,6 +1352,44 @@ function toast(msg) {
   el.textContent = msg; el.className = 'toast show ok';
   setTimeout(() => el.className = 'toast', 2500);
 }
+
+// postMessage от iframe-тестов (день 2)
+window.addEventListener('message', async function(event) {
+  const d = event.data;
+  if (!d || d.type !== 'quiz_result') return;
+  const passed = d.pct >= 70;
+  const btn = document.getElementById('quiz-btn-' + d.lesson_id);
+  if (btn) {
+    if (passed) {
+      btn.disabled = false;
+      btn.textContent = '✓ Тест пройден — продолжить';
+    } else {
+      btn.disabled = true;
+      let msg = btn.parentNode.querySelector('.retry-msg');
+      if (!msg) { msg = document.createElement('div'); msg.className = 'retry-msg'; msg.style.cssText = 'margin-bottom:8px;font-size:13px;color:#E24B4A;font-weight:500'; btn.parentNode.insertBefore(msg, btn); }
+      msg.textContent = `Результат ${d.pct}% — нужно минимум 70%. Пройди тест заново.`;
+    }
+  }
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return;
+  sb.from('quiz_scores').insert({ user_id: session.user.id, user_name: cachedUserName, lesson_id: d.lesson_id, score: d.score, max_score: d.max_score, pct: d.pct, submitted_at: new Date().toISOString() });
+});
+
+// Восстановление состояния кнопок после обновления страницы (день 2)
+async function restoreQuizButtonStates(userId) {
+  const { data: scores } = await sb.from('quiz_scores').select('lesson_id, pct').eq('user_id', userId);
+  if (!scores) return;
+  const bestByLesson = {};
+  scores.forEach(r => { if (!bestByLesson[r.lesson_id] || r.pct > bestByLesson[r.lesson_id]) bestByLesson[r.lesson_id] = r.pct; });
+  // Маппинг quiz_scores lesson_id → quiz-btn id для дня 2
+  const lessonBtnMap = { 211: '11', 212: '12', 214: '14', 219: '19' };
+  Object.entries(bestByLesson).forEach(([lid, pct]) => {
+    if (pct < 70) return;
+    const btnId = lessonBtnMap[parseInt(lid)];
+    if (btnId) { const btn = document.getElementById('quiz-btn-' + btnId); if (btn) btn.disabled = false; }
+  });
+}
+
 
 init();
 </script>
