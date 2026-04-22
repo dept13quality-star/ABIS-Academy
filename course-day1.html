@@ -1837,6 +1837,16 @@ function answerQ(qId, result, btn) {
   }, 900);
 }
 
+const INLINE_TEST_TITLES = {
+  '2b': 'Проверочное задание: Корпоративный кодекс',
+  '4':  'Проверочное задание: Цель компании',
+  '6':  'Проверочное задание: ЦКП компании',
+  '8':  'Проверочное задание: Цель менеджера',
+  '10': 'Проверочное задание: ЦКП менеджера',
+  '33': 'Проверочное задание: Регламент внешнего вида',
+  '35': 'Проверочное задание: Регламент гостеприимства',
+};
+
 function showTestScore(lessonId) {
   const s = testScores[lessonId] || { correct: 0, total: 0 };
   const pct = Math.round((s.correct / s.total) * 100);
@@ -1854,6 +1864,21 @@ function showTestScore(lessonId) {
   document.getElementById('sl-' + lessonId).textContent = label;
   scoreEl.classList.add('show');
   scoreEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // Сохраняем результат в Supabase
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (!session) return;
+    sb.from('quiz_results').upsert({
+      user_id: session.user.id,
+      user_name: cachedUserName,
+      lesson_id: String(lessonId),
+      lesson_title: INLINE_TEST_TITLES[String(lessonId)] || ('Урок ' + lessonId),
+      score: s.correct,
+      max_score: s.total,
+      pct,
+      submitted_at: new Date().toISOString()
+    }, { onConflict: 'user_id,lesson_id' });
+  });
 }
 
 // TOAST
