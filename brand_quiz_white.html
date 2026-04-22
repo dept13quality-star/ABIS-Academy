@@ -547,6 +547,7 @@ function checkAnswers() {
   bar.innerHTML = `${emoji} Результат: <span class="score-num">${correct} / ${BRANDS.length}</span> &nbsp;·&nbsp; ${pct}%`;
   bar.classList.add('show');
   checked = true;
+  window.parent.postMessage({ type: 'quiz_result', lesson_id: 5, score: correct, max_score: BRANDS.length, pct }, '*');
 }
 
 function resetAll() {

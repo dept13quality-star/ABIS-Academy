@@ -137,6 +137,8 @@ function checkOrder() {
   });
   const msg = document.getElementById('result');
   msg.style.display = 'block';
+  const correct_count = [...items].filter(el => el.classList.contains('correct')).length;
+  const pct = Math.round(correct_count / CORRECT.length * 100);
   if (allOk) {
     msg.className = 'result-msg ok';
     msg.textContent = '✓ Отлично! Все этапы в правильном порядке.';
@@ -147,6 +149,7 @@ function checkOrder() {
     msg.textContent = `Не совсем — ${wrong} этап(а) не на своём месте. Попробуй ещё раз.`;
     document.getElementById('resetBtn').style.display = 'block';
   }
+  window.parent.postMessage({ type: 'quiz_result', lesson_id: 19, score: correct_count, max_score: CORRECT.length, pct }, '*');
 }
 
 function reset() {
