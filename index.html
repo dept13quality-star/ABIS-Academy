@@ -1174,10 +1174,9 @@ async function loadAnswers() {
   if (currentProfile?.role !== 'admin') return;
   document.getElementById('answersList').innerHTML = '<div class="loading"><div class="spinner"></div> Загрузка...</div>';
 
-  const [{ data: practical, error }, { data: quizScores }, { data: quizResults }] = await Promise.all([
+  const [{ data: practical, error }, { data: quizzes }] = await Promise.all([
     sb.from('practical_answers').select('*').order('submitted_at', { ascending: false }),
-    sb.from('quiz_scores').select('*').order('submitted_at', { ascending: false }),
-    sb.from('quiz_results').select('*').order('submitted_at', { ascending: false })
+    sb.from('quiz_scores').select('*').order('submitted_at', { ascending: false })
   ]);
 
   if (error) {
@@ -1186,18 +1185,7 @@ async function loadAnswers() {
   }
 
   answersData = practical || [];
-  // Мержим quiz_scores (числовые ID) и quiz_results (текстовые ID)
-  const normalized = (quizResults || []).map(r => ({
-    ...r,
-    lesson_id: r.lesson_id  // уже строка, lesson_title хранится в записи
-  }));
-  const fromScores = (quizScores || []).map(r => ({
-    ...r,
-    lesson_title: QUIZ_TITLES[r.lesson_id] || ('Урок ' + r.lesson_id)
-  }));
-  quizData = [...normalized, ...fromScores].sort((a, b) =>
-    new Date(b.submitted_at) - new Date(a.submitted_at)
-  );
+  quizData = quizzes || [];
   switchAnswersTab(answersTab);
 }
 
@@ -1241,9 +1229,16 @@ function renderAnswers() {
 }
 
 const QUIZ_TITLES = {
+  2:  'Тест: Корпоративный кодекс',
+  4:  'Тест: Цель компании',
+  6:  'Тест: ЦКП компании',
+  8:  'Тест: Цель менеджера',
+  10: 'Тест: ЦКП менеджера',
   14: 'Тест: Люстры', 16: 'Тест: Бра', 18: 'Тест: Споты',
   20: 'Тест: Направляющие', 22: 'Тест: Плафоны', 24: 'Тест: Ленты',
-  26: 'Тест: Розетки и выключатели', 28: 'Тест: Лампочки'
+  26: 'Тест: Розетки и выключатели', 28: 'Тест: Лампочки',
+  33: 'Тест: Регламент внешнего вида',
+  35: 'Тест: Регламент гостеприимства',
 };
 
 function renderQuizzes() {
@@ -1270,7 +1265,7 @@ function renderQuizzes() {
       const pctColor = (q.pct||0) >= 80 ? 'var(--correct)' : (q.pct||0) >= 60 ? 'var(--gold)' : '#f87171';
       const date = new Date(q.submitted_at).toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
       return `<tr>
-        <td>${q.lesson_title || QUIZ_TITLES[q.lesson_id] || 'Урок ' + q.lesson_id}</td>
+        <td>${QUIZ_TITLES[q.lesson_id] || 'Урок ' + q.lesson_id}</td>
         <td style="font-weight:700;color:${pctColor}">${q.score} / ${q.max_score}</td>
         <td style="font-weight:700;color:${pctColor}">${q.pct}%</td>
         <td style="color:var(--muted);font-size:12px">${date}</td>

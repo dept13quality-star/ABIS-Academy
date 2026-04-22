@@ -1837,14 +1837,15 @@ function answerQ(qId, result, btn) {
   }, 900);
 }
 
-const INLINE_TEST_TITLES = {
-  '2b': 'Проверочное задание: Корпоративный кодекс',
-  '4':  'Проверочное задание: Цель компании',
-  '6':  'Проверочное задание: ЦКП компании',
-  '8':  'Проверочное задание: Цель менеджера',
-  '10': 'Проверочное задание: ЦКП менеджера',
-  '33': 'Проверочное задание: Регламент внешнего вида',
-  '35': 'Проверочное задание: Регламент гостеприимства',
+// Маппинг inline-тестов: строковый ID → { числовой ID для quiz_scores, заголовок }
+const INLINE_TEST_MAP = {
+  '2b': { id: 2,  title: 'Тест: Корпоративный кодекс' },
+  '4':  { id: 4,  title: 'Тест: Цель компании' },
+  '6':  { id: 6,  title: 'Тест: ЦКП компании' },
+  '8':  { id: 8,  title: 'Тест: Цель менеджера' },
+  '10': { id: 10, title: 'Тест: ЦКП менеджера' },
+  '33': { id: 33, title: 'Тест: Регламент внешнего вида' },
+  '35': { id: 35, title: 'Тест: Регламент гостеприимства' },
 };
 
 function showTestScore(lessonId) {
@@ -1865,19 +1866,21 @@ function showTestScore(lessonId) {
   scoreEl.classList.add('show');
   scoreEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-  // Сохраняем результат в Supabase
-  sb.auth.getSession().then(({ data: { session } }) => {
+  // Сохраняем в quiz_scores (та же таблица что и buildSimpleQuiz)
+  sb.auth.getSession().then(async ({ data: { session } }) => {
     if (!session) return;
-    sb.from('quiz_results').upsert({
+    const meta = INLINE_TEST_MAP[String(lessonId)];
+    if (!meta) return;
+    const { error } = await sb.from('quiz_scores').upsert({
       user_id: session.user.id,
       user_name: cachedUserName,
-      lesson_id: String(lessonId),
-      lesson_title: INLINE_TEST_TITLES[String(lessonId)] || ('Урок ' + lessonId),
+      lesson_id: meta.id,
       score: s.correct,
       max_score: s.total,
       pct,
       submitted_at: new Date().toISOString()
     }, { onConflict: 'user_id,lesson_id' });
+    if (error) console.error('quiz_scores upsert error:', error.message);
   });
 }
 
