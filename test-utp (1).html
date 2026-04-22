@@ -489,6 +489,7 @@ function showResult() {
   document.getElementById('r-score').textContent = `${correct} / ${total}`;
   document.getElementById('r-title').textContent = 'Все пары найдены!';
   document.getElementById('r-msg').textContent = 'Отлично! Ты знаешь УТП компании SVET.KZ и сможешь уверенно рассказать клиенту о наших преимуществах.';
+  window.parent.postMessage({ type: 'quiz_result', lesson_id: 14, score: correct, max_score: total, pct: Math.round(correct/total*100) }, '*');
 }
 
 init();
