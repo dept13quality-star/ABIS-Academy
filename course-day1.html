@@ -1680,6 +1680,7 @@ async function init() {
     updateProgress();
   }
   restoreTAs(['ta-12', 'ta-29', 'adj-input', 'ta-36']);
+  await restoreQuizButtonStates(session.user.id);
 }
 
 // TOGGLE
@@ -1880,7 +1881,18 @@ function showTestScore(lessonId) {
         msg.style.cssText = 'margin-top:10px;font-size:13px;color:#E24B4A;font-weight:500';
         scoreEl.appendChild(msg);
       }
-      msg.textContent = `Результат ${pct}% — нужно минимум 70%. Пройди тест заново.`;
+      msg.textContent = `Результат ${pct}% — нужно минимум 70%.`;
+
+      // Кнопка "Пройти заново"
+      let retryBtn = scoreEl.querySelector('.retry-test-btn');
+      if (!retryBtn) {
+        retryBtn = document.createElement('button');
+        retryBtn.className = 'retry-test-btn';
+        retryBtn.style.cssText = 'margin-top:10px;background:transparent;border:1.5px solid #E24B4A;border-radius:10px;padding:9px 20px;font-family:Onest,sans-serif;font-size:13px;font-weight:600;color:#E24B4A;cursor:pointer;display:block';
+        retryBtn.textContent = '↺ Пройти заново';
+        retryBtn.onclick = () => resetInlineTest(String(lessonId));
+        scoreEl.appendChild(retryBtn);
+      }
     }
   }
 
@@ -2178,6 +2190,67 @@ window.addEventListener('message', async function(event) {
   });
   if (error) console.error('iframe quiz_scores error:', error.message);
 });
+
+// Сброс inline-теста для повторного прохождения
+function resetInlineTest(lessonId) {
+  // Сбрасываем счётчик
+  delete testScores[lessonId];
+
+  // Скрываем блок результата
+  const scoreEl = document.getElementById('score-' + lessonId);
+  if (scoreEl) scoreEl.classList.remove('show');
+
+  // Сбрасываем все вопросы: скрываем все кроме первого, убираем стили кнопок
+  let qNum = 1;
+  while (true) {
+    const qEl = document.getElementById('tq-' + lessonId + '-' + qNum);
+    if (!qEl) break;
+    qEl.querySelectorAll('.option-btn').forEach(b => {
+      b.disabled = false;
+      b.classList.remove('correct', 'wrong');
+    });
+    const fb = document.getElementById('fb-' + lessonId + '-' + qNum);
+    if (fb) { fb.className = 'feedback-msg'; fb.textContent = ''; }
+    qEl.style.display = qNum === 1 ? 'block' : 'none';
+    qNum++;
+  }
+
+  // Прокрутить к первому вопросу
+  const first = document.getElementById('tq-' + lessonId + '-1');
+  if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// Восстановление состояния кнопок тестов после обновления страницы
+async function restoreQuizButtonStates(userId) {
+  const { data: scores } = await sb.from('quiz_scores')
+    .select('lesson_id, pct')
+    .eq('user_id', userId);
+  if (!scores) return;
+
+  // Для каждого lesson_id берём максимальный pct
+  const bestByLesson = {};
+  scores.forEach(r => {
+    const lid = r.lesson_id;
+    if (!bestByLesson[lid] || r.pct > bestByLesson[lid]) bestByLesson[lid] = r.pct;
+  });
+
+  // Маппинг числового lesson_id → строковый (для inline-тестов)
+  const numToStr = { 2: '2b', 4: '4', 6: '6', 8: '8', 10: '10', 33: '33', 35: '35' };
+
+  Object.entries(bestByLesson).forEach(([lid, pct]) => {
+    if (pct < 70) return;
+    // Числовые ID (iframe тесты: 14,16,18,20,22,24,26,28)
+    const btnNum = document.getElementById('quiz-btn-' + lid);
+    if (btnNum) { btnNum.disabled = false; return; }
+    // Строковые ID (inline тесты через маппинг)
+    const strId = numToStr[parseInt(lid)];
+    if (strId) {
+      const btnStr = document.getElementById('quiz-btn-' + strId);
+      if (btnStr) btnStr.disabled = false;
+    }
+  });
+}
+
 
 init();
 </script>
