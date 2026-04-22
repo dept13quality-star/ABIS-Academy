@@ -424,7 +424,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
     <div class="lesson-body">
       <iframe src="https://dept13quality-star.github.io/ABIS-Academy/1c_simulator_fiz.html" style="width:100%;height:600px;border:none"></iframe>
       <div style="padding:12px 16px 16px">
-        <button class="complete-btn" onclick="completeLesson(4)">✓ Задание выполнено</button>
+        <button class="complete-btn" id="quiz-btn-4" onclick="completeLesson(4)" disabled>✓ Задание выполнено</button>
       </div>
     </div>
   </div>
@@ -804,7 +804,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           <div class="score-emoji" id="se-16"></div>
           <div class="score-val" id="sv-16"></div>
           <div class="score-label" id="sl-16"></div>
-          <button class="complete-btn done" onclick="completeLesson(16)" style="margin-top:12px">Продолжить →</button>
+          <button class="complete-btn done" id="quiz-btn-16" onclick="completeLesson(16)" style="margin-top:12px" disabled>Продолжить →</button>
         </div>
       </div>
     </div>
@@ -896,7 +896,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           <div class="score-emoji" id="se-18"></div>
           <div class="score-val" id="sv-18"></div>
           <div class="score-label" id="sl-18"></div>
-          <button class="complete-btn done" onclick="completeLesson(18)" style="margin-top:12px">Продолжить →</button>
+          <button class="complete-btn done" id="quiz-btn-18" onclick="completeLesson(18)" style="margin-top:12px" disabled>Продолжить →</button>
         </div>
       </div>
     </div>
@@ -941,9 +941,16 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const TOTAL = 19;
 let completed = new Set();
 
+let cachedUserId = null;
+let cachedUserName = null;
+
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = 'index.html'; return; }
+
+  cachedUserId = session.user.id;
+  const { data: profile } = await sb.from('profiles').select('full_name').eq('id', session.user.id).single();
+  cachedUserName = profile?.full_name || session.user.email;
 
   const { data: prog } = await sb.from('progress').select('*')
     .eq('user_id', session.user.id).eq('course_id', 5).maybeSingle();
@@ -952,6 +959,12 @@ async function init() {
     prog.completed_lessons.forEach(id => completed.add(String(id)));
     updateProgress();
   }
+  // Блокируем квиз-кнопки после updateProgress
+  ['quiz-btn-16','quiz-btn-18','quiz-btn-4'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = true;
+  });
+  await restoreQuizButtonStates();
 }
 
 
@@ -1103,6 +1116,51 @@ function showTestScore(lessonNum) {
   document.getElementById('sv-' + lessonNum).textContent = correct + ' / ' + total;
   document.getElementById('sl-' + lessonNum).textContent = pct === 100 ? 'Идеально!' : pct >= 75 ? 'Хороший результат!' : 'Повтори материал';
   scoreEl.classList.add('show');
+  scoreEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  const doneBtn = document.getElementById('quiz-btn-' + lessonNum);
+  if (doneBtn) {
+    if (pct >= 70) {
+      doneBtn.disabled = false;
+    } else {
+      doneBtn.disabled = true;
+      let msg = scoreEl.querySelector('.retry-msg');
+      if (!msg) { msg = document.createElement('div'); msg.className = 'retry-msg'; msg.style.cssText = 'margin-top:10px;font-size:13px;color:#E24B4A;font-weight:500'; scoreEl.appendChild(msg); }
+      msg.textContent = 'Результат ' + pct + '% — нужно минимум 70%.';
+      let retryBtn = scoreEl.querySelector('.retry-test-btn');
+      if (!retryBtn) {
+        retryBtn = document.createElement('button');
+        retryBtn.className = 'retry-test-btn';
+        retryBtn.style.cssText = 'margin-top:10px;background:transparent;border:1.5px solid #E24B4A;border-radius:10px;padding:9px 20px;font-family:Onest,sans-serif;font-size:13px;font-weight:600;color:#E24B4A;cursor:pointer;display:block';
+        retryBtn.textContent = '↺ Пройти заново';
+        retryBtn.onclick = () => resetInlineTest(String(lessonNum));
+        scoreEl.appendChild(retryBtn);
+      }
+    }
+  }
+
+  if (cachedUserId) {
+    sb.from('quiz_scores').insert({ user_id: cachedUserId, user_name: cachedUserName, lesson_id: 500 + parseInt(lessonNum), score: correct, max_score: total, pct, submitted_at: new Date().toISOString() })
+      .then(({error}) => { if(error) console.error('quiz save error:', error.message); });
+  }
+}
+
+function resetInlineTest(lessonId) {
+  Object.keys(testState).forEach(k => { if (k.startsWith(lessonId + '-')) delete testState[k]; });
+  const scoreEl = document.getElementById('score-' + lessonId);
+  if (scoreEl) scoreEl.classList.remove('show');
+  let qNum = 1;
+  while (true) {
+    const qEl = document.getElementById('tq-' + lessonId + '-' + qNum);
+    if (!qEl) break;
+    qEl.querySelectorAll('.option-btn').forEach(b => { b.disabled = false; b.classList.remove('correct','wrong'); });
+    const fb = document.getElementById('fb-' + lessonId + '-' + qNum);
+    if (fb) { fb.className = 'feedback-msg'; fb.textContent = ''; }
+    qEl.style.display = qNum === 1 ? 'block' : 'none';
+    qNum++;
+  }
+  const first = document.getElementById('tq-' + lessonId + '-1');
+  if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // КОНФЕТТИ
@@ -1137,6 +1195,45 @@ function toast(msg) {
   el.textContent = msg; el.className = 'toast show ok';
   setTimeout(() => el.className = 'toast', 2500);
 }
+
+// postMessage от iframe-тестов (день 5)
+window.addEventListener('message', async function(event) {
+  const d = event.data;
+  if (!d || d.type !== 'quiz_result') return;
+  const passed = d.pct >= 70;
+  const btn = document.getElementById('quiz-btn-' + d.lesson_id);
+  if (btn) {
+    if (passed) {
+      btn.disabled = false;
+      btn.textContent = '✓ Задание выполнено';
+    } else {
+      btn.disabled = true;
+      let msg = btn.parentNode.querySelector('.retry-msg');
+      if (!msg) { msg = document.createElement('div'); msg.className = 'retry-msg'; msg.style.cssText = 'margin-bottom:8px;font-size:13px;color:#E24B4A;font-weight:500'; btn.parentNode.insertBefore(msg, btn); }
+      msg.textContent = 'Результат ' + d.pct + '% — нужно минимум 70%. Пройди заново.';
+    }
+  }
+  if (!cachedUserId) return;
+  const day5LessonMap = { 4: 504 };
+  const savedLessonId = day5LessonMap[d.lesson_id] || (500 + d.lesson_id);
+  sb.from('quiz_scores').insert({ user_id: cachedUserId, user_name: cachedUserName, lesson_id: savedLessonId, score: d.score, max_score: d.max_score, pct: d.pct, submitted_at: new Date().toISOString() })
+    .then(({error}) => { if(error) console.error('day5 iframe save error:', error.message); });
+});
+
+async function restoreQuizButtonStates() {
+  if (!cachedUserId) return;
+  const { data: scores } = await sb.from('quiz_scores').select('lesson_id, pct').eq('user_id', cachedUserId);
+  if (!scores) return;
+  const bestByLesson = {};
+  scores.forEach(r => { if (!bestByLesson[r.lesson_id] || r.pct > bestByLesson[r.lesson_id]) bestByLesson[r.lesson_id] = r.pct; });
+  const lessonBtnMap = { 504: '4', 516: '16', 518: '18' };
+  Object.entries(bestByLesson).forEach(([lid, pct]) => {
+    if (pct < 70) return;
+    const btnId = lessonBtnMap[parseInt(lid)];
+    if (btnId) { const btn = document.getElementById('quiz-btn-' + btnId); if (btn) btn.disabled = false; }
+  });
+}
+
 
 init();
 </script>

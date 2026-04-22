@@ -1852,6 +1852,7 @@ function showStep(idx) {
     document.getElementById('progressFill').style.width = '100%';
     document.getElementById('stepLabel').textContent = 'Готово!';
     setTip('🎉 <b>Поздравляем!</b> Ты успешно создал заказ для физ.лица в 1С!', 'success');
+    window.parent.postMessage({ type: 'quiz_result', lesson_id: 4, score: 1, max_score: 1, pct: 100 }, '*');
     return;
   }
 
