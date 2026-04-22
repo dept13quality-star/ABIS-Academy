@@ -1094,10 +1094,10 @@ function checkStyles() {
   }
 
   // Сохраняем попытку
-  sb.auth.getSession().then(({ data: { session } }) => {
-    if (!session) return;
-    sb.from('quiz_scores').insert({ user_id: session.user.id, user_name: cachedUserName, lesson_id: 211, score: correct, max_score: styleItems.length, pct, submitted_at: new Date().toISOString() });
-  });
+  if (cachedUserId) {
+    sb.from('quiz_scores').insert({ user_id: cachedUserId, user_name: cachedUserName, lesson_id: 211, score: correct, max_score: styleItems.length, pct, submitted_at: new Date().toISOString() })
+      .then(({error}) => { if(error) console.error('style save error:', error.message); });
+  }
 }
 
 // DRAG & DROP
@@ -1255,10 +1255,10 @@ function checkDrag() {
   }
 
   // Сохраняем попытку
-  sb.auth.getSession().then(({ data: { session } }) => {
-    if (!session) return;
-    sb.from('quiz_scores').insert({ user_id: session.user.id, user_name: cachedUserName, lesson_id: 212, score: correct, max_score: dragPairs.length, pct, submitted_at: new Date().toISOString() });
-  });
+  if (cachedUserId) {
+    sb.from('quiz_scores').insert({ user_id: cachedUserId, user_name: cachedUserName, lesson_id: 212, score: correct, max_score: dragPairs.length, pct, submitted_at: new Date().toISOString() })
+      .then(({error}) => { if(error) console.error('drag save error:', error.message); });
+  }
 }
 
 function resetDrag() {
@@ -1370,12 +1370,11 @@ window.addEventListener('message', async function(event) {
       msg.textContent = `Результат ${d.pct}% — нужно минимум 70%. Пройди тест заново.`;
     }
   }
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) return;
   // Ремаппинг lesson_id во избежание конфликтов с днём 1 (14→214, 19→219)
   const day2LessonMap = { 14: 214, 19: 219 };
   const savedLessonId = day2LessonMap[d.lesson_id] || d.lesson_id;
-  sb.from('quiz_scores').insert({ user_id: session.user.id, user_name: cachedUserName, lesson_id: savedLessonId, score: d.score, max_score: d.max_score, pct: d.pct, submitted_at: new Date().toISOString() });
+  if (!cachedUserId) return;
+  sb.from('quiz_scores').insert({ user_id: cachedUserId, user_name: cachedUserName, lesson_id: savedLessonId, score: d.score, max_score: d.max_score, pct: d.pct, submitted_at: new Date().toISOString() }).then(({error}) => { if(error) console.error('quiz_scores insert error:', error.message); });
 });
 
 // Восстановление состояния кнопок после обновления страницы (день 2)
