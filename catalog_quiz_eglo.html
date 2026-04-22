@@ -295,6 +295,7 @@ function showResult() {
     '<div class="score-label">100% правильных ответов</div>' +
     '<button class="restart-btn" onclick="restart()">Пройти ещё раз</button>' +
     '</div>';
+  window.parent.postMessage({ type: 'quiz_result', lesson_id: 9, score: questions.length, max_score: questions.length, pct: 100 }, '*');
 }
 
 function restart() {

@@ -269,6 +269,8 @@ function updateProgress() {
 }
 
 function showResult() {
+  const pct = Math.round(score / questions.length * 100);
+  window.parent.postMessage({ type: 'quiz_result', lesson_id: 14, score: score, max_score: questions.length, pct: pct }, '*');
   document.getElementById('progressFill').style.width = '100%';
   document.getElementById('progressLabel').textContent = `${questions.length} / ${questions.length}`;
   document.getElementById('quizCard').style.display = 'none';
