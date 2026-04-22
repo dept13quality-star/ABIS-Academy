@@ -594,6 +594,11 @@ async function init() {
     updateProgress();
   }
   restoreTAs(['ta-5', 'ta-12']);
+  // Блокируем квиз-кнопки (updateProgress мог их снять через completed_lessons)
+  ['quiz-btn-3','quiz-btn-7','quiz-btn-9','quiz-btn-14'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = true;
+  });
   await restoreQuizButtonStates();
 }
 
