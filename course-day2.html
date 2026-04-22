@@ -1372,7 +1372,10 @@ window.addEventListener('message', async function(event) {
   }
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return;
-  sb.from('quiz_scores').insert({ user_id: session.user.id, user_name: cachedUserName, lesson_id: d.lesson_id, score: d.score, max_score: d.max_score, pct: d.pct, submitted_at: new Date().toISOString() });
+  // Ремаппинг lesson_id во избежание конфликтов с днём 1 (14→214, 19→219)
+  const day2LessonMap = { 14: 214, 19: 219 };
+  const savedLessonId = day2LessonMap[d.lesson_id] || d.lesson_id;
+  sb.from('quiz_scores').insert({ user_id: session.user.id, user_name: cachedUserName, lesson_id: savedLessonId, score: d.score, max_score: d.max_score, pct: d.pct, submitted_at: new Date().toISOString() });
 });
 
 // Восстановление состояния кнопок после обновления страницы (день 2)
