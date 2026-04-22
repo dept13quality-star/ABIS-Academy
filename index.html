@@ -1259,29 +1259,50 @@ function renderQuizzes() {
   });
 
   container.innerHTML = Object.entries(byUser).map(([name, scores]) => {
-    const avg = Math.round(scores.reduce((a,b) => a + (b.pct||0), 0) / scores.length);
-    const avgColor = avg >= 80 ? 'var(--correct)' : avg >= 60 ? 'var(--gold)' : '#f87171';
-    const rows = scores.map(q => {
-      const pctColor = (q.pct||0) >= 80 ? 'var(--correct)' : (q.pct||0) >= 60 ? 'var(--gold)' : '#f87171';
-      const date = new Date(q.submitted_at).toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-      return `<tr>
-        <td>${QUIZ_TITLES[q.lesson_id] || 'Урок ' + q.lesson_id}</td>
-        <td style="font-weight:700;color:${pctColor}">${q.score} / ${q.max_score}</td>
-        <td style="font-weight:700;color:${pctColor}">${q.pct}%</td>
-        <td style="color:var(--muted);font-size:12px">${date}</td>
-      </tr>`;
+    // Группируем попытки по тесту
+    const byLesson = {};
+    scores.forEach(q => {
+      const key = q.lesson_id;
+      if (!byLesson[key]) byLesson[key] = [];
+      byLesson[key].push(q);
+    });
+
+    const passedTests = Object.values(byLesson).filter(attempts => attempts.some(a => (a.pct||0) >= 70)).length;
+    const totalTests = Object.keys(byLesson).length;
+
+    const rows = Object.entries(byLesson).flatMap(([lid, attempts]) => {
+      const lessonTitle = QUIZ_TITLES[lid] || QUIZ_TITLES[parseInt(lid)] || 'Урок ' + lid;
+      const bestPct = Math.max(...attempts.map(a => a.pct||0));
+      const passed = bestPct >= 70;
+      return attempts.map((q, i) => {
+        const pct = q.pct || 0;
+        const pctColor = pct >= 70 ? 'var(--correct)' : '#f87171';
+        const date = new Date(q.submitted_at).toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+        const statusIcon = pct >= 70 ? '✓' : '✗';
+        const statusColor = pct >= 70 ? 'var(--correct)' : '#f87171';
+        const attemptLabel = attempts.length > 1 ? ` <span style="font-size:11px;color:var(--muted)">(попытка ${i+1})</span>` : '';
+        return \`<tr>
+          <td style="font-size:13px">\${i === 0 ? lessonTitle : ''}${attemptLabel}</td>
+          <td style="font-weight:700;color:\${pctColor}">\${q.score} / \${q.max_score}</td>
+          <td style="font-weight:700;color:\${pctColor}">\${pct}%</td>
+          <td style="font-weight:700;color:\${statusColor};font-size:15px">\${statusIcon}</td>
+          <td style="color:var(--muted);font-size:12px">\${date}</td>
+        </tr>\`;
+      });
     }).join('');
 
-    return `<div class="card" style="margin-bottom:12px">
+    const statusColor = passedTests === totalTests ? 'var(--correct)' : passedTests > 0 ? 'var(--gold)' : '#f87171';
+
+    return \`<div class="card" style="margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div style="font-weight:700;font-size:15px">${name}</div>
-        <div style="font-size:13px;font-weight:700;color:${avgColor}">Среднее: ${avg}%</div>
+        <div style="font-weight:700;font-size:15px">\${name}</div>
+        <div style="font-size:13px;font-weight:700;color:\${statusColor}">Зачтено: \${passedTests} / \${totalTests} тестов</div>
       </div>
       <table class="data-table">
-        <thead><tr><th>Тест</th><th>Балл</th><th>%</th><th>Дата</th></tr></thead>
-        <tbody>${rows}</tbody>
+        <thead><tr><th>Тест</th><th>Балл</th><th>%</th><th></th><th>Дата</th></tr></thead>
+        <tbody>\${rows}</tbody>
       </table>
-    </div>`;
+    </div>\`;
   }).join('');
 }
 

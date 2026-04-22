@@ -500,7 +500,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           <div class="score-emoji" id="se-2b"></div>
           <div class="score-val" id="sv-2b"></div>
           <div class="score-label" id="sl-2b"></div>
-          <button class="complete-btn done" onclick="completeLesson('2b')" style="margin-top:12px">Продолжить →</button>
+          <button class="complete-btn done" id="quiz-btn-2b" onclick="completeLesson('2b')" style="margin-top:12px" disabled>Продолжить →</button>
         </div>
       </div>
     </div>
@@ -597,7 +597,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           <div class="score-emoji" id="se-4"></div>
           <div class="score-val" id="sv-4"></div>
           <div class="score-label" id="sl-4"></div>
-          <button class="complete-btn done" onclick="completeLesson(4)" style="margin-top:12px">Продолжить →</button>
+          <button class="complete-btn done" id="quiz-btn-4" onclick="completeLesson(4)" style="margin-top:12px" disabled>Продолжить →</button>
         </div>
       </div>
     </div>
@@ -698,7 +698,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           <div class="score-emoji" id="se-6"></div>
           <div class="score-val" id="sv-6"></div>
           <div class="score-label" id="sl-6"></div>
-          <button class="complete-btn done" onclick="completeLesson(6)" style="margin-top:12px">Продолжить →</button>
+          <button class="complete-btn done" id="quiz-btn-6" onclick="completeLesson(6)" style="margin-top:12px" disabled>Продолжить →</button>
         </div>
       </div>
     </div>
@@ -788,7 +788,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           <div class="score-emoji" id="se-8"></div>
           <div class="score-val" id="sv-8"></div>
           <div class="score-label" id="sl-8"></div>
-          <button class="complete-btn done" onclick="completeLesson(8)" style="margin-top:12px">Продолжить →</button>
+          <button class="complete-btn done" id="quiz-btn-8" onclick="completeLesson(8)" style="margin-top:12px" disabled>Продолжить →</button>
         </div>
       </div>
     </div>
@@ -889,7 +889,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           <div class="score-emoji" id="se-10"></div>
           <div class="score-val" id="sv-10"></div>
           <div class="score-label" id="sl-10"></div>
-          <button class="complete-btn done" onclick="completeLesson(10)" style="margin-top:12px">Продолжить →</button>
+          <button class="complete-btn done" id="quiz-btn-10" onclick="completeLesson(10)" style="margin-top:12px" disabled>Продолжить →</button>
         </div>
       </div>
     </div>
@@ -993,7 +993,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
     <div class="lesson-body">
       <iframe src="https://dept13quality-star.github.io/ABIS-Academy/%D0%9A%D0%B2%D0%B8%D0%B7%20%D0%BA%20%D0%B0%D0%B7%D0%B1%D1%83%D0%BA%D0%B5%20%D0%BF%D0%BE%20%D0%BF%D1%80%D0%BE%D0%B4%D1%83%D0%BA%D1%82%D1%83%20(%D0%BB%D1%8E%D1%81%D1%82%D1%80%D1%8B)%20(2).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
       <div style="padding:12px 16px 16px">
-        <button class="complete-btn" onclick="completeLesson(14)">✓ Тест пройден</button>
+        <button class="complete-btn" id="quiz-btn-14" onclick="completeLesson(14)" disabled>✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -1035,7 +1035,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
     <div class="lesson-body">
       <iframe src="https://dept13quality-star.github.io/ABIS-Academy/test_bra_torsher_lampa_podves%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
       <div style="padding:12px 16px 16px">
-        <button class="complete-btn" onclick="completeLesson(16)">✓ Тест пройден</button>
+        <button class="complete-btn" id="quiz-btn-16" onclick="completeLesson(16)" disabled>✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -1075,7 +1075,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
     <div class="lesson-body">
       <iframe src="https://dept13quality-star.github.io/ABIS-Academy/test_spoty_treki%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
       <div style="padding:12px 16px 16px">
-        <button class="complete-btn" onclick="completeLesson(18)">✓ Тест пройден</button>
+        <button class="complete-btn" id="quiz-btn-18" onclick="completeLesson(18)" disabled>✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -1115,7 +1115,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
     <div class="lesson-body">
       <iframe src="https://dept13quality-star.github.io/ABIS-Academy/test_napravlyayushie_podsvetki%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
       <div style="padding:12px 16px 16px">
-        <button class="complete-btn" onclick="completeLesson(20)">✓ Тест пройден</button>
+        <button class="complete-btn" id="quiz-btn-20" onclick="completeLesson(20)" disabled>✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -1155,7 +1155,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
     <div class="lesson-body">
       <iframe src="https://dept13quality-star.github.io/ABIS-Academy/test_plafonyi_ulichnye%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
       <div style="padding:12px 16px 16px">
-        <button class="complete-btn" onclick="completeLesson(22)">✓ Тест пройден</button>
+        <button class="complete-btn" id="quiz-btn-22" onclick="completeLesson(22)" disabled>✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -1195,7 +1195,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
     <div class="lesson-body">
       <iframe src="https://dept13quality-star.github.io/ABIS-Academy/test_profila_lenty%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
       <div style="padding:12px 16px 16px">
-        <button class="complete-btn" onclick="completeLesson(24)">✓ Тест пройден</button>
+        <button class="complete-btn" id="quiz-btn-24" onclick="completeLesson(24)" disabled>✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -1235,7 +1235,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
     <div class="lesson-body">
       <iframe src="https://dept13quality-star.github.io/ABIS-Academy/quiz_rozetki_vykluchateli%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
       <div style="padding:12px 16px 16px">
-        <button class="complete-btn" onclick="completeLesson(26)">✓ Тест пройден</button>
+        <button class="complete-btn" id="quiz-btn-26" onclick="completeLesson(26)" disabled>✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -1281,7 +1281,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
     <div class="lesson-body">
       <iframe src="https://dept13quality-star.github.io/ABIS-Academy/quiz_formy_lampochek%20(1).html" style="width:100%;height:520px;border:none;border-radius:0 0 16px 16px"></iframe>
       <div style="padding:12px 16px 16px">
-        <button class="complete-btn" onclick="completeLesson(28)">✓ Тест пройден</button>
+        <button class="complete-btn" id="quiz-btn-28" onclick="completeLesson(28)" disabled>✓ Тест пройден</button>
       </div>
     </div>
   </div>
@@ -1486,7 +1486,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           <div class="score-emoji" id="se-33"></div>
           <div class="score-val" id="sv-33"></div>
           <div class="score-label" id="sl-33"></div>
-          <button class="complete-btn done" onclick="completeLesson(33)" style="margin-top:12px">Продолжить →</button>
+          <button class="complete-btn done" id="quiz-btn-33" onclick="completeLesson(33)" style="margin-top:12px" disabled>Продолжить →</button>
         </div>
       </div>
     </div>
@@ -1578,7 +1578,7 @@ html, body { font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(-
           <div class="score-emoji" id="se-35"></div>
           <div class="score-val" id="sv-35"></div>
           <div class="score-label" id="sl-35"></div>
-          <button class="complete-btn done" onclick="completeLesson(35)" style="margin-top:12px">Продолжить →</button>
+          <button class="complete-btn done" id="quiz-btn-35" onclick="completeLesson(35)" style="margin-top:12px" disabled>Продолжить →</button>
         </div>
       </div>
     </div>
@@ -1866,12 +1866,30 @@ function showTestScore(lessonId) {
   scoreEl.classList.add('show');
   scoreEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
+  // Блокировка кнопки продолжения по порогу 70%
+  const doneBtn = document.getElementById('quiz-btn-' + lessonId);
+  if (doneBtn) {
+    if (pct >= 70) {
+      doneBtn.disabled = false;
+    } else {
+      doneBtn.disabled = true;
+      let msg = scoreEl.querySelector('.retry-msg');
+      if (!msg) {
+        msg = document.createElement('div');
+        msg.className = 'retry-msg';
+        msg.style.cssText = 'margin-top:10px;font-size:13px;color:#E24B4A;font-weight:500';
+        scoreEl.appendChild(msg);
+      }
+      msg.textContent = `Результат ${pct}% — нужно минимум 70%. Пройди тест заново.`;
+    }
+  }
+
   // Сохраняем в quiz_scores (та же таблица что и buildSimpleQuiz)
   sb.auth.getSession().then(async ({ data: { session } }) => {
     if (!session) return;
     const meta = INLINE_TEST_MAP[String(lessonId)];
     if (!meta) return;
-    const { error } = await sb.from('quiz_scores').upsert({
+    const { error } = await sb.from('quiz_scores').insert({
       user_id: session.user.id,
       user_name: cachedUserName,
       lesson_id: meta.id,
@@ -1879,7 +1897,7 @@ function showTestScore(lessonId) {
       max_score: s.total,
       pct,
       submitted_at: new Date().toISOString()
-    }, { onConflict: 'user_id,lesson_id' });
+    });
     if (error) console.error('quiz_scores upsert error:', error.message);
   });
 }
@@ -1986,18 +2004,18 @@ function buildSimpleQuiz(containerId, questions, btnId) {
     const doneBtn = document.getElementById(btnId);
     if (doneBtn) doneBtn.style.display = 'block';
 
-    // Сохраняем балл в Supabase
+    // Сохраняем все попытки в Supabase
     sb.auth.getSession().then(({ data: { session } }) => {
       if (!session) return;
-      const lessonId = parseInt(btnId.replace('btn-', ''));
-      sb.from('quiz_scores').upsert({
+      sb.from('quiz_scores').insert({
         user_id: session.user.id,
-        lesson_id: lessonId,
+        user_name: cachedUserName,
+        lesson_id: parseInt(btnId.replace('btn-', '')),
         score,
         max_score: shuffled.length,
-        pct: Math.round(score / shuffled.length * 100),
+        pct,
         submitted_at: new Date().toISOString()
-      }, { onConflict: 'user_id,lesson_id' });
+      });
     });
   }
 
@@ -2120,6 +2138,46 @@ toggleLesson = function(n) {
     }
   }
 };
+
+// Слушаем postMessage от внешних квизов в iframe
+window.addEventListener('message', async function(event) {
+  const d = event.data;
+  if (!d || d.type !== 'quiz_result') return;
+
+  const passed = d.pct >= 70;
+  const btn = document.getElementById('quiz-btn-' + d.lesson_id);
+
+  if (btn) {
+    if (passed) {
+      btn.disabled = false;
+      btn.textContent = '✓ Тест пройден — продолжить';
+    } else {
+      btn.disabled = true;
+      let msg = btn.parentNode.querySelector('.retry-msg');
+      if (!msg) {
+        msg = document.createElement('div');
+        msg.className = 'retry-msg';
+        msg.style.cssText = 'margin-bottom:8px;font-size:13px;color:#E24B4A;font-weight:500';
+        btn.parentNode.insertBefore(msg, btn);
+      }
+      msg.textContent = `Результат ${d.pct}% — нужно минимум 70%. Пройди тест заново.`;
+    }
+  }
+
+  // Сохраняем все попытки (insert без upsert)
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return;
+  const { error } = await sb.from('quiz_scores').insert({
+    user_id: session.user.id,
+    user_name: cachedUserName,
+    lesson_id: d.lesson_id,
+    score: d.score,
+    max_score: d.max_score,
+    pct: d.pct,
+    submitted_at: new Date().toISOString()
+  });
+  if (error) console.error('iframe quiz_scores error:', error.message);
+});
 
 init();
 </script>

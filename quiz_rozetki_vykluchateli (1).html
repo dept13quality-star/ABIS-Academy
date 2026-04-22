@@ -610,6 +610,7 @@ function updateProgress() {
    РЕЗУЛЬТАТ
 ============================================================ */
 function showResult() {
+  window.parent.postMessage({ type: 'quiz_result', lesson_id: 26, score: score, max_score: questions.length, pct: Math.round(score/questions.length*100) }, '*');
   document.getElementById('questions-wrap').innerHTML = '';
   document.getElementById('btn-next').classList.remove('show');
   document.querySelector('.progress-wrap').style.display = 'none';

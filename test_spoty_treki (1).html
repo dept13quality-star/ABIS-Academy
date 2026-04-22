@@ -562,6 +562,7 @@ function updateProgress() {
 }
 
 function showResult() {
+  window.parent.postMessage({ type: 'quiz_result', lesson_id: 18, score: score, max_score: shuffled.length, pct: Math.round(score/shuffled.length*100) }, '*');
   document.getElementById('questions-wrap').innerHTML = '';
   document.getElementById('btn-next').classList.remove('show');
   document.querySelector('.progress-wrap').style.display = 'none';

@@ -200,6 +200,7 @@ function nextQ(){
 }
 
 function showResult(){
+  window.parent.postMessage({ type: 'quiz_result', lesson_id: 14, score: score, max_score: Q.length, pct: Math.round(score/Q.length*100) }, '*');
   document.getElementById('quiz-body').style.display='none';
   const rb=document.getElementById('result-body');
   rb.style.display='block';

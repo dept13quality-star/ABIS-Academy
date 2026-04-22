@@ -474,6 +474,7 @@ function checkAnswers() {
     scoreText.className = 'result-score bad';
     scoreMsg.textContent = 'Нужно повторить материал. Красные карточки — не там. Попробуй ещё раз!';
   }
+  window.parent.postMessage({ type: 'quiz_result', lesson_id: 16, score: correct, max_score: cards.length, pct: Math.round(correct/cards.length*100) }, '*');
 }
 
 function resetAll() {

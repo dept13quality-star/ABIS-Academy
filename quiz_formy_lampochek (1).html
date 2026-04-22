@@ -436,6 +436,7 @@ function selectImg(imgId) {
 }
 
 function showResult() {
+  window.parent.postMessage({ type: 'quiz_result', lesson_id: 28, score: correct, max_score: total, pct: Math.round(correct/total*100) }, '*');
   document.getElementById('result').classList.add('show');
   document.getElementById('score-bar').style.display = 'none';
   document.querySelector('.instructions').style.display = 'none';
