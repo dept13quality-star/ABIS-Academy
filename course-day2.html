@@ -953,7 +953,7 @@ async function completeLesson(n) {
 
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
-    const score = Math.round((completed.size / TOTAL) * 100);
+    const score = Math.min(100, Math.round((completed.size / TOTAL) * 100));
     const isCompleted = completed.size >= TOTAL;
     await sb.from('progress').upsert({
       user_id: session.user.id,
