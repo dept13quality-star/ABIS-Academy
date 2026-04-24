@@ -1395,5 +1395,32 @@ async function restoreQuizButtonStates(userId) {
 
 init();
 </script>
+
+<script>
+(function() {
+  document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+  document.addEventListener('selectstart', function(e) { e.preventDefault(); return false; });
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'u') { e.preventDefault(); return false; }
+    if (e.ctrlKey && e.key === 's') { e.preventDefault(); return false; }
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') { e.preventDefault(); return false; }
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') { e.preventDefault(); return false; }
+    if (e.ctrlKey && e.shiftKey && e.key === 'C') { e.preventDefault(); return false; }
+    if (e.key === 'F12') { e.preventDefault(); return false; }
+    if (e.ctrlKey && e.key === 'a') { e.preventDefault(); return false; }
+    if (e.ctrlKey && e.key === 'c') { e.preventDefault(); return false; }
+    if (e.ctrlKey && e.key === 'p') { e.preventDefault(); return false; }
+  });
+  window.addEventListener('beforeprint', function(e) {
+    e.preventDefault();
+    document.body.innerHTML = '<h1 style="text-align:center;margin-top:40vh;font-family:sans-serif">Печать запрещена</h1>';
+  });
+  setInterval(function() {
+    if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:16px"><h2>Доступ ограничен</h2><p>Закройте инструменты разработчика и обновите страницу</p></div>';
+    }
+  }, 1000);
+})();
+</script>
 </body>
 </html>
