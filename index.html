@@ -25,7 +25,17 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(--text); }
+html, body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+input, textarea, select {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+} height: 100%; font-family: 'Onest', sans-serif; background: #F7F8FA; color: var(--text); }
 
 /* AUTH */
 .auth-wrap {
@@ -1335,6 +1345,65 @@ function toast(msg, type = 'ok') {
 }
 
 init();
+</script>
+
+<script>
+// Защита от копирования
+(function() {
+  // Отключить правую кнопку мыши
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  // Отключить выделение текста
+  document.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  // Отключить горячие клавиши
+  document.addEventListener('keydown', function(e) {
+    // Ctrl+U (просмотр исходного кода)
+    if (e.ctrlKey && e.key === 'u') { e.preventDefault(); return false; }
+    // Ctrl+S (сохранить страницу)
+    if (e.ctrlKey && e.key === 's') { e.preventDefault(); return false; }
+    // Ctrl+Shift+I (DevTools)
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') { e.preventDefault(); return false; }
+    // Ctrl+Shift+J (Console)
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') { e.preventDefault(); return false; }
+    // Ctrl+Shift+C (Inspector)
+    if (e.ctrlKey && e.shiftKey && e.key === 'C') { e.preventDefault(); return false; }
+    // F12
+    if (e.key === 'F12') { e.preventDefault(); return false; }
+    // Ctrl+A (выделить всё)
+    if (e.ctrlKey && e.key === 'a') { e.preventDefault(); return false; }
+    // Ctrl+C (копировать)
+    if (e.ctrlKey && e.key === 'c') { e.preventDefault(); return false; }
+    // Ctrl+P (печать)
+    if (e.ctrlKey && e.key === 'p') { e.preventDefault(); return false; }
+  });
+
+  // Защита от print
+  window.addEventListener('beforeprint', function(e) {
+    e.preventDefault();
+    document.body.innerHTML = '<h1 style="text-align:center;margin-top:40vh;font-family:sans-serif">Печать запрещена</h1>';
+  });
+
+  // Обнаружение DevTools (по размеру окна)
+  const devtoolsDetect = function() {
+    const threshold = 160;
+    if (window.outerWidth - window.innerWidth > threshold || 
+        window.outerHeight - window.innerHeight > threshold) {
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:16px"><h2>Доступ ограничен</h2><p>Закройте инструменты разработчика и обновите страницу</p></div>';
+    }
+  };
+  setInterval(devtoolsDetect, 1000);
+
+  // Watermark — добавить копирайт в консоль
+  console.log('%c⛔ ABIS Academy — защищённый контент. Копирование запрещено.', 
+    'color: red; font-size: 16px; font-weight: bold;');
+})();
 </script>
 </body>
 </html>
