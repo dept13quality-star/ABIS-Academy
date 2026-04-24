@@ -357,10 +357,7 @@ async function recalcFit() {
   const vp = p.getViewport({ scale: 1 });
   const viewer = document.getElementById('viewer');
   const availW = viewer.clientWidth - 40;
-  const availH = viewer.clientHeight - 56;
-  const scaleByW = availW / vp.width;
-  const scaleByH = availH / vp.height;
-  fitScale = Math.max(0.3, Math.min(scaleByW, scaleByH, 3));
+  fitScale = Math.max(0.3, Math.min(availW / vp.width, 3));
 }
 
 // ── Render page ──
